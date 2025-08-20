@@ -1798,6 +1798,14 @@
                         console.error("Error with onSnapshot listener:", error);
                         showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
                     });
+                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+
+                    helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
+                        userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        renderUserLinks(userLinks);
+                    }, (error) => {
+                        console.error("Error listening for user links:", error);
+                    });                                   
                 }
             } else {
                 try {
