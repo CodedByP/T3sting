@@ -469,17 +469,6 @@
                             <p class="text-center text-gray-400 col-span-full">Loading static links...</p>
                         </div>
                     </section>
-                    
-                    <!-- Category: User-Added Links -->
-                    <!-- This section is now conditionally rendered for non-anonymous users -->
-                    <section id="user-links-section" class="col-span-1 md:col-span-2 lg:col-span-3 mt-12">
-                        <h2 class="text-3xl font-bold text-center mb-8 link-title">
-                            Your Links
-                        </h2>
-                        <div id="user-links-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>
-                        </div>
-                    </section>
                 </div>
             </div>
         </div>
@@ -874,12 +863,9 @@
         let currentTextToCopy = '';
         let currentEditingId = null;
         let openCategoryMenu = null;
-        let editingLinkDocId = null;
-        let openMenuId = null;
         let defaultLinks = [];
         let cannedResponsesUnsubscribe = null;
-        let helpfulLinksUnsubscribe = null;
-
+        
         // --- Master Blueprint Data for Initialization ---
         const defaultCannedResponsesBlueprint = {
             'BRONCO': {
@@ -929,8 +915,6 @@
             { id: 'default-7', title: 'GUTS Ticket Checklist', description: 'A checklist for resolving GUTS tickets.', url: 'https://docs.google.com/spreadsheets/d/1VeKBxej95gIGqB2RhER9cRu-8DvD4kNcbL2PDIPMtp0/edit?gid=0#gid=0' }
         ];
         
-        let userLinks = [];
-
         const getCannedResponsesBlueprint = async () => {
             return defaultCannedResponsesBlueprint;
         };
@@ -1227,9 +1211,6 @@
         const noNumbersMessage = document.getElementById('no-numbers-message');
         const loadingIndicator = document.getElementById('loading-indicator');
 
-
-        const userLinksList = document.getElementById('user-links-list');
-        const linksUserInfo = document.getElementById('links-user-info');
         
         const showMessage = (text, type = 'success') => {
             messageBox.textContent = text;
@@ -1621,86 +1602,9 @@
             renderedStaticLinks = true;
         }
 
-        const renderUserLinks = (linksArray) => {
-            userLinksList.innerHTML = '';
-            if (linksArray.length > 0) {
-                linksArray.forEach(link => {
-                    const card = document.createElement('div');
-                    const titleForHtml = link.title.replace(/'/g, "\\'");
-                    const urlForHtml = link.url.replace(/'/g, "\\'");
-                    const descriptionForHtml = (link.description || '').replace(/'/g, "\\'");
-                    
-                    card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect flex items-center justify-between relative';
-                    card.innerHTML = `
-                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
-                            <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
-                            <p class="text-sm text-gray-400">${descriptionForHtml || 'No description available.'}</p>
-                        </a>
-                        <div class="relative inline-block text-left" data-doc-id="${link.id}" data-title="${titleForHtml}" data-url="${urlForHtml}" data-description="${descriptionForHtml}">
-                            <button type="button" class="meatballs-button p-2 text-gray-400 hover:text-white transition-colors" aria-expanded="true" aria-haspopup="true">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 pointer-events-none">
-                                    <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                                </svg>
-                            </button>
-                            <div class="meatballs-menu hidden absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                                <div class="py-1">
-                                    <button class="edit-link-btn text-gray-200 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Edit</button>
-                                    <button class="delete-link-btn text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Delete</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    userLinksList.appendChild(card);
-                });
-            } else {
-                userLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>';
-            }
-        }
-
         const renderHelpfulLinks = () => {
             renderStaticLinks();
-            if (!isAnonymous) {
-                renderUserLinks(userLinks);
-            }
         }
-        
-        function listenForUserLinks() {
-            if (!db || !userId || isAnonymous) {
-                console.error("Firestore or User ID not available, or user is anonymous.");
-                return;
-            }
-            
-            const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-            const q = query(linksCollectionRef);
-
-            helpfulLinksUnsubscribe = onSnapshot(q, (querySnapshot) => {
-                userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Now call the dedicated render function with the updated data
-                renderUserLinks(userLinks);
-            }, (error) => {
-                console.error("Error listening for documents:", error);
-                showLinksStatus('Failed to load links. Please try again.', 'text-red-400');
-            });
-        }
-
-        linksCancelButton.addEventListener('click', () => {
-            resetLinksForm();
-        });
-        document.addEventListener('click', (event) => {
-            const isClickInsideCategoryActions = event.target.closest('#category-actions-menu') || event.target.closest('#category-actions-btn');
-            const isClickInsideMeatballsMenu = event.target.closest('.meatballs-menu') || event.target.closest('.meatballs-button');
-
-            if (!categoryActionsMenu.contains(event.target) && !categoryActionsBtn.contains(event.target)) {
-                categoryActionsMenu.classList.add('hidden', 'scale-95', 'opacity-0');
-                categoryActionsBtn.classList.remove('active');
-            }
-
-            if (!isClickInsideMeatballsMenu) {
-                const allMenus = document.querySelectorAll('.meatballs-menu');
-                allMenus.forEach(m => m.classList.add('hidden'));
-                openMenuId = null;
-            }
-        });
 
         // Get the new login modal elements
         const loginPopupModal = document.getElementById('login-popup-modal');
@@ -1792,10 +1696,6 @@
             if (cannedResponsesUnsubscribe) {
               cannedResponsesUnsubscribe();
               cannedResponsesUnsubscribe = null;
-            }
-            if (helpfulLinksUnsubscribe) {
-              helpfulLinksUnsubscribe();
-              helpfulLinksUnsubscribe = null;
             }
         
             if (user) {
