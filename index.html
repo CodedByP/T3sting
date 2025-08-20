@@ -480,37 +480,6 @@
                             <p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>
                         </div>
                     </section>
-
-                    <!-- Form to add new links -->
-                    <!-- This section is now conditionally rendered for non-anonymous users -->
-                    <section id="add-link-section" class="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center">
-                        <div class="floating-card rounded-2xl p-8 max-w-lg w-full">
-                            <h2 id="form-title" class="text-2xl font-bold text-blue-400 mb-4">Add a New Link</h2>
-                            <form id="add-link-form" class="space-y-4">
-                                <div>
-                                    <label for="link-title" class="block text-sm font-medium text-gray-400">Title</label>
-                                    <input type="text" id="link-title" required class="mt-1 block w-full bg-gray-700 text-white border-2 border-gray-600 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg p-3 transition duration-300">
-                                </div>
-                                <div>
-                                    <label for="link-url" class="block text-sm font-medium text-gray-400">URL</label>
-                                    <input type="url" id="link-url" required class="mt-1 block w-full bg-gray-700 text-white border-2 border-gray-600 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg p-3 transition duration-300">
-                                </div>
-                                <div>
-                                    <label for="link-description" class="block text-sm font-medium text-gray-400">Description (Optional)</label>
-                                    <input type="text" id="link-description" class="mt-1 block w-full bg-gray-700 text-white border-2 border-gray-600 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg p-3 transition duration-300">
-                                </div>
-                                <div class="flex space-x-4">
-                                    <button type="submit" id="submit-button" class="w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-lg text-lg font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
-                                        Add Link
-                                    </button>
-                                    <button type="button" id="cancel-button" class="w-full inline-flex justify-center py-3 px-6 border border-gray-600 shadow-md text-lg font-bold rounded-xl text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-300 hidden">
-                                        Cancel
-                                    </button>
-                                </div>
-                                <div id="status-message" class="text-center mt-2 text-sm text-gray-400"></div>
-                            </form>
-                        </div>
-                    </section>
                 </div>
             </div>
         </div>
@@ -1258,14 +1227,7 @@
         const noNumbersMessage = document.getElementById('no-numbers-message');
         const loadingIndicator = document.getElementById('loading-indicator');
 
-        const linksForm = document.getElementById('add-link-form');
-        const linkTitleInput = document.getElementById('link-title');
-        const linkUrlInput = document.getElementById('link-url');
-        const linkDescriptionInput = document.getElementById('link-description');
-        const linksSubmitButton = document.getElementById('submit-button');
-        const linksCancelButton = document.getElementById('cancel-button');
-        const linksFormTitle = document.getElementById('form-title');
-        const linksStatusMessage = document.getElementById('status-message');
+
         const userLinksList = document.getElementById('user-links-list');
         const linksUserInfo = document.getElementById('links-user-info');
         
@@ -1702,52 +1664,6 @@
             }
         }
         
-        const showLinksStatus = (message, colorClass) => {
-            linksStatusMessage.textContent = message;
-            linksStatusMessage.className = `text-center mt-2 text-sm font-semibold ${colorClass}`;
-            setTimeout(() => {
-                linksStatusMessage.textContent = '';
-                linksStatusMessage.className = 'text-center mt-2 text-sm text-gray-400';
-            }, 3000);
-        };
-        
-        const resetLinksForm = () => {
-            linksFormTitle.textContent = "Add a New Link";
-            linkTitleInput.value = '';
-            linkUrlInput.value = '';
-            linkDescriptionInput.value = '';
-            linksSubmitButton.textContent = 'Add Link';
-            linksCancelButton.classList.add('hidden');
-            editingLinkDocId = null;
-        };
-
-        const editLink = (docId, title, url, description) => {
-            linksFormTitle.textContent = "Edit Link";
-            linkTitleInput.value = title;
-            linkUrlInput.value = url;
-            linkDescriptionInput.value = description;
-            linksSubmitButton.textContent = 'Save Changes';
-            linksCancelButton.classList.remove('hidden');
-            editingLinkDocId = docId;
-            // Scroll to the form
-            addLinkSection.scrollIntoView({ behavior: 'smooth' });
-        };
-        
-        const deleteLink = async (docId) => {
-            if (!db || !userId || isAnonymous) {
-                showLinksStatus('Please sign in to delete links.', 'text-red-400');
-                return;
-            }
-            const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', docId);
-            try {
-                await deleteDoc(docRef);
-                showLinksStatus('Link deleted successfully!', 'text-green-400');
-            } catch (error) {
-                console.error("Error deleting link:", error);
-                showLinksStatus(`Failed to delete link: ${error.message}`, 'text-red-400');
-            }
-        };
-
         function listenForUserLinks() {
             if (!db || !userId || isAnonymous) {
                 console.error("Firestore or User ID not available, or user is anonymous.");
@@ -1766,104 +1682,10 @@
                 showLinksStatus('Failed to load links. Please try again.', 'text-red-400');
             });
         }
-        
-        linksForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!db || !userId || isAnonymous) {
-                showLinksStatus('Please sign in to manage your links.', 'text-yellow-400');
-                return;
-            }
-
-            const title = linkTitleInput.value;
-            const url = linkUrlInput.value;
-            const description = linkDescriptionInput.value;
-
-            if (!title || !url) {
-                showLinksStatus('Please fill out all required fields.', 'text-red-400');
-                return;
-            }
-
-            try {
-                if (editingLinkDocId) {
-                    showLinksStatus('Updating link...', 'text-yellow-400');
-                    const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', editingLinkDocId);
-                    await updateDoc(docRef, {
-                        title: title,
-                        url: url,
-                        description: description,
-                    });
-                    showLinksStatus('Link updated successfully!', 'text-green-400');
-                } else {
-                    showLinksStatus('Adding link...', 'text-yellow-400');
-                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-                    await addDoc(linksCollectionRef, {
-                        title: title,
-                        url: url,
-                        description: description,
-                        createdAt: new Date()
-                    });
-                    showLinksStatus('Link added successfully!', 'text-green-400');
-                }
-                resetLinksForm();
-
-            } catch (error) {
-                console.error("Error during link operation:", error);
-                showLinksStatus(`Failed to save link: ${error.message}`, 'text-red-400');
-            }
-        });
 
         linksCancelButton.addEventListener('click', () => {
             resetLinksForm();
         });
-
-        userLinksList.addEventListener('click', (event) => {
-            if (isAnonymous) return;
-            const button = event.target.closest('.meatballs-button');
-            const editBtn = event.target.closest('.edit-link-btn');
-            const deleteBtn = event.target.closest('.delete-link-btn');
-
-            if (button) {
-                event.stopPropagation();
-                const parentDiv = button.closest('[data-doc-id]');
-                const menu = parentDiv.querySelector('.meatballs-menu');
-                if (menu) {
-                    const isHidden = menu.classList.contains('hidden');
-                    const allMenus = document.querySelectorAll('.meatballs-menu');
-                    allMenus.forEach(m => m.classList.add('hidden'));
-
-                    if (isHidden) {
-                        menu.classList.remove('hidden');
-                        openMenuId = parentDiv.dataset.docId;
-                    } else {
-                        openMenuId = null;
-                    }
-                }
-            } else if (editBtn) {
-                event.stopPropagation();
-                const parentDiv = editBtn.closest('[data-doc-id]');
-                if (parentDiv) {
-                    const docId = parentDiv.dataset.docId;
-                    const title = parentDiv.dataset.title;
-                    const url = parentDiv.dataset.url;
-                    const description = parentDiv.dataset.description;
-                    editLink(docId, title, url, description);
-                    const menu = parentDiv.querySelector('.meatballs-menu');
-                    if (menu) menu.classList.add('hidden');
-                    openMenuId = null;
-                }
-            } else if (deleteBtn) {
-                event.stopPropagation();
-                const parentDiv = deleteBtn.closest('[data-doc-id]');
-                if (parentDiv) {
-                    const docId = parentDiv.dataset.docId;
-                    deleteLink(docId);
-                    const menu = parentDiv.querySelector('.meatballs-menu');
-                    if (menu) menu.classList.add('hidden');
-                    openMenuId = null;
-                }
-            }
-        });
-
         document.addEventListener('click', (event) => {
             const isClickInsideCategoryActions = event.target.closest('#category-actions-menu') || event.target.closest('#category-actions-btn');
             const isClickInsideMeatballsMenu = event.target.closest('.meatballs-menu') || event.target.closest('.meatballs-button');
@@ -2465,57 +2287,6 @@
                 importData(file);
             }
         });
-
-        // Helpful Links Listeners
-        linksForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!db || !userId || isAnonymous) {
-                showLinksStatus('Please sign in to manage your links.', 'text-yellow-400');
-                return;
-            }
-
-            const title = linkTitleInput.value;
-            const url = linkUrlInput.value;
-            const description = linkDescriptionInput.value;
-
-            if (!title || !url) {
-                showLinksStatus('Please fill out all required fields.', 'text-red-400');
-                return;
-            }
-
-            try {
-                if (editingLinkDocId) {
-                    showLinksStatus('Updating link...', 'text-yellow-400');
-                    const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', editingLinkDocId);
-                    await updateDoc(docRef, {
-                        title: title,
-                        url: url,
-                        description: description,
-                    });
-                    showLinksStatus('Link updated successfully!', 'text-green-400');
-                } else {
-                    showLinksStatus('Adding link...', 'text-yellow-400');
-                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-                    await addDoc(linksCollectionRef, {
-                        title: title,
-                        url: url,
-                        description: description,
-                        createdAt: new Date()
-                    });
-                    showLinksStatus('Link added successfully!', 'text-green-400');
-                }
-                resetLinksForm();
-
-            } catch (error) {
-                console.error("Error during link operation:", error);
-                showLinksStatus(`Failed to save link: ${error.message}`, 'text-red-400');
-            }
-        });
-
-        linksCancelButton.addEventListener('click', () => {
-            resetLinksForm();
-        });
-
         // Placeholder modal listeners
         confirmPlaceholderBtn.addEventListener('click', () => {
             const inputs = placeholderInputsContainer.querySelectorAll('input, textarea');
