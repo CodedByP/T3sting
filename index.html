@@ -1691,122 +1691,122 @@
             }
         });
 
-onAuthStateChanged(auth, async (user) => {
-    // Unsubscribe from any previous listeners to prevent duplicates
-    if (cannedResponsesUnsubscribe) {
-        cannedResponsesUnsubscribe();
-        cannedResponsesUnsubscribe = null;
-    }
-
-    if (user) {
-        userId = user.uid;
-        isAnonymous = user.isAnonymous; // Update anonymous status
-        const displayName = user.displayName || user.email || 'User';
-        userName = displayName.split(' ')[0].split('@')[0];
-        linksUserInfo.textContent = `User ID: ${userId}`;
-
-        // Render static links only once on auth change, regardless of page
-        defaultLinks = await getHelpfulLinksBlueprint();
-        renderStaticLinks();
-
-        // Now, check if the user is anonymous AFTER we have the user object
-        if (isAnonymous) {
-            // Check Firestore for the flag
-            const userDocRef = getUserRootDocRef(userId);
-            try {
-                const userDoc = await getDoc(userDocRef);
-                const hasSeenPrompt = userDoc.exists() && userDoc.data().hasSeenLoginPrompt;
-
-                if (!hasSeenPrompt) {
-                    loginPopupModal.classList.remove('hidden');
-                    // Use a setTimeout to allow the CSS transition to play
-                    setTimeout(() => {
-                        loginPopupModal.classList.add('show');
-                    }, 10);
-                } else {
-                    loginPopupModal.classList.add('hidden');
-                }
-            } catch (error) {
-                console.error("Error fetching user data for login prompt:", error);
-                // Fallback to showing the pop-up if there's an error
-                loginPopupModal.classList.remove('hidden');
-                setTimeout(() => {
-                    loginPopupModal.classList.add('show');
-                }, 10);
+        onAuthStateChanged(auth, async (user) => {
+            // Unsubscribe from any previous listeners to prevent duplicates
+            if (cannedResponsesUnsubscribe) {
+                cannedResponsesUnsubscribe();
+                cannedResponsesUnsubscribe = null;
             }
 
-            // For anonymous users, load canned responses from the blueprint
-            categories = await getCannedResponsesBlueprint();
+            if (user) {
+                userId = user.uid;
+                isAnonymous = user.isAnonymous; // Update anonymous status
+                const displayName = user.displayName || user.email || 'User';
+                userName = displayName.split(' ')[0].split('@')[0];
+                linksUserInfo.textContent = `User ID: ${userId}`;
 
-            if (Object.keys(categories).length > 0) {
-                const existingCategoryNames = Object.keys(categories);
-                if (!existingCategoryNames.includes(activeCategory)) {
-                    activeCategory = existingCategoryNames[0];
-                }
-            }
-            renderContent();
+                // Render static links only once on auth change, regardless of page
+                defaultLinks = await getHelpfulLinksBlueprint();
+                renderStaticLinks();
 
-        } else {
-            // Hide the popup if the user is not anonymous
-            loginPopupModal.classList.add('hidden');
-
-            // Check for tutorial flag for signed-in users
-            const userDocRef = getUserRootDocRef(userId);
-            const userDoc = await getDoc(userDocRef);
-            const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
-
-            if (!tutorialSeen) {
-                tutorialModal.classList.remove('hidden');
-                showTutorialStep(0); // Start the tutorial at the beginning
-            } else {
-                tutorialModal.classList.add('hidden');
-            }
-
-            const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
-
-            cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
-                if (doc.exists()) {
-                    categories = doc.data().categories || {};
-                } else {
-                    // User has no private data, so initialize it from the in-memory blueprint
+                // Now, check if the user is anonymous AFTER we have the user object
+                if (isAnonymous) {
+                    // Check Firestore for the flag
+                    const userDocRef = getUserRootDocRef(userId);
                     try {
-                        const blueprint = await getCannedResponsesBlueprint();
-                        categories = JSON.parse(JSON.stringify(blueprint));
-                        await setDoc(userCannedResponsesDocRef, {
-                            categories: categories
-                        });
-                        console.log("Migrated default data to Firestore for new user.");
+                        const userDoc = await getDoc(userDocRef);
+                        const hasSeenPrompt = userDoc.exists() && userDoc.data().hasSeenLoginPrompt;
+
+                        if (!hasSeenPrompt) {
+                            loginPopupModal.classList.remove('hidden');
+                            // Use a setTimeout to allow the CSS transition to play
+                            setTimeout(() => {
+                                loginPopupModal.classList.add('show');
+                            }, 10);
+                        } else {
+                            loginPopupModal.classList.add('hidden');
+                        }
                     } catch (error) {
-                        console.error("Error migrating data for new user:", error);
+                        console.error("Error fetching user data for login prompt:", error);
+                        // Fallback to showing the pop-up if there's an error
+                        loginPopupModal.classList.remove('hidden');
+                        setTimeout(() => {
+                            loginPopupModal.classList.add('show');
+                        }, 10);
                     }
-                }
 
-                for (const key in categories) {
-                    if (!categories[key].responses) {
-                        categories[key].responses = [];
-                    }
-                }
+                    // For anonymous users, load canned responses from the blueprint
+                    categories = await getCannedResponsesBlueprint();
 
-                if (Object.keys(categories).length > 0) {
-                    const existingCategoryNames = Object.keys(categories);
-                    if (!existingCategoryNames.includes(activeCategory)) {
-                        activeCategory = existingCategoryNames[0];
+                    if (Object.keys(categories).length > 0) {
+                        const existingCategoryNames = Object.keys(categories);
+                        if (!existingCategoryNames.includes(activeCategory)) {
+                            activeCategory = existingCategoryNames[0];
+                        }
                     }
+                    renderContent();
+
+                } else {
+                    // Hide the popup if the user is not anonymous
+                    loginPopupModal.classList.add('hidden');
+
+                    // Check for tutorial flag for signed-in users
+                    const userDocRef = getUserRootDocRef(userId);
+                    const userDoc = await getDoc(userDocRef);
+                    const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
+
+                    if (!tutorialSeen) {
+                        tutorialModal.classList.remove('hidden');
+                        showTutorialStep(0); // Start the tutorial at the beginning
+                    } else {
+                        tutorialModal.classList.add('hidden');
+                    }
+
+                    const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
+
+                    cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
+                        if (doc.exists()) {
+                            categories = doc.data().categories || {};
+                        } else {
+                            // User has no private data, so initialize it from the in-memory blueprint
+                            try {
+                                const blueprint = await getCannedResponsesBlueprint();
+                                categories = JSON.parse(JSON.stringify(blueprint));
+                                await setDoc(userCannedResponsesDocRef, {
+                                    categories: categories
+                                });
+                                console.log("Migrated default data to Firestore for new user.");
+                            } catch (error) {
+                                console.error("Error migrating data for new user:", error);
+                            }
+                        }
+
+                        for (const key in categories) {
+                            if (!categories[key].responses) {
+                                categories[key].responses = [];
+                            }
+                        }
+
+                        if (Object.keys(categories).length > 0) {
+                            const existingCategoryNames = Object.keys(categories);
+                            if (!existingCategoryNames.includes(activeCategory)) {
+                                activeCategory = existingCategoryNames[0];
+                            }
+                        }
+                        renderContent();
+                    }, (error) => {
+                        console.error("Error with onSnapshot listener:", error);
+                        showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
+                    });
                 }
-                renderContent();
-            }, (error) => {
-                console.error("Error with onSnapshot listener:", error);
-                showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
-            });
-        }
-    } else {
-        try {
-            await signInAnonymously(auth);
-        } catch (error) {
-            console.error("Anonymous sign-in failed", error);
-        }
-    }
-});
+            } else {
+                try {
+                    await signInAnonymously(auth);
+                } catch (error) {
+                    console.error("Anonymous sign-in failed", error);
+                }
+            }
+        });
         
         // --- Event Listeners ---
         
