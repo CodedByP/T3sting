@@ -1093,14 +1093,14 @@
             categoryList.innerHTML = '';
             const categoryNames = Object.keys(categories);
             
-            if (categoryNames.length > 0) {
-                if (categoryActionsBtn) categoryActionsBtn.classList.remove('hidden');
-            } else {
-                if (categoryActionsBtn) {
-                    categoryActionsBtn.classList.add('hidden');
-                    categoryActionsMenu.classList.add('hidden');
-                }
+        if (!isAnonymous && categoryNames.length > 0) {
+            if (categoryActionsBtn) categoryActionsBtn.classList.remove('hidden');
+        } else {
+            if (categoryActionsBtn) {
+                categoryActionsBtn.classList.add('hidden');
+                categoryActionsMenu.classList.add('hidden');
             }
+        }
 
             if (!isAnonymous) {
                 addResponseSection.classList.remove('hidden');
