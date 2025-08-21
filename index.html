@@ -1004,80 +1004,82 @@
             }
         };
 
-        const renderContent = () => {
-            const cannedResponsesApp = document.getElementById('canned-responses-app');
-            const fedexTrackerApp = document.getElementById('fedex-tracker-app');
-            const helpfulLinksApp = document.getElementById('helpful-links-app');
-            const settingsPage = document.getElementById('settings-page');
-            const categoryBar = document.getElementById('category-bar');
-            
-            const mainTitle = document.getElementById('main-title');
-            const categoryActionsBtn = document.getElementById('category-actions-btn');
-            const categoryActionsMenu = document.getElementById('category-actions-menu');
-            const addCategoryBtn = document.getElementById('add-category-btn');
-            const addResponseSection = document.getElementById('add-response-section');
-            const userLinksSection = document.getElementById('user-links-section');
-            const addLinkSection = document.getElementById('add-link-section');
-            const importExportBtnSettings = document.getElementById('import-export-btn-settings');
-            const checkUpdatesBtnSettings = document.getElementById('check-updates-btn-settings');
+const renderContent = () => {
+    const cannedResponsesApp = document.getElementById('canned-responses-app');
+    const fedexTrackerApp = document.getElementById('fedex-tracker-app');
+    const helpfulLinksApp = document.getElementById('helpful-links-app');
+    const settingsPage = document.getElementById('settings-page');
+    const categoryBar = document.getElementById('category-bar');
+    
+    const mainTitle = document.getElementById('main-title');
+    const categoryActionsBtn = document.getElementById('category-actions-btn');
+    const categoryActionsMenu = document.getElementById('category-actions-menu');
+    const addCategoryBtn = document.getElementById('add-category-btn');
+    const addResponseSection = document.getElementById('add-response-section');
+    const userLinksSection = document.getElementById('user-links-section');
+    const addLinkSection = document.getElementById('add-link-section');
+    const importExportBtnSettings = document.getElementById('import-export-btn-settings');
+    const checkUpdatesBtnSettings = document.getElementById('check-updates-btn-settings');
 
-            // Hide the kebab menu button and menu by default for all pages
-            categoryActionsBtn.classList.add('hidden');
-            categoryActionsMenu.classList.add('hidden');
-            
-            if (cannedResponsesApp) cannedResponsesApp.classList.add('hidden');
-            if (fedexTrackerApp) fedexTrackerApp.classList.add('hidden');
-            if (helpfulLinksApp) helpfulLinksApp.classList.add('hidden');
-            if (settingsPage) settingsPage.classList.add('hidden');
-            if (categoryBar) categoryBar.classList.add('hidden');
-            
-            if (currentPage === 'canned-responses') {
-                cannedResponsesApp.classList.remove('hidden');
-                categoryBar.classList.remove('hidden');
-                mainTitle.textContent = 'Canned Responses';
-                renderCategories();
-                
-                // Show interactive elements for signed-in users on this page
-                if (!isAnonymous) {
-                    addCategoryBtn.classList.remove('hidden');
-                    addResponseSection.classList.remove('hidden');
-                    if (Object.keys(categories).length > 0) {
-                        categoryActionsBtn.classList.remove('hidden');
-                    }
-                } else {
-                    addCategoryBtn.classList.add('hidden');
-                    addResponseSection.classList.add('hidden');
-                }
-            } else if (currentPage === 'fedex-tracker') {
-                fedexTrackerApp.classList.remove('hidden');
-                mainTitle.textContent = 'FedEx Tracker';
-                extractAndDisplayNumbers();
-            } else if (currentPage === 'helpful-links') {
-                helpfulLinksApp.classList.remove('hidden');
-                mainTitle.textContent = 'Helpful Links';
-                renderHelpfulLinks();
-                // Hide interactive elements for anonymous users
-                if (isAnonymous) {
-                    userLinksSection.classList.add('hidden');
-                    addLinkSection.classList.add('hidden');
-                } else {
-                    userLinksSection.classList.remove('hidden');
-                    addLinkSection.classList.remove('hidden');
-                }
-            } else if (currentPage === 'settings') {
-                settingsPage.classList.remove('hidden');
-                mainTitle.textContent = 'Settings';
-                renderSettingsPage();
-                // Hide interactive elements for anonymous users
-                if (isAnonymous) {
-                    importExportBtnSettings.classList.add('hidden');
-                    checkUpdatesBtnSettings.classList.add('hidden');
-                } else {
-                    importExportBtnSettings.classList.remove('hidden');
-                    checkUpdatesBtnSettings.classList.remove('hidden');
-                }
+    categoryActionsBtn.classList.add('hidden');
+    categoryActionsMenu.classList.add('hidden');
+    
+    if (cannedResponsesApp) cannedResponsesApp.classList.add('hidden');
+    if (fedexTrackerApp) fedexTrackerApp.classList.add('hidden');
+    if (helpfulLinksApp) helpfulLinksApp.classList.add('hidden');
+    if (settingsPage) settingsPage.classList.add('hidden');
+    if (categoryBar) categoryBar.classList.add('hidden');
+    
+    if (currentPage === 'canned-responses') {
+        cannedResponsesApp.classList.remove('hidden');
+        categoryBar.classList.remove('hidden');
+        mainTitle.textContent = 'Canned Responses';
+        renderCategories();
+        
+        if (!isAnonymous) {
+            addCategoryBtn.classList.remove('hidden');
+            addResponseSection.classList.remove('hidden');
+            if (Object.keys(categories).length > 0) {
+                categoryActionsBtn.classList.remove('hidden');
             }
-        };
+        } else {
+            addCategoryBtn.classList.add('hidden');
+            addResponseSection.classList.add('hidden');
+        }
+    } else if (currentPage === 'fedex-tracker') {
+        fedexTrackerApp.classList.remove('hidden');
+        mainTitle.textContent = 'FedEx Tracker';
+        extractAndDisplayNumbers();
+    } else if (currentPage === 'helpful-links') {
+        helpfulLinksApp.classList.remove('hidden');
+        mainTitle.textContent = 'Helpful Links';
+        
+        if (!renderedStaticLinks) {
+            renderStaticLinks();
+        }
+
+        if (isAnonymous) {
+            userLinksSection.classList.add('hidden');
+            addLinkSection.classList.add('hidden');
+        } else {
+            userLinksSection.classList.remove('hidden');
+            addLinkSection.classList.remove('hidden');
+            // FIX: Removed the redundant call to renderUserLinks() from here.
+            // The onSnapshot listener now handles all rendering.
+        }
+    } else if (currentPage === 'settings') {
+        settingsPage.classList.remove('hidden');
+        mainTitle.textContent = 'Settings';
+        renderSettingsPage();
+        if (isAnonymous) {
+            importExportBtnSettings.classList.add('hidden');
+            checkUpdatesBtnSettings.classList.add('hidden');
+        } else {
+            importExportBtnSettings.classList.remove('hidden');
+            checkUpdatesBtnSettings.classList.remove('hidden');
+        }
+    }
+};
 
         const responsesList = document.getElementById('responses-list');
         const emptyState = document.getElementById('empty-state');
@@ -1984,6 +1986,18 @@ onAuthStateChanged(auth, async (user) => {
 
         defaultLinks = await getHelpfulLinksBlueprint();
         renderStaticLinks();
+        
+        // NEW: This listener is set up here and is the ONLY thing that will call renderUserLinks.
+        if (!isAnonymous) {
+            const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+            helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
+                userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderUserLinks(); // This is the single, correct call to render the user links.
+            }, (error) => {
+                console.error("Error listening for user links:", error);
+                showMessage("Error loading your links. Please check your Firebase permissions.", 'error');
+            });
+        }
 
         if (isAnonymous) {
             const userDocRef = getUserRootDocRef(userId);
@@ -2031,7 +2045,6 @@ onAuthStateChanged(auth, async (user) => {
             }
             
             const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
-            const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
             
             cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
                 if (doc.exists()) {
@@ -2063,14 +2076,6 @@ onAuthStateChanged(auth, async (user) => {
             }, (error) => {
                 console.error("Error with onSnapshot listener:", error);
                 showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
-            });
-            
-            helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
-                userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderUserLinks();
-            }, (error) => {
-                console.error("Error listening for user links:", error);
-                showMessage("Error loading your links. Please check your Firebase permissions.", 'error');
             });
         }
     } else {
