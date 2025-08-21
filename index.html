@@ -23,7 +23,7 @@
         .container-bg {
             background-color: #0d1117;
             background-image: radial-gradient(at 0% 0%, hsla(215,90%,55%,0.15) 0, transparent 50%),
-                                 radial-gradient(at 100% 100%, hsla(280,90%,70%,0.15) 0, transparent 50%);
+                                radial-gradient(at 100% 100%, hsla(280,90%,70%,0.15) 0, transparent 50%);
         }
         .link-card, .card-style, .form-container, .floating-card, .main-card, .sidebar, .modal-content {
             background-color: rgba(22, 27, 34, 0.8);
@@ -177,7 +177,7 @@
         .light-mode .container-bg {
             background-color: #f9fafb;
             background-image: radial-gradient(at 0% 0%, hsla(215,90%,55%,0.15) 0, transparent 50%),
-                                 radial-gradient(at 100% 100%, hsla(280,90%,70%,0.15) 0, transparent 50%);
+                                radial-gradient(at 100% 100%, hsla(280,90%,70%,0.15) 0, transparent 50%);
         }
         .light-mode .link-card, .light-mode .card-style, .light-mode .form-container, .light-mode .floating-card, .light-mode .main-card, .light-mode .sidebar, .light-mode .modal-content {
             background-color: rgba(255, 255, 255, 0.8);
@@ -893,12 +893,11 @@
         const db = getFirestore(app);
         setLogLevel('debug');
         
-        // --- Global State Variables ---
-        let currentTutorialStep = 0;
+        // The one true source of data, updated only by the onSnapshot listener.
         let categories = {};
         let activeCategory = '';
         let userId = null;
-        let isAnonymous = true;
+        let isAnonymous = true; // Track if the user is anonymous
         let responseToDeleteId = null;
         let categoryToEdit = null;
         let currentPage = 'canned-responses';
@@ -911,16 +910,6 @@
         let defaultLinks = [];
         let cannedResponsesUnsubscribe = null;
         let helpfulLinksUnsubscribe = null;
-        let userLinks = [];
-        let renderedStaticLinks = false;
-        let isSubmittingLink = false;
-
-        const tutorialSteps = [
-            document.getElementById('tutorial-step-1'),
-            document.getElementById('tutorial-step-2'),
-            document.getElementById('tutorial-step-3'),
-            document.getElementById('tutorial-step-4'),
-        ];
 
         // --- Master Blueprint Data for Initialization ---
         const defaultCannedResponsesBlueprint = {
@@ -970,45 +959,29 @@
             { id: 'default-6', title: 'Technician Workload Management', description: 'View and manage technician workload.', url: 'https://lookerstudio.google.com/c/u/0/reporting/462c770f-51f7-42e4-811d-b3fb3daf09eb/page/p_6a7jcz4nsd' },
             { id: 'default-7', title: 'GUTS Ticket Checklist', description: 'A checklist for resolving GUTS tickets.', url: 'https://docs.google.com/spreadsheets/d/1VeKBxej95gIGqB2RhER9cRu-8DvD4kNcbL2PDIPMtp0/edit?gid=0#gid=0' }
         ];
+        
+        let userLinks = [];
 
-        // --- Helper Functions ---
-        const showMessage = (text, type = 'success') => {
-            const messageBox = document.getElementById('message-box');
-            messageBox.textContent = text;
-            messageBox.className = 'message-box show';
-            if (type === 'success') {
-                messageBox.style.backgroundColor = '#10B981';
-            } else if (type === 'error') {
-                messageBox.style.backgroundColor = '#EF4444';
-            }
-            setTimeout(() => {
-                messageBox.className = 'message-box';
-            }, 3000);
+        const getCannedResponsesBlueprint = async () => {
+            return defaultCannedResponsesBlueprint;
+        };
+
+        const getHelpfulLinksBlueprint = async () => {
+            return defaultHelpfulLinksBlueprint;
         };
         
-        const showTutorialStep = (stepIndex) => {
+        const getUserCannedResponsesDocRef = (uid) => {
+            return doc(db, 'artifacts', safeAppId, 'users', uid, 'canned_responses_data', 'app_data');
+        };
 
-            const tutorialBackBtn = document.getElementById('tutorial-back-btn');
-            const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-            const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-
-            tutorialSteps.forEach(step => step.classList.add('hidden'));
-            if (tutorialSteps[stepIndex]) {
-                tutorialSteps[stepIndex].classList.remove('hidden');
-            }
-
-            tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
-            tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
-            tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
-            currentTutorialStep = stepIndex;
-        }
+        const getUserHelpfulLinksCollectionRef = (uid) => {
+            return collection(db, 'artifacts', safeAppId, 'users', uid, 'helpful_links_data');
+        };
         
-
-        const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
-        const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
-        const getUserCannedResponsesDocRef = (uid) => { return doc(db, 'artifacts', safeAppId, 'users', uid, 'canned_responses_data', 'app_data'); };
-        const getUserHelpfulLinksCollectionRef = (uid) => { return collection(db, 'artifacts', safeAppId, 'users', uid, 'helpful_links_data'); };
-        const getUserRootDocRef = (uid) => { return doc(db, 'artifacts', safeAppId, 'users', uid); }
+        // This is a new function to get the user's root document.
+        const getUserRootDocRef = (uid) => {
+            return doc(db, 'artifacts', safeAppId, 'users', uid);
+        }
 
         const saveToFirestore = async (dataToSave) => {
             if (!userId || isAnonymous) {
@@ -1030,14 +1003,14 @@
                 showMessage("Error saving data. Check your permissions.", 'error');
             }
         };
-        
-        // --- Rendering Functions ---
+
         const renderContent = () => {
             const cannedResponsesApp = document.getElementById('canned-responses-app');
             const fedexTrackerApp = document.getElementById('fedex-tracker-app');
             const helpfulLinksApp = document.getElementById('helpful-links-app');
             const settingsPage = document.getElementById('settings-page');
             const categoryBar = document.getElementById('category-bar');
+            
             const mainTitle = document.getElementById('main-title');
             const categoryActionsBtn = document.getElementById('category-actions-btn');
             const categoryActionsMenu = document.getElementById('category-actions-menu');
@@ -1048,6 +1021,7 @@
             const importExportBtnSettings = document.getElementById('import-export-btn-settings');
             const checkUpdatesBtnSettings = document.getElementById('check-updates-btn-settings');
 
+            // Hide the kebab menu button and menu by default for all pages
             categoryActionsBtn.classList.add('hidden');
             categoryActionsMenu.classList.add('hidden');
             
@@ -1063,6 +1037,7 @@
                 mainTitle.textContent = 'Canned Responses';
                 renderCategories();
                 
+                // Show interactive elements for signed-in users on this page
                 if (!isAnonymous) {
                     addCategoryBtn.classList.remove('hidden');
                     addResponseSection.classList.remove('hidden');
@@ -1072,8 +1047,6 @@
                 } else {
                     addCategoryBtn.classList.add('hidden');
                     addResponseSection.classList.add('hidden');
-                    categoryActionsBtn.classList.add('hidden'); // Ensure it is hidden for anonymous users
-
                 }
             } else if (currentPage === 'fedex-tracker') {
                 fedexTrackerApp.classList.remove('hidden');
@@ -1082,23 +1055,20 @@
             } else if (currentPage === 'helpful-links') {
                 helpfulLinksApp.classList.remove('hidden');
                 mainTitle.textContent = 'Helpful Links';
-                
-                if (!renderedStaticLinks) {
-                    renderStaticLinks();
-                }
-
+                renderHelpfulLinks();
+                // Hide interactive elements for anonymous users
                 if (isAnonymous) {
                     userLinksSection.classList.add('hidden');
                     addLinkSection.classList.add('hidden');
                 } else {
                     userLinksSection.classList.remove('hidden');
                     addLinkSection.classList.remove('hidden');
-                    renderUserLinks();
                 }
             } else if (currentPage === 'settings') {
                 settingsPage.classList.remove('hidden');
                 mainTitle.textContent = 'Settings';
                 renderSettingsPage();
+                // Hide interactive elements for anonymous users
                 if (isAnonymous) {
                     importExportBtnSettings.classList.add('hidden');
                     checkUpdatesBtnSettings.classList.add('hidden');
@@ -1108,26 +1078,226 @@
                 }
             }
         };
+
+        const responsesList = document.getElementById('responses-list');
+        const emptyState = document.getElementById('empty-state');
+        const messageBox = document.getElementById('message-box');
+        const deleteModal = document.getElementById('delete-modal');
+        const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+        const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+        const categoryList = document.getElementById('category-list');
+        const addCategoryBtn = document.getElementById('add-category-btn');
+        const addCategoryModal = document.getElementById('add-category-modal');
+        const addCategoryInput = document.getElementById('add-category-input');
+        const confirmAddCategoryBtn = document.getElementById('confirm-add-category-btn');
+        const cancelAddCategoryBtn = document.getElementById('cancel-add-category-btn');
+        const addResponseSection = document.getElementById('add-response-section');
+        const responsesHeading = document.getElementById('responses-heading');
+        
+        const importExportModal = document.getElementById('import-export-modal');
+        const exportBtn = document.getElementById('export-btn');
+        const importFileInput = document.getElementById('import-file-input');
+        const closeImportExportModalBtn = document.getElementById('close-import-export-modal-btn');
+        
+        const searchInput = document.getElementById('search-input');
+        const searchBarContainer = document.getElementById('search-bar-container');
+
+        const editCategoryModal = document.getElementById('edit-category-modal');
+        const editCategoryInput = document.getElementById('edit-category-input');
+        const confirmEditCategoryBtn = document.getElementById('confirm-edit-category-btn');
+        const cancelEditCategoryBtn = document.getElementById('cancel-edit-category-btn');
+        const deleteCategoryModal = document.getElementById('delete-category-modal');
+        const confirmDeleteCategoryBtn = document.getElementById('confirm-delete-category-btn');
+        const cancelDeleteCategoryBtn = document.getElementById('cancel-delete-category-btn');
+
+        const colorPickerModal = document.getElementById('color-picker-modal');
+        const colorInput = document.getElementById('color-input');
+        const closeColorPickerBtn = document.getElementById('close-color-picker-btn');
+        const saveColorBtn = document.getElementById('save-color-btn');
+
+        const updateModal = document.getElementById('update-modal');
+        const updateModalTitle = document.getElementById('update-modal-title');
+        const updateModalMessage = document.getElementById('update-modal-message');
+        const updateModalButtons = document.getElementById('update-modal-buttons');
+        const closeUpdateBtn = document.getElementById('close-update-btn');
+        const checkUpdatesBtnSettings = document.getElementById('check-updates-btn-settings');
+        
+        const categoryActionsBtn = document.getElementById('category-actions-btn');
+        const categoryActionsMenu = document.getElementById('category-actions-menu');
+        const renameCategoryBtn = document.getElementById('rename-category-btn');
+        const deleteCategoryBtn = document.getElementById('delete-category-btn');
+        const changeColorBtn = document.getElementById('change-color-btn');
+
+        const hamburgerMenuBtn = document.getElementById('hamburger-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const navCannedResponses = document.getElementById('nav-canned-responses');
+        const navFedexTracker = document.getElementById('nav-fedex-tracker');
+        const navHelpfulLinks = document.getElementById('nav-helpful-links');
+        const navSettings = document.getElementById('nav-settings');
+
+        const signInBtn = document.getElementById('sign-in-btn-settings');
+        const signOutBtn = document.getElementById('sign-out-btn-settings');
+        const authStatusSettings = document.getElementById('auth-status-settings');
+        const themeToggleBtnSettings = document.getElementById('theme-toggle-btn-settings');
+        const themeIconSettings = document.getElementById('theme-icon-settings');
+        const importExportBtnSettings = document.getElementById('import-export-btn-settings');
+
+        const placeholderModal = document.getElementById('placeholder-modal');
+        const placeholderInputsContainer = document.getElementById('placeholder-inputs');
+        const confirmPlaceholderBtn = document.getElementById('confirm-placeholder-btn');
+        const cancelPlaceholderBtn = document.getElementById('cancel-placeholder-btn');
+        
+        const newResponseModal = document.getElementById('new-response-modal');
+        const openAddResponseModalBtn = document.getElementById('open-add-response-modal-btn');
+        const newResponseLabelInput = document.getElementById('new-response-label');
+        const newResponseTextInput = document.getElementById('new-response-text');
+        const newResponseCategorySelect = document.getElementById('new-response-category');
+        const saveNewResponseBtn = document.getElementById('save-new-response-btn');
+        const cancelNewResponseBtn = document.getElementById('cancel-new-response-btn');
+
+
+        const editResponseModal = document.getElementById('edit-response-modal');
+        const editResponseLabelInput = document.getElementById('edit-response-label');
+        const editResponseTextInput = document.getElementById('edit-response-text');
+        const editCategorySelect = document.getElementById('edit-category-select');
+        const saveEditBtn = document.getElementById('save-edit-btn');
+        const cancelEditBtn = document.getElementById('cancel-edit-btn');
+
+        const staticLinksList = document.getElementById('static-links-list');
+        const userLinksSection = document.getElementById('user-links-section');
+        const addLinkSection = document.getElementById('add-link-section');
+        
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const tutorialResetSection = document.getElementById('tutorial-reset-section');
+        
+        // Multi-step tutorial elements
+        const tutorialSteps = [
+            document.getElementById('tutorial-step-1'),
+            document.getElementById('tutorial-step-2'),
+            document.getElementById('tutorial-step-3'),
+            document.getElementById('tutorial-step-4'),
+        ];
+        let currentTutorialStep = 0;
+        const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+        const tutorialBackBtn = document.getElementById('tutorial-back-btn');
+        const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
+        
+        const showTutorialStep = (stepIndex) => {
+            tutorialSteps.forEach((step, index) => {
+                step.classList.add('hidden');
+            });
+            tutorialSteps[stepIndex].classList.remove('hidden');
+            
+            // Show/hide navigation buttons based on step
+            tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+            tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+            tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
+            
+            currentTutorialStep = stepIndex;
+        }
+
+        const renderSettingsPage = () => {
+            if (document.body.classList.contains('light-mode')) {
+                themeIconSettings.className = 'fas fa-sun mr-2';
+            } else {
+                themeIconSettings.className = 'fas fa-moon mr-2';
+            }
+
+            if (auth.currentUser) {
+                const displayName = auth.currentUser.displayName || auth.currentUser.email || 'User';
+                authStatusSettings.textContent = `Signed in as: ${displayName}`;
+                authStatusSettings.title = auth.currentUser.email;
+
+                if (isAnonymous) {
+                    signInBtn.classList.remove('hidden');
+                    signOutBtn.classList.add('hidden');
+                    tutorialResetSection.classList.add('hidden');
+                } else {
+                    signInBtn.classList.add('hidden');
+                    signOutBtn.classList.remove('hidden');
+                    tutorialResetSection.classList.remove('hidden');
+                }
+            } else {
+                authStatusSettings.textContent = 'Not signed in.';
+                signInBtn.classList.remove('hidden');
+                signOutBtn.classList.add('hidden');
+                tutorialResetSection.classList.add('hidden');
+            }
+        };
+
+        const themeToggleBtn = document.getElementById('theme-toggle-btn-settings');
+        const themeIcon = document.getElementById('theme-icon-settings');
+
+        themeToggleBtn.addEventListener('click', () => {
+            if (document.body.classList.contains('light-mode')) {
+                document.body.classList.remove('light-mode');
+                themeIcon.className = 'fas fa-moon mr-2';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.add('light-mode');
+                themeIcon.className = 'fas fa-sun mr-2';
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+            themeIcon.className = 'fas fa-sun mr-2';
+        } else {
+            document.body.classList.remove('light-mode');
+            themeIcon.className = 'fas fa-moon mr-2';
+        }
+
+        const fedexRegex = /(?:78\d{10}|79\d{10}|80\d{10}|81\d{10}|82\d{10}|(?:96\d{20}|96\d{32}|\d{15}|\d{12}))/g;
+        const inputTextareaFedex = document.getElementById('input-text-fedex');
+        const trackingNumbersContainer = document.getElementById('tracking-numbers-container');
+        const copyButtonFedex = document.getElementById('copy-button-fedex');
+        const clearButtonFedex = document.getElementById('clear-button-fedex');
+        const noNumbersMessage = document.getElementById('no-numbers-message');
+        const loadingIndicator = document.getElementById('loading-indicator');
+
+        const linksForm = document.getElementById('add-link-form');
+        const linkTitleInput = document.getElementById('link-title');
+        const linkUrlInput = document.getElementById('link-url');
+        const linkDescriptionInput = document.getElementById('link-description');
+        const linksSubmitButton = document.getElementById('submit-button');
+        const linksCancelButton = document.getElementById('cancel-button');
+        const linksFormTitle = document.getElementById('form-title');
+        const linksStatusMessage = document.getElementById('status-message');
+        const userLinksList = document.getElementById('user-links-list');
+        const linksUserInfo = document.getElementById('links-user-info');
+        
+        const showMessage = (text, type = 'success') => {
+            messageBox.textContent = text;
+            messageBox.className = 'message-box show';
+            if (type === 'success') {
+                messageBox.style.backgroundColor = '#10B981';
+            } else if (type === 'error') {
+                messageBox.style.backgroundColor = '#EF4444';
+            }
+            setTimeout(() => {
+                messageBox.className = 'message-box';
+            }, 3000);
+        };
         
         const renderCategories = () => {
-            const categoryList = document.getElementById('category-list');
-            const addResponseSection = document.getElementById('add-response-section');
-            const searchBarContainer = document.getElementById('search-bar-container');
-            const categoryActionsBtn = document.getElementById('category-actions-btn');
-            const categoryActionsMenu = document.getElementById('category-actions-menu');
-
             categoryList.innerHTML = '';
             const categoryNames = Object.keys(categories);
             
-        if (!isAnonymous && categoryNames.length > 0) {
-            if (categoryActionsBtn) categoryActionsBtn.classList.remove('hidden');
-        } else {
-            if (categoryActionsBtn) {
-                categoryActionsBtn.classList.add('hidden');
-                categoryActionsMenu.classList.add('hidden');
+            if (categoryNames.length > 0) {
+                const categoryActionsBtn = document.getElementById('category-actions-btn');
+                if (categoryActionsBtn) categoryActionsBtn.classList.remove('hidden');
+            } else {
+                const categoryActionsBtn = document.getElementById('category-actions-btn');
+                if (categoryActionsBtn) {
+                    categoryActionsBtn.classList.add('hidden');
+                    categoryActionsMenu.classList.add('hidden');
+                }
             }
-        }
 
+            // Only show interactive elements for non-anonymous users
             if (!isAnonymous) {
                 addResponseSection.classList.remove('hidden');
                 searchBarContainer.classList.remove('hidden');
@@ -1153,10 +1323,6 @@
         };
 
         const renderResponses = (searchQuery = '') => {
-            const responsesList = document.getElementById('responses-list');
-            const emptyState = document.getElementById('empty-state');
-            const responsesHeading = document.getElementById('responses-heading');
-
             responsesList.innerHTML = '';
             
             let responsesToRender = [];
@@ -1191,7 +1357,9 @@
                     const pinnedResponses = allResponses.filter(r => r.isPinned);
                     const unpinnedResponses = allResponses.filter(r => !r.isPinned);
                     
+                    // Sort unpinned responses alphabetically by label
                     unpinnedResponses.sort((a, b) => (a.label || '').localeCompare(b.label || ''));
+
                     responsesToRender = [...pinnedResponses, ...unpinnedResponses];
                     headingText = `Responses in: ${activeCategory}`;
                 } else {
@@ -1248,12 +1416,16 @@
                         responseEl.dataset.id = response.id;
                         responseEl.dataset.category = response.category;
                         responseEl.innerHTML = `
+                            <!-- Pin button in the top right -->
                             <button class="pin-btn absolute top-3 right-3 p-2 rounded-full hover:bg-gray-600 transition-colors duration-200" title="Pin/Unpin" ${isAnonymous ? 'hidden' : ''}>
                                 <i class="fas fa-thumbtack ${response.isPinned ? 'text-white' : 'text-gray-400'}"></i>
                             </button>
+
+                            <!-- Response content -->
                             <div class="flex-grow display-mode space-y-2 w-full pt-8 sm:pt-0">
                                 <p class="response-text-display text-gray-200 whitespace-pre-wrap">${displayText}</p>
                             </div>
+                            <!-- Buttons at the bottom, using flex to space them -->
                             <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-600">
                                 <button class="copy-btn bg-green-600 text-white font-bold py-2 px-3 rounded-lg hover:bg-green-700 hover:scale-105 hover:shadow-md active:scale-95 transition-all duration-300">
                                     <i class="fas fa-copy"></i> Copy
@@ -1276,15 +1448,15 @@
                 emptyState.classList.add('hidden');
             }
         };
-        
-        // --- Canned Responses Logic ---
-        const addResponse = async (text, label, category) => {
+
+        const addResponse = (text, label, category) => {
             if (isAnonymous) {
                 showMessage("Please sign in to add responses.", 'error');
                 return;
             }
             const newId = Date.now().toString();
             const newResponse = { id: newId, text: text, label: label || '', isPinned: false, createdAt: new Date().toISOString() };
+            
             const updatedCategories = JSON.parse(JSON.stringify(categories));
             if (!updatedCategories[category]) {
                 updatedCategories[category] = { color: categories[category]?.color || '#60a5fa', responses: [] };
@@ -1293,9 +1465,11 @@
                 updatedCategories[category].responses = [];
             }
             updatedCategories[category].responses.push(newResponse);
+            
             saveToFirestore(updatedCategories);
             showMessage("Response added successfully!");
         };
+
         const updateResponse = (id, newText, newLabel, newCategory, oldCategory) => {
             if (isAnonymous) {
                 showMessage("Please sign in to edit responses.", 'error');
@@ -1304,15 +1478,18 @@
             const updatedCategories = JSON.parse(JSON.stringify(categories));
             const oldResponsesList = updatedCategories[oldCategory]?.responses || [];
             const responseToUpdate = oldResponsesList.find(r => r.id === id);
+
             if (!responseToUpdate) {
                 showMessage("Error: The response no longer exists in its original category.", 'error');
                 return;
             }
+            
             if (newCategory && newCategory !== oldCategory) {
                 const index = oldResponsesList.findIndex(r => r.id === id);
                 if (index > -1) {
                     oldResponsesList.splice(index, 1);
                 }
+                
                 if (!updatedCategories[newCategory]) {
                     updatedCategories[newCategory] = { color: updatedCategories[newCategory]?.color || '#60a5fa', responses: [] };
                 }
@@ -1323,6 +1500,7 @@
                 responseToUpdate.label = newLabel || '';
                 updatedCategories[newCategory].responses.push(responseToUpdate);
                 activeCategory = newCategory;
+
             } else {
                 responseToUpdate.text = newText;
                 responseToUpdate.label = newLabel || '';
@@ -1330,17 +1508,21 @@
             saveToFirestore(updatedCategories);
             showMessage("Response updated successfully!");
         };
+
         const deleteResponse = (id, categoryName) => {
             if (isAnonymous) {
                 showMessage("Please sign in to delete responses.", 'error');
                 return;
             }
             if (!categoryName || !categories[categoryName] || !categories[categoryName].responses) return;
+
             const updatedCategories = JSON.parse(JSON.stringify(categories));
             updatedCategories[categoryName].responses = updatedCategories[categoryName].responses.filter(r => r.id !== id);
+            
             saveToFirestore(updatedCategories);
             showMessage("Response deleted successfully!");
         };
+
         const copyToClipboard = (text) => {
             const el = document.createElement('textarea');
             el.value = text;
@@ -1350,6 +1532,7 @@
             document.body.removeChild(el);
             showMessage("Copied to clipboard!");
         };
+
         const exportData = () => {
             if (isAnonymous) {
                 showMessage("Please sign in to export data.", 'error');
@@ -1367,6 +1550,7 @@
             URL.revokeObjectURL(url);
             showMessage("Data exported successfully!");
         };
+
         const importData = (file) => {
             if (isAnonymous) {
                 showMessage("Please sign in to import data.", 'error');
@@ -1396,13 +1580,14 @@
             };
             reader.readAsText(file);
         };
+        
         const placeholderRegex = /\[([^\]]+)\]/g;
+        
         const processAndCopy = (text) => {
-            const placeholderInputsContainer = document.getElementById('placeholder-inputs');
-            const placeholderModal = document.getElementById('placeholder-modal');
             currentTextToCopy = text;
             const matches = text.match(placeholderRegex);
             const placeholders = matches ? [...new Set(matches.map(m => m.slice(1, -1)))] : [];
+            
             if (placeholders.length > 0 && !(placeholders.length === 1 && placeholders[0] === 'Name')) {
                 placeholderInputsContainer.innerHTML = '';
                 const today = new Date().toISOString().split('T')[0];
@@ -1437,6 +1622,7 @@
                 copyToClipboard(finalContent);
             }
         };
+
         const replacePlaceholders = (text, userValues) => {
             let result = text;
             result = result.replace(/\[Name\]/g, userName);
@@ -1446,9 +1632,13 @@
             }
             return result;
         };
-        const renderStaticLinks = () => {
-            const staticLinksList = document.getElementById('static-links-list');
-            if (renderedStaticLinks) return;
+        
+        // Caches the static links so they are only rendered once
+        let renderedStaticLinks = false;
+        function renderStaticLinks() {
+            if (renderedStaticLinks) {
+                return;
+            }
             staticLinksList.innerHTML = '';
             if (defaultLinks.length > 0) {
                 defaultLinks.forEach(link => {
@@ -1468,19 +1658,23 @@
             }
             renderedStaticLinks = true;
         }
-        const renderUserLinks = () => {
-            const userLinksList = document.getElementById('user-links-list');
+
+        const renderUserLinks = (linksArray) => {
             userLinksList.innerHTML = '';
-            if (userLinks && userLinks.length > 0) {
-                userLinks.forEach(link => {
+            if (linksArray.length > 0) {
+                linksArray.forEach(link => {
                     const card = document.createElement('div');
+                    const titleForHtml = link.title.replace(/'/g, "\\'");
+                    const urlForHtml = link.url.replace(/'/g, "\\'");
+                    const descriptionForHtml = (link.description || '').replace(/'/g, "\\'");
+                    
                     card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect flex items-center justify-between relative';
                     card.innerHTML = `
                         <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
                             <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
-                            <p class="text-sm text-gray-400">${link.description || 'No description available.'}</p>
+                            <p class="text-sm text-gray-400">${descriptionForHtml || 'No description available.'}</p>
                         </a>
-                        <div class="relative inline-block text-left" data-doc-id="${link.id}" data-title="${link.title}" data-url="${link.url}" data-description="${link.description || ''}">
+                        <div class="relative inline-block text-left" data-doc-id="${link.id}" data-title="${titleForHtml}" data-url="${urlForHtml}" data-description="${descriptionForHtml}">
                             <button type="button" class="meatballs-button p-2 text-gray-400 hover:text-white transition-colors" aria-expanded="true" aria-haspopup="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 pointer-events-none">
                                     <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
@@ -1499,24 +1693,16 @@
             } else {
                 userLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>';
             }
-        };
+        }
+
         const renderHelpfulLinks = () => {
-            const userLinksSection = document.getElementById('user-links-section');
-            const addLinkSection = document.getElementById('add-link-section');
-            if (!renderedStaticLinks) {
-                renderStaticLinks();
+            renderStaticLinks();
+            if (!isAnonymous) {
+                renderUserLinks(userLinks);
             }
-            if (isAnonymous) {
-                userLinksSection.classList.add('hidden');
-                addLinkSection.classList.add('hidden');
-            } else {
-                userLinksSection.classList.remove('hidden');
-                addLinkSection.classList.remove('hidden');
-                renderUserLinks();
-            }
-        };
+        }
+        
         const showLinksStatus = (message, colorClass) => {
-            const linksStatusMessage = document.getElementById('status-message');
             linksStatusMessage.textContent = message;
             linksStatusMessage.className = `text-center mt-2 text-sm font-semibold ${colorClass}`;
             setTimeout(() => {
@@ -1524,13 +1710,8 @@
                 linksStatusMessage.className = 'text-center mt-2 text-sm text-gray-400';
             }, 3000);
         };
+        
         const resetLinksForm = () => {
-            const linksFormTitle = document.getElementById('form-title');
-            const linkTitleInput = document.getElementById('link-title');
-            const linkUrlInput = document.getElementById('link-url');
-            const linkDescriptionInput = document.getElementById('link-description');
-            const linksSubmitButton = document.getElementById('submit-button');
-            const linksCancelButton = document.getElementById('cancel-button');
             linksFormTitle.textContent = "Add a New Link";
             linkTitleInput.value = '';
             linkUrlInput.value = '';
@@ -1539,14 +1720,8 @@
             linksCancelButton.classList.add('hidden');
             editingLinkDocId = null;
         };
+
         const editLink = (docId, title, url, description) => {
-            const linksFormTitle = document.getElementById('form-title');
-            const linkTitleInput = document.getElementById('link-title');
-            const linkUrlInput = document.getElementById('link-url');
-            const linkDescriptionInput = document.getElementById('link-description');
-            const linksSubmitButton = document.getElementById('submit-button');
-            const linksCancelButton = document.getElementById('cancel-button');
-            const addLinkSection = document.getElementById('add-link-section');
             linksFormTitle.textContent = "Edit Link";
             linkTitleInput.value = title;
             linkUrlInput.value = url;
@@ -1554,8 +1729,10 @@
             linksSubmitButton.textContent = 'Save Changes';
             linksCancelButton.classList.remove('hidden');
             editingLinkDocId = docId;
+            // Scroll to the form
             addLinkSection.scrollIntoView({ behavior: 'smooth' });
         };
+        
         const deleteLink = async (docId) => {
             if (!db || !userId || isAnonymous) {
                 showLinksStatus('Please sign in to delete links.', 'text-red-400');
@@ -1570,14 +1747,650 @@
                 showLinksStatus(`Failed to delete link: ${error.message}`, 'text-red-400');
             }
         };
+
+        function listenForUserLinks() {
+            if (!db || !userId || isAnonymous) {
+                console.error("Firestore or User ID not available, or user is anonymous.");
+                return;
+            }
+            
+            const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+            const q = query(linksCollectionRef);
+
+            helpfulLinksUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Now call the dedicated render function with the updated data
+                renderUserLinks(userLinks);
+            }, (error) => {
+                console.error("Error listening for documents:", error);
+                showLinksStatus('Failed to load links. Please try again.', 'text-red-400');
+            });
+        }
+        
+        linksForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!db || !userId || isAnonymous) {
+                showLinksStatus('Please sign in to manage your links.', 'text-yellow-400');
+                return;
+            }
+
+            const title = linkTitleInput.value;
+            const url = linkUrlInput.value;
+            const description = linkDescriptionInput.value;
+
+            if (!title || !url) {
+                showLinksStatus('Please fill out all required fields.', 'text-red-400');
+                return;
+            }
+
+            try {
+                if (editingLinkDocId) {
+                    showLinksStatus('Updating link...', 'text-yellow-400');
+                    const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', editingLinkDocId);
+                    await updateDoc(docRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                    });
+                    showLinksStatus('Link updated successfully!', 'text-green-400');
+                } else {
+                    showLinksStatus('Adding link...', 'text-yellow-400');
+                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+                    await addDoc(linksCollectionRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                        createdAt: new Date()
+                    });
+                    showLinksStatus('Link added successfully!', 'text-green-400');
+                }
+                resetLinksForm();
+
+            } catch (error) {
+                console.error("Error during link operation:", error);
+                showLinksStatus(`Failed to save link: ${error.message}`, 'text-red-400');
+            }
+        });
+
+        linksCancelButton.addEventListener('click', () => {
+            resetLinksForm();
+        });
+
+        userLinksList.addEventListener('click', (event) => {
+            if (isAnonymous) return;
+            const button = event.target.closest('.meatballs-button');
+            const editBtn = event.target.closest('.edit-link-btn');
+            const deleteBtn = event.target.closest('.delete-link-btn');
+
+            if (button) {
+                event.stopPropagation();
+                const parentDiv = button.closest('[data-doc-id]');
+                const menu = parentDiv.querySelector('.meatballs-menu');
+                if (menu) {
+                    const isHidden = menu.classList.contains('hidden');
+                    const allMenus = document.querySelectorAll('.meatballs-menu');
+                    allMenus.forEach(m => m.classList.add('hidden'));
+
+                    if (isHidden) {
+                        menu.classList.remove('hidden');
+                        openMenuId = parentDiv.dataset.docId;
+                    } else {
+                        openMenuId = null;
+                    }
+                }
+            } else if (editBtn) {
+                event.stopPropagation();
+                const parentDiv = editBtn.closest('[data-doc-id]');
+                if (parentDiv) {
+                    const docId = parentDiv.dataset.docId;
+                    const title = parentDiv.dataset.title;
+                    const url = parentDiv.dataset.url;
+                    const description = parentDiv.dataset.description;
+                    editLink(docId, title, url, description);
+                    const menu = parentDiv.querySelector('.meatballs-menu');
+                    if (menu) menu.classList.add('hidden');
+                    openMenuId = null;
+                }
+            } else if (deleteBtn) {
+                event.stopPropagation();
+                const parentDiv = deleteBtn.closest('[data-doc-id]');
+                if (parentDiv) {
+                    const docId = parentDiv.dataset.docId;
+                    deleteLink(docId);
+                    const menu = parentDiv.querySelector('.meatballs-menu');
+                    if (menu) menu.classList.add('hidden');
+                    openMenuId = null;
+                }
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            const isClickInsideCategoryActions = event.target.closest('#category-actions-menu') || event.target.closest('#category-actions-btn');
+            const isClickInsideMeatballsMenu = event.target.closest('.meatballs-menu') || event.target.closest('.meatballs-button');
+
+            if (!categoryActionsMenu.contains(event.target) && !categoryActionsBtn.contains(event.target)) {
+                categoryActionsMenu.classList.add('hidden', 'scale-95', 'opacity-0');
+                categoryActionsBtn.classList.remove('active');
+            }
+
+            if (!isClickInsideMeatballsMenu) {
+                const allMenus = document.querySelectorAll('.meatballs-menu');
+                allMenus.forEach(m => m.classList.add('hidden'));
+                openMenuId = null;
+            }
+        });
+
+        // Get the new login modal elements
+        const loginPopupModal = document.getElementById('login-popup-modal');
+        const closeLoginPopupBtn = document.getElementById('close-login-popup-btn');
+        const loginPopupBtn = document.getElementById('login-popup-btn');
+
+        // Close button listener for the popup
+        closeLoginPopupBtn.addEventListener('click', async () => {
+            loginPopupModal.classList.remove('show');
+            loginPopupModal.classList.add('hidden');
+            // Update the Firestore flag for the anonymous user
+            if (userId) {
+                const userDocRef = getUserRootDocRef(userId);
+                try {
+                    await setDoc(userDocRef, { hasSeenLoginPrompt: true }, { merge: true });
+                } catch (error) {
+                    console.error("Error setting hasSeenLoginPrompt flag:", error);
+                }
+            }
+        });
+
+        // Sign in button listener for the popup
+        loginPopupBtn.addEventListener('click', async () => {
+            loginPopupModal.classList.remove('show');
+            loginPopupModal.classList.add('hidden');
+            // Update the Firestore flag as the user is now signing in
+            if (userId) {
+                const userDocRef = getUserRootDocRef(userId);
+                try {
+                    await setDoc(userDocRef, { hasSeenLoginPrompt: true }, { merge: true });
+                } catch (error) {
+                    console.error("Error setting hasSeenLoginPrompt flag:", error);
+                }
+            }
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+                showMessage("Signed in with Google!");
+            } catch (error) {
+                console.error("Google sign-in failed", error);
+                showMessage("Google sign-in failed. Please try again.", 'error');
+            }
+        });
+        
+        tutorialNextBtn.addEventListener('click', () => {
+            if (currentTutorialStep < tutorialSteps.length - 1) {
+                showTutorialStep(currentTutorialStep + 1);
+            }
+        });
+
+        tutorialBackBtn.addEventListener('click', () => {
+            if (currentTutorialStep > 0) {
+                showTutorialStep(currentTutorialStep - 1);
+            }
+        });
+
+        tutorialFinishBtn.addEventListener('click', async () => {
+            tutorialModal.classList.add('hidden');
+            if (userId) {
+                const userDocRef = getUserRootDocRef(userId);
+                try {
+                    await setDoc(userDocRef, { tutorialSeen: true }, { merge: true });
+                } catch (error) {
+                    console.error("Error setting tutorialSeen flag:", error);
+                }
+            }
+        });
+
+        // "Show Me Again" button click listener
+        const showTutorialBtn = document.getElementById('show-tutorial-btn');
+        showTutorialBtn.addEventListener('click', async () => {
+            if (userId && !isAnonymous) {
+                const userDocRef = getUserRootDocRef(userId);
+                try {
+                    await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
+                    showTutorialStep(0); // Reset and show the first step
+                    tutorialModal.classList.remove('hidden');
+                } catch (error) {
+                    console.error("Error resetting tutorialSeen flag:", error);
+                    showMessage("Error showing tutorial. Please try again.", 'error');
+                }
+            } else {
+                showMessage("Please sign in to view the tutorial.", 'error');
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            // Unsubscribe from any previous listeners to prevent duplicates
+            if (cannedResponsesUnsubscribe) {
+              cannedResponsesUnsubscribe();
+              cannedResponsesUnsubscribe = null;
+            }
+            if (helpfulLinksUnsubscribe) {
+              helpfulLinksUnsubscribe();
+              helpfulLinksUnsubscribe = null;
+            }
+        
+            if (user) {
+                userId = user.uid;
+                isAnonymous = user.isAnonymous; // Update anonymous status
+                const displayName = user.displayName || user.email || 'User';
+                userName = displayName.split(' ')[0].split('@')[0];
+                linksUserInfo.textContent = `User ID: ${userId}`;
+
+                // Render static links only once on auth change, regardless of page
+                defaultLinks = await getHelpfulLinksBlueprint();
+                renderStaticLinks();
+                
+                // Now, check if the user is anonymous AFTER we have the user object
+                if (isAnonymous) {
+                    // Check Firestore for the flag
+                    const userDocRef = getUserRootDocRef(userId);
+                    try {
+                        const userDoc = await getDoc(userDocRef);
+                        const hasSeenPrompt = userDoc.exists() && userDoc.data().hasSeenLoginPrompt;
+                        
+                        if (!hasSeenPrompt) {
+                            loginPopupModal.classList.remove('hidden');
+                            // Use a setTimeout to allow the CSS transition to play
+                            setTimeout(() => {
+                               loginPopupModal.classList.add('show');
+                            }, 10);
+                        } else {
+                            loginPopupModal.classList.add('hidden');
+                        }
+                    } catch (error) {
+                        console.error("Error fetching user data for login prompt:", error);
+                        // Fallback to showing the pop-up if there's an error
+                        loginPopupModal.classList.remove('hidden');
+                        setTimeout(() => {
+                            loginPopupModal.classList.add('show');
+                        }, 10);
+                    }
+                    
+                    // For anonymous users, load data directly from the blueprint
+                    categories = await getCannedResponsesBlueprint();
+                    
+                    if (Object.keys(categories).length > 0) {
+                        const existingCategoryNames = Object.keys(categories);
+                        if (!existingCategoryNames.includes(activeCategory)) {
+                               activeCategory = existingCategoryNames[0];
+                        }
+                    }
+                    renderContent();
+
+                } else {
+                    // Hide the popup if the user is not anonymous
+                    loginPopupModal.classList.add('hidden');
+
+                    // Check for tutorial flag for signed-in users
+                    const userDocRef = getUserRootDocRef(userId);
+                    const userDoc = await getDoc(userDocRef);
+                    const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
+
+                    if (!tutorialSeen) {
+                        tutorialModal.classList.remove('hidden');
+                        showTutorialStep(0); // Start the tutorial at the beginning
+                    } else {
+                        tutorialModal.classList.add('hidden');
+                    }
+                    
+                    const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
+                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+                    
+                    cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
+                        if (doc.exists()) {
+                            categories = doc.data().categories || {};
+                        } else {
+                            // User has no private data, so initialize it from the in-memory blueprint
+                            try {
+                                const blueprint = await getCannedResponsesBlueprint();
+                                categories = JSON.parse(JSON.stringify(blueprint));
+                                await setDoc(userCannedResponsesDocRef, { categories: categories });
+                                console.log("Migrated default data to Firestore for new user.");
+                            } catch (error) {
+                                console.error("Error migrating data for new user:", error);
+                            }
+                        }
+                        
+                        for (const key in categories) {
+                            if (!categories[key].responses) {
+                                categories[key].responses = [];
+                            }
+                        }
+
+                        if (Object.keys(categories).length > 0) {
+                            const existingCategoryNames = Object.keys(categories);
+                            if (!existingCategoryNames.includes(activeCategory)) {
+                                   activeCategory = existingCategoryNames[0];
+                            }
+                        }
+                        renderContent();
+                    }, (error) => {
+                        console.error("Error with onSnapshot listener:", error);
+                        showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
+                    });
+                    
+                    // Here is the fix for the disappearing helpful links bug.
+                    // The listener for user-specific links is now set up here, immediately after
+                    // the user is authenticated. It will now fetch and update the userLinks
+                    // array in real-time, regardless of what page the user is viewing.
+                    helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
+                        userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        renderUserLinks(userLinks);
+                    }, (error) => {
+                        console.error("Error listening for user links:", error);
+                    });
+                }
+            } else {
+                try {
+                    await signInAnonymously(auth);
+                } catch (error) {
+                    console.error("Anonymous sign-in failed", error);
+                }
+            }
+        });
+        
+        // --- Event Listeners ---
+        
+        // Navigation Listeners
+        hamburgerMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+
+        navCannedResponses.addEventListener('click', () => {
+            currentPage = 'canned-responses';
+            renderContent();
+            sidebar.classList.remove('open');
+        });
+
+        navFedexTracker.addEventListener('click', () => {
+            currentPage = 'fedex-tracker';
+            renderContent();
+            sidebar.classList.remove('open');
+        });
+
+        navHelpfulLinks.addEventListener('click', async () => {
+            currentPage = 'helpful-links';
+            renderContent();
+            sidebar.classList.remove('open');
+        });
+
+        navSettings.addEventListener('click', () => {
+            currentPage = 'settings';
+            renderContent();
+            sidebar.classList.remove('open');
+        });
+
+        // Theme Toggle Listener
+        themeToggleBtnSettings.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+            const icon = themeToggleBtnSettings.querySelector('i');
+            icon.className = document.body.classList.contains('light-mode') ? 'fas fa-sun mr-2' : 'fas fa-moon mr-2';
+        });
+
+        // Canned Responses Listeners
+        categoryList.addEventListener('click', (e) => {
+            const button = e.target.closest('.category-item');
+            if (button) {
+                const newCategory = button.dataset.category;
+                if (newCategory !== activeCategory) {
+                    activeCategory = newCategory;
+                    renderCategories(); // This will re-render everything
+                }
+            }
+        });
+        
+        responsesList.addEventListener('click', (e) => {
+            const copyBtn = e.target.closest('.copy-btn');
+            const editBtn = e.target.closest('.edit-btn');
+            const deleteBtn = e.target.closest('.delete-btn');
+            const pinBtn = e.target.closest('.pin-btn');
+
+            if (copyBtn) {
+                const responseItem = copyBtn.closest('.response-item');
+                const textToCopy = responseItem.querySelector('.response-text-display').textContent;
+                processAndCopy(textToCopy);
+            }
+            if (editBtn) {
+                const responseItem = editBtn.closest('.response-item');
+                const id = responseItem.dataset.id;
+                const category = responseItem.dataset.category;
+                const responseData = categories[category].responses.find(r => r.id === id);
+                if (responseData) {
+                    editResponseLabelInput.value = responseData.label || '';
+                    editResponseTextInput.value = responseData.text;
+                    editResponseModal.dataset.originalId = responseData.id;
+                    editResponseModal.dataset.originalCategory = category;
+                    
+                    editCategorySelect.innerHTML = '';
+                    const categoryNames = Object.keys(categories);
+                    categoryNames.forEach(catName => {
+                        const option = document.createElement('option');
+                        option.value = catName;
+                        option.textContent = catName;
+                        if (catName === category) {
+                            option.selected = true;
+                        }
+                        editCategorySelect.appendChild(option);
+                    });
+                    
+                    editResponseModal.classList.remove('hidden');
+                }
+            }
+            if (deleteBtn) {
+                const responseItem = deleteBtn.closest('.response-item');
+                responseToDeleteId = responseItem.dataset.id;
+                const category = responseItem.dataset.category;
+                deleteModal.dataset.category = category;
+                deleteModal.classList.remove('hidden');
+            }
+            if (pinBtn) {
+                const responseItem = pinBtn.closest('.response-item');
+                const id = responseItem.dataset.id;
+                const category = responseItem.dataset.category;
+                const responseData = categories[category].responses.find(r => r.id === id);
+                if (responseData) {
+                    responseData.isPinned = !responseData.isPinned;
+                    saveToFirestore(categories);
+                }
+            }
+        });
+
+        // Add/Edit response modal listeners
+        openAddResponseModalBtn.addEventListener('click', () => {
+            newResponseModal.classList.remove('hidden');
+            newResponseLabelInput.value = '';
+            newResponseTextInput.value = '';
+            
+            newResponseCategorySelect.innerHTML = '';
+            const categoryNames = Object.keys(categories);
+            categoryNames.forEach(catName => {
+                const option = document.createElement('option');
+                option.value = catName;
+                option.textContent = catName;
+                if (catName === activeCategory) {
+                    option.selected = true;
+                }
+                newResponseCategorySelect.appendChild(option);
+            });
+        });
+        
+        cancelNewResponseBtn.addEventListener('click', () => {
+            newResponseModal.classList.add('hidden');
+        });
+        
+        saveNewResponseBtn.addEventListener('click', () => {
+            const label = newResponseLabelInput.value;
+            const text = newResponseTextInput.value;
+            const category = newResponseCategorySelect.value;
+            if (text.trim() !== '') {
+                addResponse(text, label, category);
+                newResponseModal.classList.add('hidden');
+            } else {
+                showMessage("Response text cannot be empty.", 'error');
+            }
+        });
+
+        cancelEditBtn.addEventListener('click', () => {
+            editResponseModal.classList.add('hidden');
+            currentEditingId = null;
+        });
+
+        saveEditBtn.addEventListener('click', () => {
+            const id = editResponseModal.dataset.originalId;
+            const oldCategory = editResponseModal.dataset.originalCategory;
+            const newLabel = editResponseLabelInput.value;
+            const newText = editResponseTextInput.value;
+            const newCategory = editCategorySelect.value;
+            if (newText.trim() !== '') {
+                updateResponse(id, newText, newLabel, newCategory, oldCategory);
+                editResponseModal.classList.add('hidden');
+                currentEditingId = null;
+            } else {
+                showMessage("Response text cannot be empty.", 'error');
+            }
+        });
+
+        // Delete confirmation modal listeners
+        deleteConfirmBtn.addEventListener('click', () => {
+            const category = deleteModal.dataset.category;
+            deleteResponse(responseToDeleteId, category);
+            deleteModal.classList.add('hidden');
+        });
+        
+        deleteCancelBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            responseToDeleteId = null;
+        });
+
+        // Search listener
+        searchInput.addEventListener('input', () => {
+            renderResponses(searchInput.value);
+        });
+
+        // Category management listeners
+        addCategoryBtn.addEventListener('click', () => {
+            addCategoryModal.classList.remove('hidden');
+            addCategoryInput.focus();
+        });
+
+        cancelAddCategoryBtn.addEventListener('click', () => {
+            addCategoryModal.classList.add('hidden');
+            addCategoryInput.value = '';
+        });
+
+        confirmAddCategoryBtn.addEventListener('click', () => {
+            const newCategoryName = addCategoryInput.value.trim();
+            if (newCategoryName && !categories[newCategoryName]) {
+                const updatedCategories = JSON.parse(JSON.stringify(categories));
+                updatedCategories[newCategoryName] = { color: '#60a5fa', responses: [] };
+                saveToFirestore(updatedCategories);
+                activeCategory = newCategoryName;
+                addCategoryModal.classList.add('hidden');
+                addCategoryInput.value = '';
+                showMessage("Category created successfully!");
+            } else if (categories[newCategoryName]) {
+                showMessage("Category already exists.", 'error');
+            }
+        });
+
+        categoryActionsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            categoryActionsMenu.classList.toggle('hidden');
+            categoryActionsMenu.classList.toggle('scale-95');
+            categoryActionsMenu.classList.toggle('opacity-0');
+            categoryActionsBtn.classList.toggle('active');
+         });
+
+        renameCategoryBtn.addEventListener('click', () => {
+            editCategoryModal.classList.remove('hidden');
+            editCategoryInput.value = activeCategory;
+            categoryToEdit = activeCategory;
+            categoryActionsMenu.classList.add('hidden');
+        });
+
+        cancelEditCategoryBtn.addEventListener('click', () => {
+            editCategoryModal.classList.add('hidden');
+        });
+
+        confirmEditCategoryBtn.addEventListener('click', () => {
+            const newName = editCategoryInput.value.trim();
+            if (newName && newName !== categoryToEdit) {
+                const updatedCategories = JSON.parse(JSON.stringify(categories));
+                if (updatedCategories[newName]) {
+                    showMessage("A category with that name already exists.", 'error');
+                    return;
+                }
+                const oldCategoryData = updatedCategories[categoryToEdit];
+                delete updatedCategories[categoryToEdit];
+                updatedCategories[newName] = oldCategoryData;
+                saveToFirestore(updatedCategories);
+                activeCategory = newName;
+                editCategoryModal.classList.add('hidden');
+                showMessage("Category renamed successfully!");
+            } else {
+                editCategoryModal.classList.add('hidden');
+            }
+        });
+
+        deleteCategoryBtn.addEventListener('click', () => {
+            deleteCategoryModal.classList.remove('hidden');
+            categoryActionsMenu.classList.add('hidden');
+        });
+
+        cancelDeleteCategoryBtn.addEventListener('click', () => {
+            deleteCategoryModal.classList.add('hidden');
+        });
+
+        confirmDeleteCategoryBtn.addEventListener('click', () => {
+            const updatedCategories = JSON.parse(JSON.stringify(categories));
+            delete updatedCategories[activeCategory];
+            const categoryNames = Object.keys(updatedCategories);
+            activeCategory = categoryNames.length > 0 ? categoryNames[0] : '';
+            saveToFirestore(updatedCategories);
+            deleteCategoryModal.classList.add('hidden');
+            showMessage("Category deleted successfully!");
+        });
+
+        changeColorBtn.addEventListener('click', () => {
+            colorPickerModal.classList.remove('hidden');
+            const currentColor = categories[activeCategory]?.color || '#60a5fa';
+            colorInput.value = currentColor;
+            categoryActionsMenu.classList.add('hidden');
+        });
+
+        closeColorPickerBtn.addEventListener('click', () => {
+            colorPickerModal.classList.add('hidden');
+        });
+
+        saveColorBtn.addEventListener('click', () => {
+            const newColor = colorInput.value;
+            const updatedCategories = JSON.parse(JSON.stringify(categories));
+            if (updatedCategories[activeCategory]) {
+                updatedCategories[activeCategory].color = newColor;
+                saveToFirestore(updatedCategories);
+                colorPickerModal.classList.add('hidden');
+                showMessage("Color updated successfully!");
+            }
+        });
+
+        // FedEx tracker listeners
         const extractAndDisplayNumbers = () => {
-            const fedexRegex = /(?:78\d{10}|79\d{10}|80\d{10}|81\d{10}|82\d{10}|(?:96\d{20}|96\d{32}|\d{15}|\d{12}))/g;
-            const inputTextareaFedex = document.getElementById('input-text-fedex');
-            const trackingNumbersContainer = document.getElementById('tracking-numbers-container');
-            const noNumbersMessage = document.getElementById('no-numbers-message');
             const text = inputTextareaFedex.value;
             const matches = text.match(fedexRegex) || [];
-            const uniqueMatches = [...new Set(matches)];
+            const uniqueMatches = [...new Set(matches)]; // Get unique numbers
+
             trackingNumbersContainer.innerHTML = '';
             if (uniqueMatches.length > 0) {
                 noNumbersMessage.classList.add('hidden');
@@ -1595,6 +2408,8 @@
             } else {
                 noNumbersMessage.classList.remove('hidden');
             }
+            
+            // Re-attach listeners to new buttons
             document.querySelectorAll('.copy-tracking-btn').forEach(button => {
                 button.addEventListener('click', () => {
                     const number = button.previousElementSibling.textContent;
@@ -1602,545 +2417,212 @@
                 });
             });
         };
-        const renderSettingsPage = () => {
-            const themeIconSettings = document.getElementById('theme-icon-settings');
-            const authStatusSettings = document.getElementById('auth-status-settings');
-            const signInBtn = document.getElementById('sign-in-btn-settings');
-            const signOutBtn = document.getElementById('sign-out-btn-settings');
-            const tutorialResetSection = document.getElementById('tutorial-reset-section');
-            const importExportBtnSettings = document.getElementById('import-export-btn-settings');
-            const checkUpdatesBtnSettings = document.getElementById('check-updates-btn-settings');
 
-            if (document.body.classList.contains('light-mode')) {
-                themeIconSettings.className = 'fas fa-sun mr-2';
+        inputTextareaFedex.addEventListener('input', extractAndDisplayNumbers);
+
+        clearButtonFedex.addEventListener('click', () => {
+            inputTextareaFedex.value = '';
+            extractAndDisplayNumbers();
+            showMessage('Input cleared!', 'success');
+        });
+
+        copyButtonFedex.addEventListener('click', () => {
+            const text = inputTextareaFedex.value;
+            const matches = text.match(fedexRegex) || [];
+            if (matches.length > 0) {
+                const uniqueNumbers = [...new Set(matches)];
+                const numbersToCopy = uniqueNumbers.join('\t'); // Use a tab character as requested
+                copyToClipboard(numbersToCopy);
+                
+                // Join with commas for the URL and encode to handle spaces or other chars
+                const numbersForUrl = uniqueNumbers.join(',');
+                const encodedNumbers = encodeURIComponent(numbersForUrl);
+                
+                // Use the correct FedEx tracking URL and pass all numbers
+                const fedexUrl = `https://www.fedex.com/en-us/tracking.html?tracknumbers=${encodedNumbers}`;
+                window.open(fedexUrl, '_blank');
             } else {
-                themeIconSettings.className = 'fas fa-moon mr-2';
-            }
-            if (auth.currentUser) {
-                const displayName = auth.currentUser.displayName || auth.currentUser.email || 'User';
-                authStatusSettings.textContent = `Signed in as: ${displayName}`;
-                authStatusSettings.title = auth.currentUser.email;
-                if (isAnonymous) {
-                    signInBtn.classList.remove('hidden');
-                    signOutBtn.classList.add('hidden');
-                    tutorialResetSection.classList.add('hidden');
-                } else {
-                    signInBtn.classList.add('hidden');
-                    signOutBtn.classList.remove('hidden');
-                    tutorialResetSection.classList.remove('hidden');
-                }
-            } else {
-                authStatusSettings.textContent = 'Not signed in.';
-                signInBtn.classList.remove('hidden');
-                signOutBtn.classList.add('hidden');
-                tutorialResetSection.classList.add('hidden');
-            }
-            if (isAnonymous) {
-                importExportBtnSettings.classList.add('hidden');
-                checkUpdatesBtnSettings.classList.add('hidden');
-            } else {
-                importExportBtnSettings.classList.remove('hidden');
-                checkUpdatesBtnSettings.classList.remove('hidden');
-            }
-        };
-
-
-        // --- All Event Listeners (Correctly placed to be attached only once) ---
-        function attachEventListeners() {
-            // Navigation Listeners
-            document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
-            document.getElementById('close-sidebar-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('open'); });
-            document.getElementById('nav-canned-responses').addEventListener('click', () => { currentPage = 'canned-responses'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
-            document.getElementById('nav-fedex-tracker').addEventListener('click', () => { currentPage = 'fedex-tracker'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
-            document.getElementById('nav-helpful-links').addEventListener('click', () => { currentPage = 'helpful-links'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
-            document.getElementById('nav-settings').addEventListener('click', () => { currentPage = 'settings'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
-            
-            // Form Submission Listener (Attached only once)
-            document.getElementById('add-link-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                if (isSubmittingLink) { console.warn("Preventing duplicate form submission."); return; }
-                if (!db || !userId || isAnonymous) { showLinksStatus('Please sign in to manage your links.', 'text-yellow-400'); return; }
-                const title = document.getElementById('link-title').value;
-                const url = document.getElementById('link-url').value;
-                const description = document.getElementById('link-description').value;
-                if (!title || !url) { showLinksStatus('Please fill out all required fields.', 'text-red-400'); return; }
-                isSubmittingLink = true;
-                try {
-                    if (editingLinkDocId) {
-                        showLinksStatus('Updating link...', 'text-yellow-400');
-                        const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', editingLinkDocId);
-                        await updateDoc(docRef, { title, url, description });
-                        showLinksStatus('Link updated successfully!', 'text-green-400');
-                    } else {
-                        showLinksStatus('Adding link...', 'text-yellow-400');
-                        const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-                        await addDoc(linksCollectionRef, { title, url, description, createdAt: new Date() });
-                        showLinksStatus('Link added successfully!', 'text-green-400');
-                    }
-                    resetLinksForm();
-                } catch (error) {
-                    console.error("Error during link operation:", error);
-                    showLinksStatus(`Failed to save link: ${error.message}`, 'text-red-400');
-                } finally {
-                    isSubmittingLink = false;
-                }
-            });
-
-            // Other one-time listeners
-            document.getElementById('cancel-button').addEventListener('click', () => { resetLinksForm(); });
-            document.getElementById('user-links-list').addEventListener('click', (event) => {
-                if (isAnonymous) return;
-                const button = event.target.closest('.meatballs-button');
-                const editBtn = event.target.closest('.edit-link-btn');
-                const deleteBtn = event.target.closest('.delete-link-btn');
-                if (button) {
-                    event.stopPropagation();
-                    const parentDiv = button.closest('[data-doc-id]');
-                    const menu = parentDiv.querySelector('.meatballs-menu');
-                    if (menu) {
-                        const isHidden = menu.classList.contains('hidden');
-                        document.querySelectorAll('.meatballs-menu').forEach(m => m.classList.add('hidden'));
-                        if (isHidden) { menu.classList.remove('hidden'); openMenuId = parentDiv.dataset.docId; } else { openMenuId = null; }
-                    }
-                } else if (editBtn) {
-                    event.stopPropagation();
-                    const parentDiv = editBtn.closest('[data-doc-id]');
-                    if (parentDiv) {
-                        const { docId, title, url, description } = parentDiv.dataset;
-                        editLink(docId, title, url, description);
-                        const menu = parentDiv.querySelector('.meatballs-menu');
-                        if (menu) menu.classList.add('hidden');
-                        openMenuId = null;
-                    }
-                } else if (deleteBtn) {
-                    event.stopPropagation();
-                    const parentDiv = deleteBtn.closest('[data-doc-id]');
-                    if (parentDiv) {
-                        deleteLink(parentDiv.dataset.docId);
-                        const menu = parentDiv.querySelector('.meatballs-menu');
-                        if (menu) menu.classList.add('hidden');
-                        openMenuId = null;
-                    }
-                }
-            });
-            
-            document.addEventListener('click', (event) => {
-                const isClickInsideCategoryActions = event.target.closest('#category-actions-menu') || event.target.closest('#category-actions-btn');
-                const isClickInsideMeatballsMenu = event.target.closest('.meatballs-menu') || event.target.closest('.meatballs-button');
-                const categoryActionsMenu = document.getElementById('category-actions-menu');
-                const categoryActionsBtn = document.getElementById('category-actions-btn');
-                if (!categoryActionsMenu.contains(event.target) && !categoryActionsBtn.contains(event.target)) {
-                    categoryActionsMenu.classList.add('hidden', 'scale-95', 'opacity-0');
-                    categoryActionsBtn.classList.remove('active');
-                }
-                if (!isClickInsideMeatballsMenu) {
-                    document.querySelectorAll('.meatballs-menu').forEach(m => m.classList.add('hidden'));
-                    openMenuId = null;
-                }
-            });
-            
-            document.getElementById('close-login-popup-btn').addEventListener('click', async () => {
-                document.getElementById('login-popup-modal').classList.remove('show');
-                document.getElementById('login-popup-modal').classList.add('hidden');
-                if (userId) {
-                    const userDocRef = getUserRootDocRef(userId);
-                    try { await setDoc(userDocRef, { hasSeenLoginPrompt: true }, { merge: true }); } catch (error) { console.error("Error setting hasSeenLoginPrompt flag:", error); }
-                }
-            });
-            document.getElementById('login-popup-btn').addEventListener('click', async () => {
-                document.getElementById('login-popup-modal').classList.remove('show');
-                document.getElementById('login-popup-modal').classList.add('hidden');
-                if (userId) {
-                    const userDocRef = getUserRootDocRef(userId);
-                    try { await setDoc(userDocRef, { hasSeenLoginPrompt: true }, { merge: true }); } catch (error) { console.error("Error setting hasSeenLoginPrompt flag:", error); }
-                }
-                try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
-            });
-            
-         // --- Tutorial Listeners (Corrected) ---
-    document.getElementById('tutorial-next-btn').addEventListener('click', () => {
-        if (currentTutorialStep < tutorialSteps.length - 1) {
-            currentTutorialStep++;
-            showTutorialStep(currentTutorialStep);
-        }
-    });
-
-    document.getElementById('tutorial-back-btn').addEventListener('click', () => {
-        if (currentTutorialStep > 0) {
-            currentTutorialStep--;
-            showTutorialStep(currentTutorialStep);
-        }
-    });
-
-    document.getElementById('tutorial-finish-btn').addEventListener('click', async () => {
-        document.getElementById('tutorial-modal').classList.add('hidden');
-        if (userId) {
-            const userDocRef = getUserRootDocRef(userId);
-            try {
-                await setDoc(userDocRef, { tutorialSeen: true }, { merge: true });
-            } catch (error) {
-                console.error("Error setting tutorialSeen flag:", error);
-            }
-        }
-    });
-
-    document.getElementById('show-tutorial-btn').addEventListener('click', async () => {
-        if (userId && !isAnonymous) {
-            const userDocRef = getUserRootDocRef(userId);
-            try {
-                await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
-                showTutorialStep(0);
-                document.getElementById('tutorial-modal').classList.remove('hidden');
-            } catch (error) {
-                console.error("Error resetting tutorialSeen flag:", error);
-                showMessage("Error showing tutorial. Please try again.", 'error');
-            }
-        } else {
-            showMessage("Please sign in to view the tutorial.", 'error');
-        }
-    });
-
-            document.getElementById('theme-toggle-btn-settings').addEventListener('click', () => {
-                document.body.classList.toggle('light-mode');
-                localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
-                const icon = document.getElementById('theme-toggle-btn-settings').querySelector('i');
-                icon.className = document.body.classList.contains('light-mode') ? 'fas fa-sun mr-2' : 'fas fa-moon mr-2';
-            });
-            document.getElementById('category-list').addEventListener('click', (e) => {
-                const button = e.target.closest('.category-item');
-                if (button) {
-                    const newCategory = button.dataset.category;
-                    if (newCategory !== activeCategory) {
-                        activeCategory = newCategory;
-                        renderCategories();
-                    }
-                }
-            });
-            document.getElementById('responses-list').addEventListener('click', (e) => {
-                const copyBtn = e.target.closest('.copy-btn');
-                const editBtn = e.target.closest('.edit-btn');
-                const deleteBtn = e.target.closest('.delete-btn');
-                const pinBtn = e.target.closest('.pin-btn');
-                if (copyBtn) {
-                    const responseItem = copyBtn.closest('.response-item');
-                    const textToCopy = responseItem.querySelector('.response-text-display').textContent;
-                    processAndCopy(textToCopy);
-                }
-                if (editBtn) {
-                    const responseItem = editBtn.closest('.response-item');
-                    const id = responseItem.dataset.id;
-                    const category = responseItem.dataset.category;
-                    const responseData = categories[category].responses.find(r => r.id === id);
-                    if (responseData) {
-                        document.getElementById('edit-response-label').value = responseData.label || '';
-                        document.getElementById('edit-response-text').value = responseData.text;
-                        document.getElementById('edit-response-modal').dataset.originalId = responseData.id;
-                        document.getElementById('edit-response-modal').dataset.originalCategory = category;
-                        const editCategorySelect = document.getElementById('edit-category-select');
-                        editCategorySelect.innerHTML = '';
-                        const categoryNames = Object.keys(categories);
-                        categoryNames.forEach(catName => {
-                            const option = document.createElement('option');
-                            option.value = catName;
-                            option.textContent = catName;
-                            if (catName === category) option.selected = true;
-                            editCategorySelect.appendChild(option);
-                        });
-                        document.getElementById('edit-response-modal').classList.remove('hidden');
-                    }
-                }
-                if (deleteBtn) {
-                    const responseItem = deleteBtn.closest('.response-item');
-                    responseToDeleteId = responseItem.dataset.id;
-                    const category = responseItem.dataset.category;
-                    document.getElementById('delete-modal').dataset.category = category;
-                    document.getElementById('delete-modal').classList.remove('hidden');
-                }
-                if (pinBtn) {
-                    const responseItem = pinBtn.closest('.response-item');
-                    const id = responseItem.dataset.id;
-                    const category = responseItem.dataset.category;
-                    const responseData = categories[category].responses.find(r => r.id === id);
-                    if (responseData) {
-                        responseData.isPinned = !responseData.isPinned;
-                        saveToFirestore(categories);
-                    }
-                }
-            });
-            document.getElementById('open-add-response-modal-btn').addEventListener('click', () => {
-                document.getElementById('new-response-modal').classList.remove('hidden');
-                document.getElementById('new-response-label').value = '';
-                document.getElementById('new-response-text').value = '';
-                const newResponseCategorySelect = document.getElementById('new-response-category');
-                newResponseCategorySelect.innerHTML = '';
-                const categoryNames = Object.keys(categories);
-                categoryNames.forEach(catName => {
-                    const option = document.createElement('option');
-                    option.value = catName;
-                    option.textContent = catName;
-                    if (catName === activeCategory) option.selected = true;
-                    newResponseCategorySelect.appendChild(option);
-                });
-            });
-            document.getElementById('cancel-new-response-btn').addEventListener('click', () => { document.getElementById('new-response-modal').classList.add('hidden'); });
-            document.getElementById('save-new-response-btn').addEventListener('click', () => {
-                const label = document.getElementById('new-response-label').value;
-                const text = document.getElementById('new-response-text').value;
-                const category = document.getElementById('new-response-category').value;
-                if (text.trim() !== '') { addResponse(text, label, category); document.getElementById('new-response-modal').classList.add('hidden'); } else { showMessage("Response text cannot be empty.", 'error'); }
-            });
-            document.getElementById('cancel-edit-btn').addEventListener('click', () => { document.getElementById('edit-response-modal').classList.add('hidden'); currentEditingId = null; });
-            document.getElementById('save-edit-btn').addEventListener('click', () => {
-                const id = document.getElementById('edit-response-modal').dataset.originalId;
-                const oldCategory = document.getElementById('edit-response-modal').dataset.originalCategory;
-                const newLabel = document.getElementById('edit-response-label').value;
-                const newText = document.getElementById('edit-response-text').value;
-                const newCategory = document.getElementById('edit-category-select').value;
-                if (newText.trim() !== '') { updateResponse(id, newText, newLabel, newCategory, oldCategory); document.getElementById('edit-response-modal').classList.add('hidden'); currentEditingId = null; } else { showMessage("Response text cannot be empty.", 'error'); }
-            });
-            document.getElementById('delete-confirm-btn').addEventListener('click', () => {
-                const category = document.getElementById('delete-modal').dataset.category;
-                deleteResponse(responseToDeleteId, category);
-                document.getElementById('delete-modal').classList.add('hidden');
-            });
-            document.getElementById('delete-cancel-btn').addEventListener('click', () => { document.getElementById('delete-modal').classList.add('hidden'); responseToDeleteId = null; });
-            document.getElementById('search-input').addEventListener('input', () => { renderResponses(document.getElementById('search-input').value); });
-            document.getElementById('add-category-btn').addEventListener('click', () => { document.getElementById('add-category-modal').classList.remove('hidden'); document.getElementById('add-category-input').focus(); });
-            document.getElementById('cancel-add-category-btn').addEventListener('click', () => { document.getElementById('add-category-modal').classList.add('hidden'); document.getElementById('add-category-input').value = ''; });
-            document.getElementById('confirm-add-category-btn').addEventListener('click', () => {
-                const newCategoryName = document.getElementById('add-category-input').value.trim();
-                if (newCategoryName && !categories[newCategoryName]) {
-                    const updatedCategories = JSON.parse(JSON.stringify(categories));
-                    updatedCategories[newCategoryName] = { color: '#60a5fa', responses: [] };
-                    saveToFirestore(updatedCategories);
-                    activeCategory = newCategoryName;
-                    document.getElementById('add-category-modal').classList.add('hidden');
-                    document.getElementById('add-category-input').value = '';
-                    showMessage("Category created successfully!");
-                } else if (categories[newCategoryName]) {
-                    showMessage("Category already exists.", 'error');
-                }
-            });
-            document.getElementById('category-actions-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                const categoryActionsMenu = document.getElementById('category-actions-menu');
-                categoryActionsMenu.classList.toggle('hidden');
-                categoryActionsMenu.classList.toggle('scale-95');
-                categoryActionsMenu.classList.toggle('opacity-0');
-                document.getElementById('category-actions-btn').classList.toggle('active');
-            });
-            document.getElementById('rename-category-btn').addEventListener('click', () => {
-                const editCategoryModal = document.getElementById('edit-category-modal');
-                const editCategoryInput = document.getElementById('edit-category-input');
-                const categoryActionsMenu = document.getElementById('category-actions-menu');
-                editCategoryModal.classList.remove('hidden');
-                editCategoryInput.value = activeCategory;
-                categoryToEdit = activeCategory;
-                categoryActionsMenu.classList.add('hidden');
-            });
-            document.getElementById('cancel-edit-category-btn').addEventListener('click', () => { document.getElementById('edit-category-modal').classList.add('hidden'); });
-            document.getElementById('confirm-edit-category-btn').addEventListener('click', () => {
-                const newName = document.getElementById('edit-category-input').value.trim();
-                if (newName && newName !== categoryToEdit) {
-                    const updatedCategories = JSON.parse(JSON.stringify(categories));
-                    if (updatedCategories[newName]) { showMessage("A category with that name already exists.", 'error'); return; }
-                    const oldCategoryData = updatedCategories[categoryToEdit];
-                    delete updatedCategories[categoryToEdit];
-                    updatedCategories[newName] = oldCategoryData;
-                    saveToFirestore(updatedCategories);
-                    activeCategory = newName;
-                    document.getElementById('edit-category-modal').classList.add('hidden');
-                    showMessage("Category renamed successfully!");
-                } else { document.getElementById('edit-category-modal').classList.add('hidden'); }
-            });
-            document.getElementById('delete-category-btn').addEventListener('click', () => { document.getElementById('delete-category-modal').classList.remove('hidden'); document.getElementById('category-actions-menu').classList.add('hidden'); });
-            document.getElementById('cancel-delete-category-btn').addEventListener('click', () => { document.getElementById('delete-category-modal').classList.add('hidden'); });
-            document.getElementById('confirm-delete-category-btn').addEventListener('click', () => {
-                const updatedCategories = JSON.parse(JSON.stringify(categories));
-                delete updatedCategories[activeCategory];
-                const categoryNames = Object.keys(updatedCategories);
-                activeCategory = categoryNames.length > 0 ? categoryNames[0] : '';
-                saveToFirestore(updatedCategories);
-                document.getElementById('delete-category-modal').classList.add('hidden');
-                showMessage("Category deleted successfully!");
-            });
-            document.getElementById('change-color-btn').addEventListener('click', () => {
-                const colorPickerModal = document.getElementById('color-picker-modal');
-                const colorInput = document.getElementById('color-input');
-                colorPickerModal.classList.remove('hidden');
-                const currentColor = categories[activeCategory]?.color || '#60a5fa';
-                colorInput.value = currentColor;
-                document.getElementById('category-actions-menu').classList.add('hidden');
-            });
-            document.getElementById('close-color-picker-btn').addEventListener('click', () => { document.getElementById('color-picker-modal').classList.add('hidden'); });
-            document.getElementById('save-color-btn').addEventListener('click', () => {
-                const newColor = document.getElementById('color-input').value;
-                const updatedCategories = JSON.parse(JSON.stringify(categories));
-                if (updatedCategories[activeCategory]) {
-                    updatedCategories[activeCategory].color = newColor;
-                    saveToFirestore(updatedCategories);
-                    document.getElementById('color-picker-modal').classList.add('hidden');
-                    showMessage("Color updated successfully!");
-                }
-            });
-            document.getElementById('input-text-fedex').addEventListener('input', extractAndDisplayNumbers);
-            document.getElementById('clear-button-fedex').addEventListener('click', () => {
-                document.getElementById('input-text-fedex').value = '';
-                extractAndDisplayNumbers();
-                showMessage('Input cleared!', 'success');
-            });
-            document.getElementById('copy-button-fedex').addEventListener('click', () => {
-                const text = document.getElementById('input-text-fedex').value;
-                const fedexRegex = /(?:78\d{10}|79\d{10}|80\d{10}|81\d{10}|82\d{10}|(?:96\d{20}|96\d{32}|\d{15}|\d{12}))/g;
-                const matches = text.match(fedexRegex) || [];
-                if (matches.length > 0) {
-                    const uniqueNumbers = [...new Set(matches)];
-                    const numbersToCopy = uniqueNumbers.join('\t');
-                    copyToClipboard(numbersToCopy);
-                    const numbersForUrl = uniqueNumbers.join(',');
-                    const encodedNumbers = encodeURIComponent(numbersForUrl);
-                    const fedexUrl = `https://www.fedex.com/en-us/tracking.html?tracknumbers=${encodedNumbers}`;
-                    window.open(fedexUrl, '_blank');
-                } else {
-                    showMessage('No tracking numbers to copy.', 'error');
-                }
-            });
-            document.getElementById('import-export-btn-settings').addEventListener('click', () => { document.getElementById('import-export-modal').classList.remove('hidden'); });
-            document.getElementById('close-import-export-modal-btn').addEventListener('click', () => { document.getElementById('import-export-modal').classList.add('hidden'); });
-            document.getElementById('export-btn').addEventListener('click', () => { exportData(); });
-            document.getElementById('import-file-input').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) importData(file);
-            });
-            document.getElementById('confirm-placeholder-btn').addEventListener('click', () => {
-                const inputs = document.getElementById('placeholder-inputs').querySelectorAll('input, textarea');
-                const userValues = {};
-                inputs.forEach(input => { const key = input.dataset.placeholder; userValues[key] = input.value; });
-                const finalContent = replacePlaceholders(currentTextToCopy, userValues);
-                copyToClipboard(finalContent);
-                document.getElementById('placeholder-modal').classList.add('hidden');
-            });
-            document.getElementById('cancel-placeholder-btn').addEventListener('click', () => { document.getElementById('placeholder-modal').classList.add('hidden'); });
-            document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
-                try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
-            });
-            document.getElementById('sign-out-btn-settings').addEventListener('click', async () => {
-                try { await signOut(auth); showMessage("Signed out successfully!"); await signInAnonymously(auth); } catch (error) { console.error("Sign out failed", error); showMessage("Sign out failed. Please try again.", 'error'); }
-            });
-            document.getElementById('check-updates-btn-settings').addEventListener('click', async () => {
-                if (isAnonymous) { showMessage("Please sign in to check for updates.", "error"); return; }
-                const updateModal = document.getElementById('update-modal');
-                const updateModalTitle = document.getElementById('update-modal-title');
-                const updateModalMessage = document.getElementById('update-modal-message');
-                const updateModalButtons = document.getElementById('update-modal-buttons');
-                updateModal.classList.remove('hidden');
-                updateModalTitle.textContent = "Checking for Updates...";
-                updateModalMessage.textContent = "Please wait while we check for new content.";
-                updateModalButtons.classList.add('hidden');
-                try {
-                    const blueprint = await getCannedResponsesBlueprint();
-                    let changesMade = false;
-                    const updatedCategories = JSON.parse(JSON.stringify(categories));
-                    let newCategoryCount = 0;
-                    let newResponseCount = 0;
-                    for (const cat in blueprint) {
-                        if (!updatedCategories[cat]) { updatedCategories[cat] = blueprint[cat]; newCategoryCount++; changesMade = true; }
-                    }
-                    for (const cat in blueprint) {
-                        if (updatedCategories[cat]) {
-                            const existingResponses = updatedCategories[cat].responses.map(r => r.id);
-                            const newResponses = blueprint[cat].responses.filter(r => !existingResponses.includes(r.id));
-                            if (newResponses.length > 0) {
-                                updatedCategories[cat].responses.push(...newResponses);
-                                newResponseCount += newResponses.length;
-                                changesMade = true;
-                            }
-                        }
-                    }
-                    if (changesMade) {
-                        await saveToFirestore(updatedCategories);
-                        updateModalTitle.textContent = "Updates Found!";
-                        updateModalMessage.innerHTML = `<p>${newCategoryCount} new categories and ${newResponseCount} new responses were added.</p><p class="mt-2">Your data has been updated with the new content.</p>`;
-                        updateModalButtons.classList.remove('hidden');
-                    } else {
-                        updateModalTitle.textContent = "No Updates Found";
-                        updateModalMessage.textContent = "Your content is already up to date.";
-                        updateModalButtons.classList.remove('hidden');
-                    }
-                } catch (error) {
-                    console.error("Error checking for updates:", error);
-                    updateModalTitle.textContent = "Update Failed";
-                    updateModalMessage.textContent = "There was an error checking for updates. Please try again later.";
-                    updateModalButtons.classList.remove('hidden');
-                }
-            });
-            document.getElementById('close-update-btn').addEventListener('click', () => { document.getElementById('update-modal').classList.add('hidden'); });
-        }
-
-        // --- Core Application Logic (Auth and Data Sync) ---
-        onAuthStateChanged(auth, async (user) => {
-            if (cannedResponsesUnsubscribe) { cannedResponsesUnsubscribe(); cannedResponsesUnsubscribe = null; }
-            if (helpfulLinksUnsubscribe) { helpfulLinksUnsubscribe(); helpfulLinksUnsubscribe = null; }
-            if (user) {
-                userId = user.uid;
-                isAnonymous = user.isAnonymous;
-                const displayName = user.displayName || user.email || 'User';
-                userName = displayName.split(' ')[0].split('@')[0];
-                const linksUserInfo = document.getElementById('links-user-info');
-                if (linksUserInfo) linksUserInfo.textContent = `User ID: ${userId}`;
-                defaultLinks = await getHelpfulLinksBlueprint();
-                renderStaticLinks();
-                if (!isAnonymous) {
-                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-                    helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
-                        userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        renderUserLinks();
-                    }, (error) => {
-                        console.error("Error listening for user links:", error);
-                        showMessage("Error loading your links. Please check your Firebase permissions.", 'error');
-                    });
-                }
-                if (isAnonymous) {
-                    const userDocRef = getUserRootDocRef(userId);
-                    try {
-                        const userDoc = await getDoc(userDocRef);
-                        const hasSeenPrompt = userDoc.exists() && userDoc.data().hasSeenLoginPrompt;
-                        if (!hasSeenPrompt) { document.getElementById('login-popup-modal').classList.remove('hidden'); setTimeout(() => { document.getElementById('login-popup-modal').classList.add('show'); }, 10); } else { document.getElementById('login-popup-modal').classList.add('hidden'); }
-                    } catch (error) {
-                        console.error("Error fetching user data for login prompt:", error);
-                        document.getElementById('login-popup-modal').classList.remove('hidden');
-                        setTimeout(() => { document.getElementById('login-popup-modal').classList.add('show'); }, 10);
-                    }
-                    categories = await getCannedResponsesBlueprint();
-                    if (Object.keys(categories).length > 0) {
-                        const existingCategoryNames = Object.keys(categories);
-                        if (!existingCategoryNames.includes(activeCategory)) { activeCategory = existingCategoryNames[0]; }
-                    }
-                    renderContent();
-                } else {
-                    document.getElementById('login-popup-modal').classList.add('hidden');
-                    const userDocRef = getUserRootDocRef(userId);
-                    const userDoc = await getDoc(userDocRef);
-                    const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
-                    if (!tutorialSeen) { document.getElementById('tutorial-modal').classList.remove('hidden'); showTutorialStep(0); } else { document.getElementById('tutorial-modal').classList.add('hidden'); }
-                    const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
-                    cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
-                        if (doc.exists()) { categories = doc.data().categories || {}; } else { try { const blueprint = await getCannedResponsesBlueprint(); categories = JSON.parse(JSON.stringify(blueprint)); await setDoc(userCannedResponsesDocRef, { categories: categories }); console.log("Migrated default data to Firestore for new user."); } catch (error) { console.error("Error migrating data for new user:", error); } }
-                        for (const key in categories) { if (!categories[key].responses) { categories[key].responses = []; } }
-                        if (Object.keys(categories).length > 0) {
-                            const existingCategoryNames = Object.keys(categories);
-                            if (!existingCategoryNames.includes(activeCategory)) { activeCategory = existingCategoryNames[0]; }
-                        }
-                        renderContent();
-                    }, (error) => {
-                        console.error("Error with onSnapshot listener:", error);
-                        showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
-                    });
-                }
-            } else {
-                try { await signInAnonymously(auth); } catch (error) { console.error("Anonymous sign-in failed", error); }
+                showMessage('No tracking numbers to copy.', 'error');
             }
         });
 
-        attachEventListeners();
+        // Import/Export Listeners
+        importExportBtnSettings.addEventListener('click', () => {
+            importExportModal.classList.remove('hidden');
+        });
+
+        closeImportExportModalBtn.addEventListener('click', () => {
+            importExportModal.classList.add('hidden');
+        });
+
+        exportBtn.addEventListener('click', () => {
+            exportData();
+        });
+
+        importFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                importData(file);
+            }
+        });
+
+        // Helpful Links Listeners
+        linksForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!db || !userId || isAnonymous) {
+                showLinksStatus('Please sign in to manage your links.', 'text-yellow-400');
+                return;
+            }
+
+            const title = linkTitleInput.value;
+            const url = linkUrlInput.value;
+            const description = linkDescriptionInput.value;
+
+            if (!title || !url) {
+                showLinksStatus('Please fill out all required fields.', 'text-red-400');
+                return;
+            }
+
+            try {
+                if (editingLinkDocId) {
+                    showLinksStatus('Updating link...', 'text-yellow-400');
+                    const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', editingLinkDocId);
+                    await updateDoc(docRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                    });
+                    showLinksStatus('Link updated successfully!', 'text-green-400');
+                } else {
+                    showLinksStatus('Adding link...', 'text-yellow-400');
+                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+                    await addDoc(linksCollectionRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                        createdAt: new Date()
+                    });
+                    showLinksStatus('Link added successfully!', 'text-green-400');
+                }
+                resetLinksForm();
+
+            } catch (error) {
+                console.error("Error during link operation:", error);
+                showLinksStatus(`Failed to save link: ${error.message}`, 'text-red-400');
+            }
+        });
+
+        linksCancelButton.addEventListener('click', () => {
+            resetLinksForm();
+        });
+
+        // Placeholder modal listeners
+        confirmPlaceholderBtn.addEventListener('click', () => {
+            const inputs = placeholderInputsContainer.querySelectorAll('input, textarea');
+            const userValues = {};
+            inputs.forEach(input => {
+                const key = input.dataset.placeholder;
+                userValues[key] = input.value;
+            });
+            const finalContent = replacePlaceholders(currentTextToCopy, userValues);
+            copyToClipboard(finalContent);
+            placeholderModal.classList.add('hidden');
+        });
+
+        cancelPlaceholderBtn.addEventListener('click', () => {
+            placeholderModal.classList.add('hidden');
+        });
+        
+        // Settings page buttons
+        signInBtn.addEventListener('click', async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+                showMessage("Signed in with Google!");
+            } catch (error) {
+                console.error("Google sign-in failed", error);
+                showMessage("Google sign-in failed. Please try again.", 'error');
+            }
+        });
+
+        signOutBtn.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                showMessage("Signed out successfully!");
+                // After signing out, sign in as an anonymous user to allow for core functionality
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Sign out failed", error);
+                showMessage("Sign out failed. Please try again.", 'error');
+            }
+        });
+
+        checkUpdatesBtnSettings.addEventListener('click', async () => {
+            if (isAnonymous) {
+                showMessage("Please sign in to check for updates.", "error");
+                return;
+            }
+
+            updateModal.classList.remove('hidden');
+            updateModalTitle.textContent = "Checking for Updates...";
+            updateModalMessage.textContent = "Please wait while we check for new content.";
+            updateModalButtons.classList.add('hidden');
+
+            try {
+                const blueprint = await getCannedResponsesBlueprint();
+                let hasUpdates = false;
+                const updatedCategories = JSON.parse(JSON.stringify(categories));
+                let changesMade = false;
+                let newCategoryCount = 0;
+                let newResponseCount = 0;
+
+                // Check for new categories
+                for (const cat in blueprint) {
+                    if (!updatedCategories[cat]) {
+                        updatedCategories[cat] = blueprint[cat];
+                        newCategoryCount++;
+                        changesMade = true;
+                    }
+                }
+                
+                // Check for new responses within existing categories
+                for (const cat in blueprint) {
+                    if (updatedCategories[cat]) {
+                        const existingResponses = updatedCategories[cat].responses.map(r => r.id);
+                        const newResponses = blueprint[cat].responses.filter(r => !existingResponses.includes(r.id));
+                        if (newResponses.length > 0) {
+                            updatedCategories[cat].responses.push(...newResponses);
+                            newResponseCount += newResponses.length;
+                            changesMade = true;
+                        }
+                    }
+                }
+                
+                if (changesMade) {
+                    await saveToFirestore(updatedCategories);
+                    updateModalTitle.textContent = "Updates Found!";
+                    updateModalMessage.innerHTML = `
+                        <p>${newCategoryCount} new categories and ${newResponseCount} new responses were added.</p>
+                        <p class="mt-2">Your data has been updated with the new content.</p>
+                    `;
+                    updateModalButtons.classList.remove('hidden');
+                } else {
+                    updateModalTitle.textContent = "No Updates Found";
+                    updateModalMessage.textContent = "Your content is already up to date.";
+                    updateModalButtons.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error checking for updates:", error);
+                updateModalTitle.textContent = "Update Failed";
+                updateModalMessage.textContent = "There was an error checking for updates. Please try again later.";
+                updateModalButtons.classList.remove('hidden');
+            }
+        });
+
+        closeUpdateBtn.addEventListener('click', () => {
+            updateModal.classList.add('hidden');
+        });
+        
     </script>
+</body>
+</html>
