@@ -469,6 +469,48 @@
                             <p class="text-center text-gray-400 col-span-full">Loading static links...</p>
                         </div>
                     </section>
+                    
+                    <!-- Category: User-Added Links -->
+                    <!-- This section is now conditionally rendered for non-anonymous users -->
+                    <section id="user-links-section" class="col-span-1 md:col-span-2 lg:col-span-3 mt-12">
+                        <h2 class="text-3xl font-bold text-center mb-8 link-title">
+                            Your Links
+                        </h2>
+                        <div id="user-links-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>
+                        </div>
+                    </section>
+
+                    <!-- Form to add new links -->
+                    <!-- This section is now conditionally rendered for non-anonymous users -->
+                    <section id="add-link-section" class="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center">
+                        <div class="floating-card rounded-2xl p-8 max-w-lg w-full">
+                            <h2 id="form-title" class="text-2xl font-bold text-blue-400 mb-4">Add a New Link</h2>
+                            <form id="add-link-form" class="space-y-4">
+                                <div>
+                                    <label for="link-title" class="block text-sm font-medium text-gray-400">Title</label>
+                                    <input type="text" id="link-title" required class="mt-1 block w-full bg-gray-700 text-white border-2 border-gray-600 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg p-3 transition duration-300">
+                                </div>
+                                <div>
+                                    <label for="link-url" class="block text-sm font-medium text-gray-400">URL</label>
+                                    <input type="url" id="link-url" required class="mt-1 block w-full bg-gray-700 text-white border-2 border-gray-600 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg p-3 transition duration-300">
+                                </div>
+                                <div>
+                                    <label for="link-description" class="block text-sm font-medium text-gray-400">Description (Optional)</label>
+                                    <input type="text" id="link-description" class="mt-1 block w-full bg-gray-700 text-white border-2 border-gray-600 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-lg p-3 transition duration-300">
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button type="submit" id="submit-button" class="w-full inline-flex justify-center py-3 px-6 border border-transparent shadow-lg text-lg font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300">
+                                        Add Link
+                                    </button>
+                                    <button type="button" id="cancel-button" class="w-full inline-flex justify-center py-3 px-6 border border-gray-600 shadow-md text-lg font-bold rounded-xl text-gray-300 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-300 hidden">
+                                        Cancel
+                                    </button>
+                                </div>
+                                <div id="status-message" class="text-center mt-2 text-sm text-gray-400"></div>
+                            </form>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>
@@ -863,9 +905,12 @@
         let currentTextToCopy = '';
         let currentEditingId = null;
         let openCategoryMenu = null;
+        let editingLinkDocId = null;
+        let openMenuId = null;
         let defaultLinks = [];
         let cannedResponsesUnsubscribe = null;
-        
+        let helpfulLinksUnsubscribe = null;
+
         // --- Master Blueprint Data for Initialization ---
         const defaultCannedResponsesBlueprint = {
             'BRONCO': {
@@ -915,6 +960,8 @@
             { id: 'default-7', title: 'GUTS Ticket Checklist', description: 'A checklist for resolving GUTS tickets.', url: 'https://docs.google.com/spreadsheets/d/1VeKBxej95gIGqB2RhER9cRu-8DvD4kNcbL2PDIPMtp0/edit?gid=0#gid=0' }
         ];
         
+        let userLinks = [];
+
         const getCannedResponsesBlueprint = async () => {
             return defaultCannedResponsesBlueprint;
         };
@@ -1211,6 +1258,16 @@
         const noNumbersMessage = document.getElementById('no-numbers-message');
         const loadingIndicator = document.getElementById('loading-indicator');
 
+        const linksForm = document.getElementById('add-link-form');
+        const linkTitleInput = document.getElementById('link-title');
+        const linkUrlInput = document.getElementById('link-url');
+        const linkDescriptionInput = document.getElementById('link-description');
+        const linksSubmitButton = document.getElementById('submit-button');
+        const linksCancelButton = document.getElementById('cancel-button');
+        const linksFormTitle = document.getElementById('form-title');
+        const linksStatusMessage = document.getElementById('status-message');
+        const userLinksList = document.getElementById('user-links-list');
+        const linksUserInfo = document.getElementById('links-user-info');
         
         const showMessage = (text, type = 'success') => {
             messageBox.textContent = text;
@@ -1602,9 +1659,226 @@
             renderedStaticLinks = true;
         }
 
+        const renderUserLinks = (linksArray) => {
+            const userLinksList = document.getElementById('user-links-list');
+            // This is the key change: clear the container before re-rendering.
+            userLinksList.innerHTML = ''; 
+
+            if (linksArray && linksArray.length > 0) {
+                linksArray.forEach(link => {
+                    const card = document.createElement('div');
+                    card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect flex items-center justify-between relative';
+                    // Use a template literal to safely insert content
+                    card.innerHTML = `
+                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
+                            <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
+                            <p class="text-sm text-gray-400">${link.description || 'No description available.'}</p>
+                        </a>
+                        <div class="relative inline-block text-left" data-doc-id="${link.id}" data-title="${link.title}" data-url="${link.url}" data-description="${link.description || ''}">
+                            <button type="button" class="meatballs-button p-2 text-gray-400 hover:text-white transition-colors" aria-expanded="true" aria-haspopup="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 pointer-events-none">
+                                    <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                                </svg>
+                            </button>
+                            <div class="meatballs-menu hidden absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                                <div class="py-1">
+                                    <button class="edit-link-btn text-gray-200 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Edit</button>
+                                    <button class="delete-link-btn text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    userLinksList.appendChild(card);
+                });
+            } else {
+                userLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>';
+            }
+        };
+
         const renderHelpfulLinks = () => {
             renderStaticLinks();
+            if (!isAnonymous) {
+                renderUserLinks(userLinks);
+            }
         }
+        
+        const showLinksStatus = (message, colorClass) => {
+            linksStatusMessage.textContent = message;
+            linksStatusMessage.className = `text-center mt-2 text-sm font-semibold ${colorClass}`;
+            setTimeout(() => {
+                linksStatusMessage.textContent = '';
+                linksStatusMessage.className = 'text-center mt-2 text-sm text-gray-400';
+            }, 3000);
+        };
+        
+        const resetLinksForm = () => {
+            linksFormTitle.textContent = "Add a New Link";
+            linkTitleInput.value = '';
+            linkUrlInput.value = '';
+            linkDescriptionInput.value = '';
+            linksSubmitButton.textContent = 'Add Link';
+            linksCancelButton.classList.add('hidden');
+            editingLinkDocId = null;
+        };
+
+        const editLink = (docId, title, url, description) => {
+            linksFormTitle.textContent = "Edit Link";
+            linkTitleInput.value = title;
+            linkUrlInput.value = url;
+            linkDescriptionInput.value = description;
+            linksSubmitButton.textContent = 'Save Changes';
+            linksCancelButton.classList.remove('hidden');
+            editingLinkDocId = docId;
+            // Scroll to the form
+            addLinkSection.scrollIntoView({ behavior: 'smooth' });
+        };
+        
+        const deleteLink = async (docId) => {
+            if (!db || !userId || isAnonymous) {
+                showLinksStatus('Please sign in to delete links.', 'text-red-400');
+                return;
+            }
+            const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', docId);
+            try {
+                await deleteDoc(docRef);
+                showLinksStatus('Link deleted successfully!', 'text-green-400');
+            } catch (error) {
+                console.error("Error deleting link:", error);
+                showLinksStatus(`Failed to delete link: ${error.message}`, 'text-red-400');
+            }
+        };
+
+        function listenForUserLinks() {
+            if (!db || !userId || isAnonymous) {
+                console.error("Firestore or User ID not available, or user is anonymous.");
+                return;
+            }
+            
+            const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+            const q = query(linksCollectionRef);
+
+            helpfulLinksUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Now call the dedicated render function with the updated data
+                renderUserLinks(userLinks);
+            }, (error) => {
+                console.error("Error listening for documents:", error);
+                showLinksStatus('Failed to load links. Please try again.', 'text-red-400');
+            });
+        }
+        
+        linksForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!db || !userId || isAnonymous) {
+                showLinksStatus('Please sign in to manage your links.', 'text-yellow-400');
+                return;
+            }
+
+            const title = linkTitleInput.value;
+            const url = linkUrlInput.value;
+            const description = linkDescriptionInput.value;
+
+            if (!title || !url) {
+                showLinksStatus('Please fill out all required fields.', 'text-red-400');
+                return;
+            }
+
+            try {
+                if (editingLinkDocId) {
+                    showLinksStatus('Updating link...', 'text-yellow-400');
+                    const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', editingLinkDocId);
+                    await updateDoc(docRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                    });
+                    showLinksStatus('Link updated successfully!', 'text-green-400');
+                } else {
+                    showLinksStatus('Adding link...', 'text-yellow-400');
+                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+                    await addDoc(linksCollectionRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                        createdAt: new Date()
+                    });
+                    showLinksStatus('Link added successfully!', 'text-green-400');
+                }
+                resetLinksForm();
+
+            } catch (error) {
+                console.error("Error during link operation:", error);
+                showLinksStatus(`Failed to save link: ${error.message}`, 'text-red-400');
+            }
+        });
+
+        linksCancelButton.addEventListener('click', () => {
+            resetLinksForm();
+        });
+
+        userLinksList.addEventListener('click', (event) => {
+            if (isAnonymous) return;
+            const button = event.target.closest('.meatballs-button');
+            const editBtn = event.target.closest('.edit-link-btn');
+            const deleteBtn = event.target.closest('.delete-link-btn');
+
+            if (button) {
+                event.stopPropagation();
+                const parentDiv = button.closest('[data-doc-id]');
+                const menu = parentDiv.querySelector('.meatballs-menu');
+                if (menu) {
+                    const isHidden = menu.classList.contains('hidden');
+                    const allMenus = document.querySelectorAll('.meatballs-menu');
+                    allMenus.forEach(m => m.classList.add('hidden'));
+
+                    if (isHidden) {
+                        menu.classList.remove('hidden');
+                        openMenuId = parentDiv.dataset.docId;
+                    } else {
+                        openMenuId = null;
+                    }
+                }
+            } else if (editBtn) {
+                event.stopPropagation();
+                const parentDiv = editBtn.closest('[data-doc-id]');
+                if (parentDiv) {
+                    const docId = parentDiv.dataset.docId;
+                    const title = parentDiv.dataset.title;
+                    const url = parentDiv.dataset.url;
+                    const description = parentDiv.dataset.description;
+                    editLink(docId, title, url, description);
+                    const menu = parentDiv.querySelector('.meatballs-menu');
+                    if (menu) menu.classList.add('hidden');
+                    openMenuId = null;
+                }
+            } else if (deleteBtn) {
+                event.stopPropagation();
+                const parentDiv = deleteBtn.closest('[data-doc-id]');
+                if (parentDiv) {
+                    const docId = parentDiv.dataset.docId;
+                    deleteLink(docId);
+                    const menu = parentDiv.querySelector('.meatballs-menu');
+                    if (menu) menu.classList.add('hidden');
+                    openMenuId = null;
+                }
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            const isClickInsideCategoryActions = event.target.closest('#category-actions-menu') || event.target.closest('#category-actions-btn');
+            const isClickInsideMeatballsMenu = event.target.closest('.meatballs-menu') || event.target.closest('.meatballs-button');
+
+            if (!categoryActionsMenu.contains(event.target) && !categoryActionsBtn.contains(event.target)) {
+                categoryActionsMenu.classList.add('hidden', 'scale-95', 'opacity-0');
+                categoryActionsBtn.classList.remove('active');
+            }
+
+            if (!isClickInsideMeatballsMenu) {
+                const allMenus = document.querySelectorAll('.meatballs-menu');
+                allMenus.forEach(m => m.classList.add('hidden'));
+                openMenuId = null;
+            }
+        });
 
         // Get the new login modal elements
         const loginPopupModal = document.getElementById('login-popup-modal');
@@ -1697,6 +1971,11 @@
                 cannedResponsesUnsubscribe();
                 cannedResponsesUnsubscribe = null;
             }
+            // NEW: Also unsubscribe from the previous helpful links listener
+            if (helpfulLinksUnsubscribe) {
+                helpfulLinksUnsubscribe();
+                helpfulLinksUnsubscribe = null;
+            }
 
             if (user) {
                 userId = user.uid;
@@ -1705,13 +1984,11 @@
                 userName = displayName.split(' ')[0].split('@')[0];
                 linksUserInfo.textContent = `User ID: ${userId}`;
 
-                // Render static links only once on auth change, regardless of page
+                // Render static links once when the app starts
                 defaultLinks = await getHelpfulLinksBlueprint();
                 renderStaticLinks();
 
-                // Now, check if the user is anonymous AFTER we have the user object
                 if (isAnonymous) {
-                    // Check Firestore for the flag
                     const userDocRef = getUserRootDocRef(userId);
                     try {
                         const userDoc = await getDoc(userDocRef);
@@ -1719,7 +1996,6 @@
 
                         if (!hasSeenPrompt) {
                             loginPopupModal.classList.remove('hidden');
-                            // Use a setTimeout to allow the CSS transition to play
                             setTimeout(() => {
                                 loginPopupModal.classList.add('show');
                             }, 10);
@@ -1728,16 +2004,13 @@
                         }
                     } catch (error) {
                         console.error("Error fetching user data for login prompt:", error);
-                        // Fallback to showing the pop-up if there's an error
                         loginPopupModal.classList.remove('hidden');
                         setTimeout(() => {
                             loginPopupModal.classList.add('show');
                         }, 10);
                     }
 
-                    // For anonymous users, load canned responses from the blueprint
                     categories = await getCannedResponsesBlueprint();
-
                     if (Object.keys(categories).length > 0) {
                         const existingCategoryNames = Object.keys(categories);
                         if (!existingCategoryNames.includes(activeCategory)) {
@@ -1747,40 +2020,36 @@
                     renderContent();
 
                 } else {
-                    // Hide the popup if the user is not anonymous
                     loginPopupModal.classList.add('hidden');
 
-                    // Check for tutorial flag for signed-in users
                     const userDocRef = getUserRootDocRef(userId);
                     const userDoc = await getDoc(userDocRef);
                     const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
 
                     if (!tutorialSeen) {
                         tutorialModal.classList.remove('hidden');
-                        showTutorialStep(0); // Start the tutorial at the beginning
+                        showTutorialStep(0);
                     } else {
                         tutorialModal.classList.add('hidden');
                     }
 
                     const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
+                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
 
                     cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
                         if (doc.exists()) {
-                            categories = doc.data().categories || {};
+                    categories = doc.data().categories || {};
                         } else {
-                            // User has no private data, so initialize it from the in-memory blueprint
                             try {
                                 const blueprint = await getCannedResponsesBlueprint();
                                 categories = JSON.parse(JSON.stringify(blueprint));
-                                await setDoc(userCannedResponsesDocRef, {
-                                    categories: categories
-                                });
+                                await setDoc(userCannedResponsesDocRef, { categories: categories });
                                 console.log("Migrated default data to Firestore for new user.");
                             } catch (error) {
                                 console.error("Error migrating data for new user:", error);
                             }
                         }
-
+    
                         for (const key in categories) {
                             if (!categories[key].responses) {
                                 categories[key].responses = [];
@@ -1798,14 +2067,16 @@
                         console.error("Error with onSnapshot listener:", error);
                         showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
                     });
-                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-
+            
+                    // CORRECTED: This listener now handles all rendering for user links
+                    // and will prevent duplicates because it replaces the entire list each time.
                     helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
                         userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        renderUserLinks(userLinks);
+                        renderUserLinks(userLinks); // Calling render here is correct
                     }, (error) => {
                         console.error("Error listening for user links:", error);
-                    });                                   
+                        showMessage("Error loading your links. Please check your Firebase permissions.", 'error');
+                    });
                 }
             } else {
                 try {
@@ -2185,6 +2456,57 @@
                 importData(file);
             }
         });
+
+        // Helpful Links Listeners
+        linksForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!db || !userId || isAnonymous) {
+                showLinksStatus('Please sign in to manage your links.', 'text-yellow-400');
+                return;
+            }
+
+            const title = linkTitleInput.value;
+            const url = linkUrlInput.value;
+            const description = linkDescriptionInput.value;
+
+            if (!title || !url) {
+                showLinksStatus('Please fill out all required fields.', 'text-red-400');
+                return;
+            }
+
+            try {
+                if (editingLinkDocId) {
+                    showLinksStatus('Updating link...', 'text-yellow-400');
+                    const docRef = doc(db, 'artifacts', safeAppId, 'users', userId, 'helpful_links_data', editingLinkDocId);
+                    await updateDoc(docRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                    });
+                    showLinksStatus('Link updated successfully!', 'text-green-400');
+                } else {
+                    showLinksStatus('Adding link...', 'text-yellow-400');
+                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+                    await addDoc(linksCollectionRef, {
+                        title: title,
+                        url: url,
+                        description: description,
+                        createdAt: new Date()
+                    });
+                    showLinksStatus('Link added successfully!', 'text-green-400');
+                }
+                resetLinksForm();
+
+            } catch (error) {
+                console.error("Error during link operation:", error);
+                showLinksStatus(`Failed to save link: ${error.message}`, 'text-red-400');
+            }
+        });
+
+        linksCancelButton.addEventListener('click', () => {
+            resetLinksForm();
+        });
+
         // Placeholder modal listeners
         confirmPlaceholderBtn.addEventListener('click', () => {
             const inputs = placeholderInputsContainer.querySelectorAll('input, textarea');
