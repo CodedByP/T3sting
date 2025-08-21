@@ -1695,13 +1695,9 @@
         };
 
         const renderHelpfulLinks = () => {
-            // Only render static links once
+            // Only render static links once.
             if (!renderedStaticLinks) {
                 renderStaticLinks();
-            }
-            // Render user links every time this is called.
-            if (!isAnonymous) {
-                renderUserLinks();
             }
         };
         
@@ -1819,53 +1815,53 @@
             resetLinksForm();
         });
 
-        userLinksList.addEventListener('click', (event) => {
-            if (isAnonymous) return;
-            const button = event.target.closest('.meatballs-button');
-            const editBtn = event.target.closest('.edit-link-btn');
-            const deleteBtn = event.target.closest('.delete-link-btn');
+userLinksList.addEventListener('click', (event) => {
+    if (isAnonymous) return;
+    const button = event.target.closest('.meatballs-button');
+    const editBtn = event.target.closest('.edit-link-btn');
+    const deleteBtn = event.target.closest('.delete-link-btn');
 
-            if (button) {
-                event.stopPropagation();
-                const parentDiv = button.closest('[data-doc-id]');
-                const menu = parentDiv.querySelector('.meatballs-menu');
-                if (menu) {
-                    const isHidden = menu.classList.contains('hidden');
-                    const allMenus = document.querySelectorAll('.meatballs-menu');
-                    allMenus.forEach(m => m.classList.add('hidden'));
+    if (button) {
+        event.stopPropagation();
+        const parentDiv = button.closest('[data-doc-id]');
+        const menu = parentDiv.querySelector('.meatballs-menu');
+        if (menu) {
+            const isHidden = menu.classList.contains('hidden');
+            const allMenus = document.querySelectorAll('.meatballs-menu');
+            allMenus.forEach(m => m.classList.add('hidden'));
 
-                    if (isHidden) {
-                        menu.classList.remove('hidden');
-                        openMenuId = parentDiv.dataset.docId;
-                    } else {
-                        openMenuId = null;
-                    }
-                }
-            } else if (editBtn) {
-                event.stopPropagation();
-                const parentDiv = editBtn.closest('[data-doc-id]');
-                if (parentDiv) {
-                    const docId = parentDiv.dataset.docId;
-                    const title = parentDiv.dataset.title;
-                    const url = parentDiv.dataset.url;
-                    const description = parentDiv.dataset.description;
-                    editLink(docId, title, url, description);
-                    const menu = parentDiv.querySelector('.meatballs-menu');
-                    if (menu) menu.classList.add('hidden');
-                    openMenuId = null;
-                }
-            } else if (deleteBtn) {
-                event.stopPropagation();
-                const parentDiv = deleteBtn.closest('[data-doc-id]');
-                if (parentDiv) {
-                    const docId = parentDiv.dataset.docId;
-                    deleteLink(docId);
-                    const menu = parentDiv.querySelector('.meatballs-menu');
-                    if (menu) menu.classList.add('hidden');
-                    openMenuId = null;
-                }
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                openMenuId = parentDiv.dataset.docId;
+            } else {
+                openMenuId = null;
             }
-        });
+        }
+    } else if (editBtn) {
+        event.stopPropagation();
+        const parentDiv = editBtn.closest('[data-doc-id]');
+        if (parentDiv) {
+            const docId = parentDiv.dataset.docId;
+            const title = parentDiv.dataset.title;
+            const url = parentDiv.dataset.url;
+            const description = parentDiv.dataset.description;
+            editLink(docId, title, url, description);
+            const menu = parentDiv.querySelector('.meatballs-menu');
+            if (menu) menu.classList.add('hidden');
+            openMenuId = null;
+        }
+    } else if (deleteBtn) {
+        event.stopPropagation();
+        const parentDiv = deleteBtn.closest('[data-doc-id]');
+        if (parentDiv) {
+            const docId = parentDiv.dataset.docId;
+            deleteLink(docId);
+            const menu = parentDiv.querySelector('.meatballs-menu');
+            if (menu) menu.classList.add('hidden');
+            openMenuId = null;
+        }
+    }
+});
 
         document.addEventListener('click', (event) => {
             const isClickInsideCategoryActions = event.target.closest('#category-actions-menu') || event.target.closest('#category-actions-btn');
@@ -1968,125 +1964,123 @@
             }
         });
 
-        onAuthStateChanged(auth, async (user) => {
-            // Unsubscribe from any previous listeners to prevent duplicates
-            if (cannedResponsesUnsubscribe) {
-                cannedResponsesUnsubscribe();
-                cannedResponsesUnsubscribe = null;
-            }
-            // NEW: Also unsubscribe from the previous helpful links listener
-            if (helpfulLinksUnsubscribe) {
-                helpfulLinksUnsubscribe();
-                helpfulLinksUnsubscribe = null;
-            }
+onAuthStateChanged(auth, async (user) => {
+    // Unsubscribe from any previous listeners to prevent duplicates
+    if (cannedResponsesUnsubscribe) {
+        cannedResponsesUnsubscribe();
+        cannedResponsesUnsubscribe = null;
+    }
+    if (helpfulLinksUnsubscribe) {
+        helpfulLinksUnsubscribe();
+        helpfulLinksUnsubscribe = null;
+    }
 
-            if (user) {
-                userId = user.uid;
-                isAnonymous = user.isAnonymous;
-                const displayName = user.displayName || user.email || 'User';
-                userName = displayName.split(' ')[0].split('@')[0];
-                linksUserInfo.textContent = `User ID: ${userId}`;
+    if (user) {
+        userId = user.uid;
+        isAnonymous = user.isAnonymous;
+        const displayName = user.displayName || user.email || 'User';
+        userName = displayName.split(' ')[0].split('@')[0];
+        linksUserInfo.textContent = `User ID: ${userId}`;
 
-                defaultLinks = await getHelpfulLinksBlueprint();
-                renderStaticLinks();
+        defaultLinks = await getHelpfulLinksBlueprint();
+        renderStaticLinks();
 
-                if (isAnonymous) {
-                    const userDocRef = getUserRootDocRef(userId);
-                    try {
-                        const userDoc = await getDoc(userDocRef);
-                        const hasSeenPrompt = userDoc.exists() && userDoc.data().hasSeenLoginPrompt;
+        if (isAnonymous) {
+            const userDocRef = getUserRootDocRef(userId);
+            try {
+                const userDoc = await getDoc(userDocRef);
+                const hasSeenPrompt = userDoc.exists() && userDoc.data().hasSeenLoginPrompt;
 
-                        if (!hasSeenPrompt) {
-                            loginPopupModal.classList.remove('hidden');
-                            setTimeout(() => {
-                               loginPopupModal.classList.add('show');
-                            }, 10);
-                        } else {
-                            loginPopupModal.classList.add('hidden');
-                        }
-                    } catch (error) {
-                        console.error("Error fetching user data for login prompt:", error);
-                        loginPopupModal.classList.remove('hidden');
-                        setTimeout(() => {
-                            loginPopupModal.classList.add('show');
-                        }, 10);
-                    }
-            
-                    categories = await getCannedResponsesBlueprint();
-                    if (Object.keys(categories).length > 0) {
-                        const existingCategoryNames = Object.keys(categories);
-                        if (!existingCategoryNames.includes(activeCategory)) {
-                            activeCategory = existingCategoryNames[0];
-                        }
-                    }
-                    renderContent();
-
+                if (!hasSeenPrompt) {
+                    loginPopupModal.classList.remove('hidden');
+                    setTimeout(() => {
+                        loginPopupModal.classList.add('show');
+                    }, 10);
                 } else {
                     loginPopupModal.classList.add('hidden');
-
-                    const userDocRef = getUserRootDocRef(userId);
-                    const userDoc = await getDoc(userDocRef);
-                    const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
-
-                    if (!tutorialSeen) {
-                        tutorialModal.classList.remove('hidden');
-                        showTutorialStep(0);
-                    } else {
-                        tutorialModal.classList.add('hidden');
-                    }
-            
-                    const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
-                    const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-            
-                    cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
-                        if (doc.exists()) {
-                            categories = doc.data().categories || {};
-                        } else {
-                            try {
-                                const blueprint = await getCannedResponsesBlueprint();
-                                categories = JSON.parse(JSON.stringify(blueprint));
-                                await setDoc(userCannedResponsesDocRef, { categories: categories });
-                                console.log("Migrated default data to Firestore for new user.");
-                            } catch (error) {
-                                console.error("Error migrating data for new user:", error);
-                            }
-                        }
-                
-                        for (const key in categories) {
-                            if (!categories[key].responses) {
-                                categories[key].responses = [];
-                            }
-                        }
-
-                        if (Object.keys(categories).length > 0) {
-                            const existingCategoryNames = Object.keys(categories);
-                            if (!existingCategoryNames.includes(activeCategory)) {
-                                activeCategory = existingCategoryNames[0];
-                            }
-                        }
-                        renderContent();
-                    }, (error) => {
-                        console.error("Error with onSnapshot listener:", error);
-                        showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
-                    });
-            
-                    // CORRECTED: This listener now correctly updates the global array and calls the render function.
-                    helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
-                        userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        renderUserLinks(); // The function no longer needs to receive the array as an argument.
-                    }, (error) => {
-                        console.error("Error listening for user links:", error);
-                        showMessage("Error loading your links. Please check your Firebase permissions.", 'error');
-                    });
                 }
-            } else {
-                try {
-                    await signInAnonymously(auth);
-                } catch (error) {
-                    console.error("Anonymous sign-in failed", error);
+            } catch (error) {
+                console.error("Error fetching user data for login prompt:", error);
+                loginPopupModal.classList.remove('hidden');
+                setTimeout(() => {
+                    loginPopupModal.classList.add('show');
+                }, 10);
+            }
+            
+            categories = await getCannedResponsesBlueprint();
+            if (Object.keys(categories).length > 0) {
+                const existingCategoryNames = Object.keys(categories);
+                if (!existingCategoryNames.includes(activeCategory)) {
+                    activeCategory = existingCategoryNames[0];
                 }
             }
-        });
+            renderContent();
+
+        } else {
+            loginPopupModal.classList.add('hidden');
+
+            const userDocRef = getUserRootDocRef(userId);
+            const userDoc = await getDoc(userDocRef);
+            const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
+
+            if (!tutorialSeen) {
+                tutorialModal.classList.remove('hidden');
+                showTutorialStep(0);
+            } else {
+                tutorialModal.classList.add('hidden');
+            }
+            
+            const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
+            const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
+            
+            cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
+                if (doc.exists()) {
+                    categories = doc.data().categories || {};
+                } else {
+                    try {
+                        const blueprint = await getCannedResponsesBlueprint();
+                        categories = JSON.parse(JSON.stringify(blueprint));
+                        await setDoc(userCannedResponsesDocRef, { categories: categories });
+                        console.log("Migrated default data to Firestore for new user.");
+                    } catch (error) {
+                        console.error("Error migrating data for new user:", error);
+                    }
+                }
+                
+                for (const key in categories) {
+                    if (!categories[key].responses) {
+                        categories[key].responses = [];
+                    }
+                }
+
+                if (Object.keys(categories).length > 0) {
+                    const existingCategoryNames = Object.keys(categories);
+                    if (!existingCategoryNames.includes(activeCategory)) {
+                        activeCategory = existingCategoryNames[0];
+                    }
+                }
+                renderContent();
+            }, (error) => {
+                console.error("Error with onSnapshot listener:", error);
+                showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
+            });
+            
+            helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
+                userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderUserLinks();
+            }, (error) => {
+                console.error("Error listening for user links:", error);
+                showMessage("Error loading your links. Please check your Firebase permissions.", 'error');
+            });
+        }
+    } else {
+        try {
+            await signInAnonymously(auth);
+        } catch (error) {
+            console.error("Anonymous sign-in failed", error);
+        }
+    }
+});
         
         // --- Event Listeners ---
         
