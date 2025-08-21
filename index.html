@@ -1659,16 +1659,15 @@
             renderedStaticLinks = true;
         }
 
-        const renderUserLinks = (linksArray) => {
+        const renderUserLinks = () => {
             const userLinksList = document.getElementById('user-links-list');
-            // This is the key change: clear the container before re-rendering.
-            userLinksList.innerHTML = ''; 
+            // CRUCIAL FIX: Always clear the container first to prevent duplicates.
+            userLinksList.innerHTML = '';
 
-            if (linksArray && linksArray.length > 0) {
-                linksArray.forEach(link => {
+            if (userLinks && userLinks.length > 0) {
+                userLinks.forEach(link => {
                     const card = document.createElement('div');
                     card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect flex items-center justify-between relative';
-                    // Use a template literal to safely insert content
                     card.innerHTML = `
                         <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
                             <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
@@ -1696,11 +1695,15 @@
         };
 
         const renderHelpfulLinks = () => {
-            renderStaticLinks();
-            if (!isAnonymous) {
-                renderUserLinks(userLinks);
+            // Only render static links once
+            if (!renderedStaticLinks) {
+                renderStaticLinks();
             }
-        }
+            // Render user links every time this is called.
+            if (!isAnonymous) {
+                renderUserLinks();
+            }
+        };
         
         const showLinksStatus = (message, colorClass) => {
             linksStatusMessage.textContent = message;
@@ -1979,12 +1982,11 @@
 
             if (user) {
                 userId = user.uid;
-                isAnonymous = user.isAnonymous; // Update anonymous status
+                isAnonymous = user.isAnonymous;
                 const displayName = user.displayName || user.email || 'User';
                 userName = displayName.split(' ')[0].split('@')[0];
                 linksUserInfo.textContent = `User ID: ${userId}`;
 
-                // Render static links once when the app starts
                 defaultLinks = await getHelpfulLinksBlueprint();
                 renderStaticLinks();
 
@@ -1997,7 +1999,7 @@
                         if (!hasSeenPrompt) {
                             loginPopupModal.classList.remove('hidden');
                             setTimeout(() => {
-                                loginPopupModal.classList.add('show');
+                               loginPopupModal.classList.add('show');
                             }, 10);
                         } else {
                             loginPopupModal.classList.add('hidden');
@@ -2009,7 +2011,7 @@
                             loginPopupModal.classList.add('show');
                         }, 10);
                     }
-
+            
                     categories = await getCannedResponsesBlueprint();
                     if (Object.keys(categories).length > 0) {
                         const existingCategoryNames = Object.keys(categories);
@@ -2032,13 +2034,13 @@
                     } else {
                         tutorialModal.classList.add('hidden');
                     }
-
+            
                     const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
                     const linksCollectionRef = getUserHelpfulLinksCollectionRef(userId);
-
+            
                     cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
                         if (doc.exists()) {
-                    categories = doc.data().categories || {};
+                            categories = doc.data().categories || {};
                         } else {
                             try {
                                 const blueprint = await getCannedResponsesBlueprint();
@@ -2049,7 +2051,7 @@
                                 console.error("Error migrating data for new user:", error);
                             }
                         }
-    
+                
                         for (const key in categories) {
                             if (!categories[key].responses) {
                                 categories[key].responses = [];
@@ -2068,11 +2070,10 @@
                         showMessage("Error loading your data. Please check your Firebase permissions.", 'error');
                     });
             
-                    // CORRECTED: This listener now handles all rendering for user links
-                    // and will prevent duplicates because it replaces the entire list each time.
+                    // CORRECTED: This listener now correctly updates the global array and calls the render function.
                     helpfulLinksUnsubscribe = onSnapshot(linksCollectionRef, (querySnapshot) => {
                         userLinks = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        renderUserLinks(userLinks); // Calling render here is correct
+                        renderUserLinks(); // The function no longer needs to receive the array as an argument.
                     }, (error) => {
                         console.error("Error listening for user links:", error);
                         showMessage("Error loading your links. Please check your Firebase permissions.", 'error');
