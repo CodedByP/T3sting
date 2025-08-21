@@ -894,6 +894,7 @@
         setLogLevel('debug');
         
         // --- Global State Variables ---
+        let currentTutorialStep = 0;
         let categories = {};
         let activeCategory = '';
         let userId = null;
@@ -1617,23 +1618,27 @@
                 checkUpdatesBtnSettings.classList.remove('hidden');
             }
         };
-        const showTutorialStep = (stepIndex) => {
-            const tutorialSteps = [
-                document.getElementById('tutorial-step-1'),
-                document.getElementById('tutorial-step-2'),
-                document.getElementById('tutorial-step-3'),
-                document.getElementById('tutorial-step-4'),
-            ];
-            const tutorialBackBtn = document.getElementById('tutorial-back-btn');
-            const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-            const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-            tutorialSteps.forEach(step => step.classList.add('hidden'));
-            tutorialSteps[stepIndex].classList.remove('hidden');
-            tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
-            tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
-            tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
-            currentTutorialStep = stepIndex;
-        }
+const showTutorialStep = (stepIndex) => {
+    const tutorialSteps = [
+        document.getElementById('tutorial-step-1'),
+        document.getElementById('tutorial-step-2'),
+        document.getElementById('tutorial-step-3'),
+        document.getElementById('tutorial-step-4'),
+    ];
+    const tutorialBackBtn = document.getElementById('tutorial-back-btn');
+    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+    const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
+
+    tutorialSteps.forEach(step => step.classList.add('hidden'));
+    if (tutorialSteps[stepIndex]) {
+        tutorialSteps[stepIndex].classList.remove('hidden');
+    }
+
+    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+    tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+    tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
+    currentTutorialStep = stepIndex;
+}
 
         // --- All Event Listeners (Correctly placed to be attached only once) ---
         function attachEventListeners() {
@@ -1748,39 +1753,53 @@
             });
             
          // --- Tutorial Listeners (Corrected) ---
-        document.getElementById('tutorial-next-btn').addEventListener('click', () => {
-            if (currentTutorialStep < tutorialSteps.length - 1) {
-                currentTutorialStep++;
-                showTutorialStep(currentTutorialStep);
-            }
-        });
+    document.getElementById('tutorial-next-btn').addEventListener('click', () => {
+        const tutorialSteps = [
+            document.getElementById('tutorial-step-1'),
+            document.getElementById('tutorial-step-2'),
+            document.getElementById('tutorial-step-3'),
+            document.getElementById('tutorial-step-4'),
+        ];
+        if (currentTutorialStep < tutorialSteps.length - 1) {
+            currentTutorialStep++;
+            showTutorialStep(currentTutorialStep);
+        }
+    });
 
-        document.getElementById('tutorial-back-btn').addEventListener('click', () => {
-            if (currentTutorialStep > 0) {
-                currentTutorialStep--;
-                showTutorialStep(currentTutorialStep);
-            }
-        });
+    document.getElementById('tutorial-back-btn').addEventListener('click', () => {
+        if (currentTutorialStep > 0) {
+            currentTutorialStep--;
+            showTutorialStep(currentTutorialStep);
+        }
+    });
 
-        document.getElementById('tutorial-finish-btn').addEventListener('click', async () => {
-            document.getElementById('tutorial-modal').classList.add('hidden');
-            if (userId) {
-                const userDocRef = getUserRootDocRef(userId);
-                try {
-                    await setDoc(userDocRef, { tutorialSeen: true }, { merge: true });
-                } catch (error) {
-                    console.error("Error setting tutorialSeen flag:", error);
-                }
+    document.getElementById('tutorial-finish-btn').addEventListener('click', async () => {
+        document.getElementById('tutorial-modal').classList.add('hidden');
+        if (userId) {
+            const userDocRef = getUserRootDocRef(userId);
+            try {
+                await setDoc(userDocRef, { tutorialSeen: true }, { merge: true });
+            } catch (error) {
+                console.error("Error setting tutorialSeen flag:", error);
             }
-        });
-            document.getElementById('show-tutorial-btn').addEventListener('click', async () => {
-                if (userId && !isAnonymous) {
-                    const userDocRef = getUserRootDocRef(userId);
-                    try { await setDoc(userDocRef, { tutorialSeen: false }, { merge: true }); showTutorialStep(0); document.getElementById('tutorial-modal').classList.remove('hidden'); } catch (error) { console.error("Error resetting tutorialSeen flag:", error); showMessage("Error showing tutorial. Please try again.", 'error'); }
-                } else {
-                    showMessage("Please sign in to view the tutorial.", 'error');
-                }
-            });
+        }
+    });
+
+    document.getElementById('show-tutorial-btn').addEventListener('click', async () => {
+        if (userId && !isAnonymous) {
+            const userDocRef = getUserRootDocRef(userId);
+            try {
+                await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
+                showTutorialStep(0);
+                document.getElementById('tutorial-modal').classList.remove('hidden');
+            } catch (error) {
+                console.error("Error resetting tutorialSeen flag:", error);
+                showMessage("Error showing tutorial. Please try again.", 'error');
+            }
+        } else {
+            showMessage("Please sign in to view the tutorial.", 'error');
+        }
+    });
 
             document.getElementById('theme-toggle-btn-settings').addEventListener('click', () => {
                 document.body.classList.toggle('light-mode');
