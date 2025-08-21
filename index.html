@@ -1046,6 +1046,8 @@
                 } else {
                     addCategoryBtn.classList.add('hidden');
                     addResponseSection.classList.add('hidden');
+                    categoryActionsBtn.classList.add('hidden'); // Ensure it is hidden for anonymous users
+
                 }
             } else if (currentPage === 'fedex-tracker') {
                 fedexTrackerApp.classList.remove('hidden');
