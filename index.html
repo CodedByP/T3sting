@@ -1619,12 +1619,7 @@
             }
         };
 const showTutorialStep = (stepIndex) => {
-    const tutorialSteps = [
-        document.getElementById('tutorial-step-1'),
-        document.getElementById('tutorial-step-2'),
-        document.getElementById('tutorial-step-3'),
-        document.getElementById('tutorial-step-4'),
-    ];
+
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
     const tutorialNextBtn = document.getElementById('tutorial-next-btn');
     const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
@@ -1754,12 +1749,6 @@ const showTutorialStep = (stepIndex) => {
             
          // --- Tutorial Listeners (Corrected) ---
     document.getElementById('tutorial-next-btn').addEventListener('click', () => {
-        const tutorialSteps = [
-            document.getElementById('tutorial-step-1'),
-            document.getElementById('tutorial-step-2'),
-            document.getElementById('tutorial-step-3'),
-            document.getElementById('tutorial-step-4'),
-        ];
         if (currentTutorialStep < tutorialSteps.length - 1) {
             currentTutorialStep++;
             showTutorialStep(currentTutorialStep);
