@@ -978,6 +978,24 @@
                 messageBox.className = 'message-box';
             }, 3000);
         };
+        
+        const showTutorialStep = (stepIndex) => {
+
+            const tutorialBackBtn = document.getElementById('tutorial-back-btn');
+            const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+            const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
+
+            tutorialSteps.forEach(step => step.classList.add('hidden'));
+            if (tutorialSteps[stepIndex]) {
+                tutorialSteps[stepIndex].classList.remove('hidden');
+            }
+
+            tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+            tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+            tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
+            currentTutorialStep = stepIndex;
+        }
+        
 
         const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
         const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
@@ -1618,22 +1636,7 @@
                 checkUpdatesBtnSettings.classList.remove('hidden');
             }
         };
-const showTutorialStep = (stepIndex) => {
 
-    const tutorialBackBtn = document.getElementById('tutorial-back-btn');
-    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-    const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-
-    tutorialSteps.forEach(step => step.classList.add('hidden'));
-    if (tutorialSteps[stepIndex]) {
-        tutorialSteps[stepIndex].classList.remove('hidden');
-    }
-
-    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
-    tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
-    tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
-    currentTutorialStep = stepIndex;
-}
 
         // --- All Event Listeners (Correctly placed to be attached only once) ---
         function attachEventListeners() {
