@@ -2129,10 +2129,11 @@ const showTutorialStep = (stepIndex) => {
                     const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
 
                     // Inside your onAuthStateChanged block
-                    if (!tutorialSeen) {
-                        document.getElementById('tutorial-modal').classList.remove('hidden');
-                        renderTutorialStep(0); // Start the tutorial at the beginning
+                   if (!tutorialSeen) {
+                    document.getElementById('tutorial-modal').classList.add('visible');
+                        showTutorialStep(0); // Start the tutorial at the beginning
                     } else {
+                        document.getElementById('tutorial-modal').classList.remove('visible');
                         document.getElementById('tutorial-modal').classList.add('hidden');
                     }
                     
