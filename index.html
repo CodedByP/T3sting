@@ -102,12 +102,11 @@
     transition: all 0.5s ease-in-out;
     opacity: 0;
     transform: scale(0.95);
-    display: none; /* Hide the content by default */
+    z-index: 1001; /* Must be between the overlay and the highlight */
 }
 
 /* These classes will be added by JavaScript to position the modal */
 .tutorial-modal-content.centered {
-    display: block;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -115,7 +114,6 @@
 }
 
 .tutorial-modal-content.top-right {
-    display: block;
     top: 20px;
     right: 20px;
     left: unset;
@@ -125,7 +123,6 @@
 }
 
 .tutorial-modal-content.bottom-left {
-    display: block;
     bottom: 20px;
     left: 20px;
     top: unset;
@@ -328,22 +325,28 @@
 
     </style>
     
+    <!-- Favicon links for all browsers and devices -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 
+    <!-- Legacy favicon link for older browsers -->
     <link rel="shortcut icon" href="favicon.ico">
 
+    <!-- Apple touch icon for iOS devices -->
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
+    <!-- Manifest for Progressive Web Apps (PWAs) -->
     <link rel="manifest" href="site.webmanifest">
 </head>
 <body class="flex flex-col min-h-screen bg-gray-900 relative">
 
-    <div id="tutorial-overlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[1000]"></div>
-    
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[999]"></div>
+
+    <!-- Sidebar -->
     <div id="sidebar" class="sidebar flex flex-col">
         <h2 class="text-3xl font-extrabold text-gray-100 mb-8">Tools </h2>
         <nav class="flex flex-col space-y-3">
@@ -367,6 +370,7 @@
         </button>
     </div>
 
+    <!-- Main Content -->
     <div id="main-content" class="flex-1 p-6 sm:p-10 flex flex-col items-center transition-all duration-300 ease-in-out">
         <header class="w-full mb-8">
             <div class="flex items-center justify-between relative">
@@ -378,11 +382,13 @@
                 <div class="flex items-center space-x-4">
                     <h1 id="main-title" class="text-3xl sm:text-5xl font-extrabold text-gray-100 transition-colors duration-300">Canned Responses</h1>
                     <div id="category-menu-container" class="relative">
+                        <!-- New Category Actions Button -->
                         <button id="category-actions-btn" class="kebab-button p-2 rounded-full hover:bg-gray-700 transition duration-300 relative hidden" aria-expanded="true" aria-haspopup="true">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                             </svg>
                         </button>
+                        <!-- New centralized Category Actions menu -->
                         <div id="category-actions-menu" class="hidden absolute top-full right-0 mt-3 w-56 bg-gray-700 rounded-xl shadow-2xl z-50 transform scale-95 opacity-0 transition-all duration-300 origin-top-right">
                             <button id="rename-category-btn" class="w-full text-left px-5 py-3 hover:bg-gray-600 rounded-t-xl transition duration-200"><i class="fas fa-pencil-alt mr-2"></i>Rename Category</button>
                             <button id="delete-category-btn" class="w-full text-left px-5 py-3 hover:bg-gray-600 text-red-400 transition duration-200"><i class="fas fa-trash-alt mr-2"></i>Delete Category</button>
@@ -399,22 +405,29 @@
                 </div>
             </div>
             
+            <!-- Floating Category Bar at the top -->
             <div id="category-bar" class="mt-6 p-4 bg-gray-800 shadow-2xl flex items-center justify-between rounded-2xl">
                 <div class="flex-grow overflow-x-auto whitespace-nowrap scrollbar-hide">
                     <div id="category-list" class="flex gap-4">
-                        </div>
+                        <!-- Category buttons will be dynamically added here -->
+                    </div>
                 </div>
+                <!-- This button is now conditionally rendered for non-anonymous users -->
                 <button id="add-category-btn" class="flex-shrink-0 ml-4 bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
         </header>
 
+        <!-- Message box for user feedback -->
         <div id="message-box" class="message-box"></div>
 
+        <!-- Canned Responses App Content -->
         <div id="canned-responses-app" class="w-full container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-start justify-center py-12 hidden">
             <div class="w-full max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
+                <!-- Left Column: Search & Add Response -->
                 <div class="w-full md:w-1/3 flex flex-col">
+                    <!-- Search Bar -->
                     <div id="search-bar-container" class="floating-card mb-8 relative p-6 sm:p-8">
                         <div class="absolute inset-y-0 left-0 pl-11 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -429,6 +442,8 @@
                         />
                     </div>
                     
+                    <!-- Add Response Section -->
+                    <!-- This section is now conditionally rendered for non-anonymous users -->
                     <div id="add-response-section" class="floating-card mb-8 p-6 sm:p-8 flex justify-center items-start">
                         <button id="open-add-response-modal-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300">
                             <i class="fas fa-plus mr-2"></i> Add New Response
@@ -436,12 +451,14 @@
                     </div>
                 </div>
 
+                <!-- Right Column: Responses List -->
                 <div class="w-full md:w-2/3">
                     <div id="responses-container" class="w-full floating-card p-6 sm:p-8">
                         <h2 id="responses-heading" class="text-3xl font-bold text-gray-200 mb-6 hidden"></h2>
                         
                         <div id="responses-list" class="space-y-6">
-                            </div>
+                            <!-- Responses will be dynamically added here, grouped by label -->
+                        </div>
                         <div id="empty-state" class="text-center text-gray-400 mt-8 hidden">
                             <p class="text-lg">No canned responses in this category. Add one above!</p>
                         </div>
@@ -450,20 +467,24 @@
             </div>
         </div>
 
+        <!-- FedEx Tracker Content -->
         <div id="fedex-tracker-app" class="w-full container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-center justify-center py-12 hidden">
             <div class="main-card p-8 w-full max-w-2xl mx-auto">
                 <h1 class="text-4xl font-bold text-center text-gray-100 mb-4">FedEx Tracking</h1>
                 <p class="text-center text-gray-400 mb-8 text-lg">Extract and manage your FedEx tracking numbers easily.</p>
     
+                <!-- Input Section -->
                 <div class="mb-6">
                     <label for="input-text" class="block text-sm font-medium text-gray-300 mb-2">Paste or type your text here:</label>
                     <textarea id="input-text-fedex" rows="8" class="text-placeholder w-full p-4 border-2 border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-100 transition duration-300 text-lg" placeholder="e.g., 'Your package with tracking number 794829370821 has been shipped.'"></textarea>
                 </div>
     
+                <!-- Extracted Numbers Section -->
                 <div class="mb-6">
                     <h2 class="text-2xl font-semibold text-gray-200 mb-4">Extracted Tracking Numbers</h2>
                     <div id="tracking-numbers-container" class="tracking-numbers-container border-2 border-dashed border-gray-700 rounded-xl p-4 scrollable-box shadow-inner">
                         <p id="no-numbers-message" class="text-center text-gray-500 text-base">No tracking numbers found yet.</p>
+                        <!-- Loading indicator -->
                         <div id="loading-indicator" class="hidden flex justify-center items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -474,6 +495,7 @@
                     </div>
                 </div>
     
+                <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                     <button id="clear-button-fedex" class="w-full sm:w-auto bg-gray-700 text-gray-200 font-semibold py-3 px-8 rounded-xl shadow-md hover:bg-gray-600 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50">
                         Clear
@@ -489,6 +511,7 @@
             </div>
         </div>
 
+        <!-- Helpful Links Content -->
         <div id="helpful-links-app" class="w-full hidden container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-center justify-center py-12">
             <div class="container mx-auto px-4">
                 <header class="text-center mb-16 animate-fade-in">
@@ -498,17 +521,22 @@
                     <div id="links-user-info" class="mt-4 text-sm text-gray-500"></div>
                 </header>
 
+                <!-- Main links container -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     
+                    <!-- Category: Static Resources (Your pre-defined links) -->
                     <section class="col-span-1 md:col-span-2 lg:col-span-3">
                         <h2 class="text-3xl font-bold text-center mb-8 link-title">
                             Static Resources
                         </h2>
                         <div id="static-links-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Static links will be dynamically added here from Firestore -->
                             <p class="text-center text-gray-400 col-span-full">Loading static links...</p>
                         </div>
                     </section>
                     
+                    <!-- Category: User-Added Links -->
+                    <!-- This section is now conditionally rendered for non-anonymous users -->
                     <section id="user-links-section" class="col-span-1 md:col-span-2 lg:col-span-3 mt-12">
                         <h2 class="text-3xl font-bold text-center mb-8 link-title">
                             Your Links
@@ -518,6 +546,8 @@
                         </div>
                     </section>
 
+                    <!-- Form to add new links -->
+                    <!-- This section is now conditionally rendered for non-anonymous users -->
                     <section id="add-link-section" class="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center">
                         <div class="floating-card rounded-2xl p-8 max-w-lg w-full">
                             <h2 id="form-title" class="text-2xl font-bold text-blue-400 mb-4">Add a New Link</h2>
@@ -550,9 +580,11 @@
             </div>
         </div>
         
+        <!-- Settings App Content -->
         <div id="settings-page" class="w-full container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-start justify-center py-12 hidden">
             <div class="w-full max-w-7xl mx-auto space-y-8 md:flex md:flex-wrap md:gap-8">
                 
+                <!-- Account Section -->
                 <div class="floating-card p-6 sm:p-8 flex flex-col items-center flex-1 md:w-1/2 min-h-full">
                     <h2 class="text-2xl font-bold text-gray-200 mb-4 flex items-center">
                         <i class="fas fa-user-circle mr-3 text-3xl text-blue-400"></i> Account
@@ -568,6 +600,7 @@
                     </div>
                 </div>
 
+                <!-- Theme & Updates Section -->
                 <div class="floating-card p-6 sm:p-8 flex-1 md:w-1/2 min-h-full space-y-6">
                     <h2 class="text-2xl font-bold text-gray-200 mb-4 flex items-center">
                         <i class="fas fa-paint-brush mr-3 text-3xl text-purple-400"></i> Appearance
@@ -586,6 +619,7 @@
                     </div>
                 </div>
 
+                <!-- Data Management Section -->
                 <div class="floating-card p-6 sm:p-8 flex flex-col items-center md:w-full">
                     <h2 class="text-2xl font-bold text-gray-200 mb-4 flex items-center">
                         <i class="fas fa-database mr-3 text-3xl text-green-400"></i> Data Management
@@ -606,12 +640,14 @@
         </div>
     </div>
 
+    <!-- Universal Placeholder Modal -->
     <div id="placeholder-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Customize Response</h3>
             <p class="text-gray-400 text-base mb-4">Please fill in the details for the placeholders below.</p>
             <div id="placeholder-inputs" class="space-y-4">
-                </div>
+                <!-- Dynamic input fields will be added here -->
+            </div>
             <div class="flex justify-end mt-6 space-x-4">
                 <button id="cancel-placeholder-btn" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md">
                     Cancel
@@ -623,6 +659,7 @@
         </div>
     </div>
 
+    <!-- Edit Response Modal -->
     <div id="edit-response-modal" class="modal hidden">
         <div class="modal-content w-full max-w-3xl" data-original-category="">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Edit Response</h3>
@@ -653,6 +690,7 @@
     </div>
 
 
+    <!-- Import/Export Modal -->
     <div id="import-export-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Import or Export Data</h3>
@@ -678,6 +716,7 @@
         </div>
     </div>
 
+    <!-- New Add Response Modal -->
     <div id="new-response-modal" class="modal hidden">
         <div class="modal-content w-full max-w-3xl">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Create New Response</h3>
@@ -707,6 +746,7 @@
     </div>
 
 
+    <!-- Add Category Modal -->
     <div id="add-category-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Add a New Category</h3>
@@ -728,6 +768,7 @@
         </div>
     </div>
 
+    <!-- Edit Category Modal -->
     <div id="edit-category-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Edit Category</h3>
@@ -749,6 +790,7 @@
         </div>
     </div>
 
+    <!-- Delete Category Modal -->
     <div id="delete-category-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Confirm Category Deletion</h3>
@@ -764,6 +806,7 @@
         </div>
     </div>
 
+    <!-- Color Picker Modal -->
     <div id="color-picker-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Change Category Color</h3>
@@ -782,6 +825,7 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Confirm Deletion</h3>
@@ -797,6 +841,7 @@
         </div>
     </div>
 
+    <!-- Update Confirmation Modal -->
     <div id="update-modal" class="modal hidden">
         <div class="modal-content">
             <h3 id="update-modal-title" class="text-2xl font-bold text-gray-200 mb-4">Checking for Updates...</h3>
@@ -809,6 +854,7 @@
         </div>
     </div>
     
+    <!-- Login Modal - This is the new, modal pop-up container -->
     <div id="login-popup-modal" class="modal hidden">
         <div class="login-popup flex flex-col space-y-3">
             <div class="flex items-center justify-between">
@@ -887,6 +933,7 @@
     </div>
 </div>
     
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -933,7 +980,6 @@ let userLinks = [];
 let renderedStaticLinks = false;
 let isSubmittingLink = false;
 
-// --- MOVED TO GLOBAL SCOPE ---
 const tutorialSteps = [
     document.getElementById('tutorial-step-1'),
     document.getElementById('tutorial-step-2'),
@@ -956,11 +1002,11 @@ const tutorialPages = [
 ];
 
 // An array to map each step to the modal's target position
-const positionClasses = [
+const modalPositions = [
     'center', // Step 0 (Welcome screen) is centered
-    'top-right', // Step 1 (Add Response) is in the top right
-    'bottom-left', // Step 2 (Categories) is in the bottom right
-    'centered' // Step 3 (Placeholders) is centered
+    'top-20 right-1/3', // Step 1 (Add Response) is in the top right
+    'bottom-20 right-1/3', // Step 2 (Categories) is in the bottom right
+    'center' // Step 3 (Placeholders) is centered
 ];
 
 // --- Master Blueprint Data for Initialization ---
@@ -1029,37 +1075,56 @@ const showMessage = (text, type = 'success') => {
 
 // This is the new, combined function that handles all tutorial logic
 const showTutorialStep = (stepIndex) => {
-    const tutorialModal = document.getElementById('tutorial-modal');
-    const modalContent = tutorialModal.querySelector('.tutorial-modal-content'); // <-- CORRECT: Target the new class
-    const tutorialOverlay = document.getElementById('tutorial-overlay');
+    const tutorialSteps = [
+        document.getElementById('tutorial-step-1'),
+        document.getElementById('tutorial-step-2'),
+        document.getElementById('tutorial-step-3'),
+        document.getElementById('tutorial-step-4'),
+    ];
 
-    // First, remove all previous state from elements.
-    document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
-    tutorialSteps.forEach(step => step.classList.add('hidden'));
+    const highlightedElements = [
+        null, // Step 0 (Welcome screen) has no specific highlight
+        document.getElementById('add-response-section'),
+        document.getElementById('category-bar'),
+        null // Step 3 (Placeholders) has no specific highlight
+    ];
+    
+    // New array to map each step to a positioning class
+        const positionClasses = [
+            'centered',
+            'top-right',
+            'bottom-left',
+            'centered'
+        ];
 
-    // Hide all modal-related elements
-    modalContent.classList.remove('centered', 'top-right', 'bottom-left');
-    tutorialOverlay.classList.remove('hidden');
-    tutorialModal.classList.add('hidden');
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const modalContent = tutorialModal.querySelector('.tutorial-modal-content'); // <-- CORRECT: Target the new class
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
 
-    const currentStepElement = tutorialSteps[stepIndex];
-    const targetElement = highlightedElements[stepIndex];
+        // First, hide everything to start fresh
+        modalContent.classList.remove('centered', 'top-right', 'bottom-left');
+        tutorialOverlay.classList.remove('active');
+        tutorialModal.classList.add('hidden');
 
+        const currentStepElement = tutorialSteps[stepIndex];
+        const targetElement = highlightedElements[stepIndex];
 
-       // Show the content for the current step
+        // Reset all highlight states and hide all steps.
+        document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+        tutorialSteps.forEach(step => step.classList.add('hidden'));
+
+        // Apply the new positioning class and make everything visible
         if (currentStepElement) {
             currentStepElement.classList.remove('hidden');
+            if (targetElement) {
+                targetElement.classList.add('highlight-target');
+            }
         }
 
-        // Apply the highlight and show the overlay
-        if (targetElement) {
-            targetElement.classList.add('highlight-target');
-        }
-        tutorialOverlay.classList.remove('hidden');
-
-// Show and position the modal content
-    modalContent.classList.remove('hidden');
-    modalContent.classList.add(positionClasses[stepIndex]);
+// Show the overlay and the modal container
+tutorialOverlay.classList.add('active');
+tutorialModal.classList.remove('hidden');
+modalContent.classList.add(positionClasses[stepIndex]); // <-- CORRECT: Apply positioning to the content
 
 // Finally, manage the navigation buttons
 const tutorialBackBtn = document.getElementById('tutorial-back-btn');
@@ -1071,8 +1136,6 @@ tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 
 tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
 
 currentTutorialStep = stepIndex;
-
-};
     
 const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
 const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
@@ -1714,6 +1777,7 @@ const renderSettingsPage = () => {
 };
 
 
+// --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
     document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
@@ -1825,7 +1889,7 @@ function attachEventListeners() {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
     });
     
-    // --- Tutorial Listeners (Corrected) ---
+ // --- Tutorial Listeners (Corrected) ---
     document.getElementById('tutorial-next-btn').addEventListener('click', () => {
         if (currentTutorialStep < tutorialSteps.length - 1) {
             currentTutorialStep++;
@@ -1842,7 +1906,6 @@ function attachEventListeners() {
 
     document.getElementById('tutorial-finish-btn').addEventListener('click', async () => {
         document.getElementById('tutorial-modal').classList.add('hidden');
-        document.getElementById('tutorial-overlay').classList.add('hidden'); // Hide the overlay
         if (userId) {
             const userDocRef = getUserRootDocRef(userId);
             try {
@@ -1860,7 +1923,7 @@ function attachEventListeners() {
             await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
             showTutorialStep(0); // This function call will now handle displaying the modal
         } catch (error) {
-            console.error("Error showing tutorial. Please try again.", 'error');
+            console.error("Error resetting tutorialSeen flag:", error);
             showMessage("Error showing tutorial. Please try again.", 'error');
         }
     } else {
@@ -1947,9 +2010,8 @@ function attachEventListeners() {
             option.value = catName;
             option.textContent = catName;
             if (catName === activeCategory) option.selected = true;
-            newResponseCategorySelect.appendChild(option); 
+            newResponseCategorySelect.appendChild(option);
         });
-        document.getElementById('new-response-modal').classList.remove('hidden');
     });
     document.getElementById('cancel-new-response-btn').addEventListener('click', () => { document.getElementById('new-response-modal').classList.add('hidden'); });
     document.getElementById('save-new-response-btn').addEventListener('click', () => {
@@ -2196,7 +2258,6 @@ onAuthStateChanged(auth, async (user) => {
                 showTutorialStep(0); // Start the tutorial at the beginning
             } else {
                 document.getElementById('tutorial-modal').classList.add('hidden');
-                document.getElementById('tutorial-overlay').classList.add('hidden');
             }
             const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
             cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
@@ -2215,10 +2276,9 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         try { await signInAnonymously(auth); } catch (error) { console.error("Anonymous sign-in failed", error); }
     }
-    attachEventListeners();
-
 });
 
+attachEventListeners();
 </script>
 </body>
 </html>
