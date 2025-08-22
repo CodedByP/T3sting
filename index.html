@@ -97,6 +97,7 @@
             transition: background-color 0.3s ease;
         }
 
+        /* Positioning classes now apply directly to the modal content. */
         .modal-content {
             background-color: #1f2937;
             color: #e5e7eb;
@@ -105,43 +106,31 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
             width: 90%;
             max-width: 450px;
-            position: absolute;
+            position: fixed; /* Use 'fixed' instead of 'absolute' for reliable positioning on the viewport */
             transition: all 0.5s ease-in-out;
             opacity: 0;
             transform: scale(0.95);
             pointer-events: none;
         }
-
-        .modal.visible .modal-content {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
+        .modal-content.centered {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
-
-        /* Tutorial positioning classes will now be applied to the modal-content directly */
-#tutorial-modal .modal-content {
-    /* Base style, will be overridden */
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-#tutorial-modal.top-right .modal-content {
-    top: 20px;
-    right: 20px;
-    left: unset;
-    transform: none;
-    max-width: 400px;
-}
-
-#tutorial-modal.bottom-left .modal-content {
-    bottom: 20px;
-    left: 20px;
-    top: unset;
-    transform: none;
-    max-width: 400px;
-}
+        .modal-content.top-right {
+            top: 20px;
+            right: 20px;
+            left: unset;
+            transform: none;
+            max-width: 400px;
+        }
+        .modal-content.bottom-left {
+            bottom: 20px;
+            left: 20px;
+             top: unset;
+            transform: none;
+            max-width: 400px;
+        }
 
 /* The highlight effect */
 .highlight-target {
@@ -1251,55 +1240,56 @@ const showTutorialStep = (stepIndex) => {
 
     // New array to map each step to a positioning class
     const positionClasses = [
-        'show-modal', // Step 0: Centered modal
-        'top-right',  // Step 1: Position for add response section
-        'bottom-left',  // Step 2: Position for category bar
-        'show-modal'  // Step 3: Centered modal again
-    ];
+    'centered', // Use the new class name
+    'top-right',
+    'bottom-left',
+    'centered'  // Use the new class name
+];
+const tutorialModal = document.getElementById('tutorial-modal');
+const modalContent = tutorialModal.querySelector('.modal-content');
 
-    const tutorialModal = document.getElementById('tutorial-modal');
-    // The inner content of the modal that will be moved
-    const modalContent = tutorialModal.querySelector('.modal-content');
-    
-    // First, handle the page navigation.
-    const targetPage = 'canned-responses';
-    if (currentPage !== targetPage) {
-        currentPage = targetPage;
-        renderContent();
+// First, handle the page navigation.
+const targetPage = 'canned-responses';
+if (currentPage !== targetPage) {
+    currentPage = targetPage;
+    renderContent();
+}
+
+// Now, reset all highlight states and hide all steps.
+tutorialSteps.forEach(step => step.classList.add('hidden'));
+document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+// Hide the main modal container before moving the content
+tutorialModal.classList.add('hidden');
+
+// Remove all positioning classes from the content before adding the new one
+modalContent.classList.remove('centered', 'top-right', 'bottom-left');
+
+const currentStepElement = tutorialSteps[stepIndex];
+const targetElement = highlightedElements[stepIndex];
+
+if (currentStepElement) {
+    currentStepElement.classList.remove('hidden');
+    if (targetElement) {
+        targetElement.classList.add('highlight-target');
     }
+}
 
-    // Now, reset all highlight states and hide all steps.
-    tutorialSteps.forEach(step => step.classList.add('hidden'));
-    document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+// Apply the new positioning class to the modal content
+modalContent.classList.add(positionClasses[stepIndex]);
+// Make the main modal container visible to display the overlay and the content
+tutorialModal.classList.remove('hidden');
+tutorialModal.classList.add('visible');
 
-    // Reset modal classes to prepare for the new state
-    modalContent.classList.remove('show-modal', 'top-right', 'bottom-left');
+// Finally, manage the tutorial's navigation buttons and update the global step variable.
+const tutorialBackBtn = document.getElementById('tutorial-back-btn');
+const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
 
-    const currentStepElement = tutorialSteps[stepIndex];
-    const targetElement = highlightedElements[stepIndex];
+tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
 
-    if (currentStepElement) {
-        currentStepElement.classList.remove('hidden');
-        if (targetElement) {
-            targetElement.classList.add('highlight-target');
-        }
-    }
-    
-    // Apply the new positioning class and make the modal visible
-    modalContent.classList.add(positionClasses[stepIndex]);
-    tutorialModal.classList.add('visible');    
-    
-    // Finally, manage the tutorial's navigation buttons and update the global step variable.
-    const tutorialBackBtn = document.getElementById('tutorial-back-btn');
-    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-    const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-    
-    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
-    tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
-    tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
-    
-    currentTutorialStep = stepIndex;
-};
+currentTutorialStep = stepIndex;
 
         const renderSettingsPage = () => {
             if (document.body.classList.contains('light-mode')) {
