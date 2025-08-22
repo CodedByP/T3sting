@@ -102,11 +102,12 @@
     transition: all 0.5s ease-in-out;
     opacity: 0;
     transform: scale(0.95);
-    z-index: 1001; /* Must be between the overlay and the highlight */
+    display: none; /* Hide the content by default */
 }
 
 /* These classes will be added by JavaScript to position the modal */
 .tutorial-modal-content.centered {
+    display: block;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -114,6 +115,7 @@
 }
 
 .tutorial-modal-content.top-right {
+    display: block;
     top: 20px;
     right: 20px;
     left: unset;
@@ -123,6 +125,7 @@
 }
 
 .tutorial-modal-content.bottom-left {
+    display: block;
     bottom: 20px;
     left: 20px;
     top: unset;
@@ -344,8 +347,8 @@
 <body class="flex flex-col min-h-screen bg-gray-900 relative">
 
     <!-- Tutorial Overlay -->
-    <div id="tutorial-overlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[999]"></div>
-
+<div id="tutorial-overlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[1000]"></div>
+    
     <!-- Sidebar -->
     <div id="sidebar" class="sidebar flex flex-col">
         <h2 class="text-3xl font-extrabold text-gray-100 mb-8">Tools </h2>
@@ -1101,30 +1104,33 @@ const showTutorialStep = (stepIndex) => {
         const modalContent = tutorialModal.querySelector('.tutorial-modal-content'); // <-- CORRECT: Target the new class
         const tutorialOverlay = document.getElementById('tutorial-overlay');
 
-        // First, hide everything to start fresh
+        // First, remove all previous state from elements.
+        document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+        tutorialSteps.forEach(step => step.classList.add('hidden'));
+
+        // Hide all modal-related elements
         modalContent.classList.remove('centered', 'top-right', 'bottom-left');
-        tutorialOverlay.classList.remove('active');
+        tutorialOverlay.classList.remove('hidden');
         tutorialModal.classList.add('hidden');
 
         const currentStepElement = tutorialSteps[stepIndex];
         const targetElement = highlightedElements[stepIndex];
 
-        // Reset all highlight states and hide all steps.
-        document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
-        tutorialSteps.forEach(step => step.classList.add('hidden'));
 
-        // Apply the new positioning class and make everything visible
-        if (currentStepElement) {
-            currentStepElement.classList.remove('hidden');
+           // Show the content for the current step
+            if (currentStepElement) {
+                currentStepElement.classList.remove('hidden');
+            }
+
+            // Apply the highlight and show the overlay
             if (targetElement) {
                 targetElement.classList.add('highlight-target');
             }
-        }
+            tutorialOverlay.classList.remove('hidden');
 
-// Show the overlay and the modal container
-tutorialOverlay.classList.add('active');
-tutorialModal.classList.remove('hidden');
-modalContent.classList.add(positionClasses[stepIndex]); // <-- CORRECT: Apply positioning to the content
+// Show and position the modal content
+    modalContent.classList.remove('hidden');
+    modalContent.classList.add(positionClasses[stepIndex]);
 
 // Finally, manage the navigation buttons
 const tutorialBackBtn = document.getElementById('tutorial-back-btn');
