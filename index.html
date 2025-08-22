@@ -1910,20 +1910,21 @@ function attachEventListeners() {
     });
 
     document.getElementById('show-tutorial-btn').addEventListener('click', async () => {
-        if (userId && !isAnonymous) {
-            const userDocRef = getUserRootDocRef(userId);
-            try {
-                await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
-                showTutorialStep(0);
-                document.getElementById('tutorial-modal').classList.remove('hidden');
-            } catch (error) {
-                console.error("Error resetting tutorialSeen flag:", error);
-                showMessage("Error showing tutorial. Please try again.", 'error');
-            }
-        } else {
-            showMessage("Please sign in to view the tutorial.", 'error');
+    if (userId && !isAnonymous) {
+        const userDocRef = getUserRootDocRef(userId);
+        try {
+            // This line ensures the modal is fully visible and positioned correctly for the first step
+            document.getElementById('tutorial-modal').classList.add('show-modal');
+            await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
+            showTutorialStep(0);
+        } catch (error) {
+            console.error("Error resetting tutorialSeen flag:", error);
+            showMessage("Error showing tutorial. Please try again.", 'error');
         }
-    });
+    } else {
+        showMessage("Please sign in to view the tutorial.", 'error');
+    }
+});
 
     document.getElementById('theme-toggle-btn-settings').addEventListener('click', () => {
         document.body.classList.toggle('light-mode');
