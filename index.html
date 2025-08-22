@@ -79,7 +79,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: transparent; /* Start with transparent background */
             visibility: hidden;
             opacity: 0;
             transition: opacity 0.3s ease, visibility 0s 0.3s;
@@ -122,6 +121,7 @@
         /* Tutorial positioning classes will now be applied to the modal-content directly */
 #tutorial-modal .modal-content {
     /* Base style, will be overridden */
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
