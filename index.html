@@ -938,6 +938,13 @@
             document.getElementById('category-bar'),
             null // Step 3 (Placeholders) has no specific highlight
         ];
+        
+        const tutorialPages = [
+            'canned-responses', // Step 0: Welcome screen (on the canned responses page)
+            'canned-responses', // Step 1: Add a response
+            'canned-responses', // Step 2: Categories
+            'canned-responses' // Step 3: Dynamic placeholders
+    ];
 
         // An array to map each step to the modal's target position
         const modalPositions = [
@@ -1011,26 +1018,30 @@
             }, 3000);
         };
         
-        const showTutorialStep = (stepIndex) => {
-                // Hide all steps and remove highlight classes
+            const renderTutorialStep = (stepIndex) => {
+            // Hide all tutorial steps and remove highlight classes
             tutorialSteps.forEach(step => step.classList.add('hidden'));
             document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+    
+            // An array to map each step to the element it should highlight
+            const highlightedElements = [
+                null, // Step 0 (Welcome screen) has no specific highlight
+                document.getElementById('add-response-section'),
+                document.getElementById('category-bar'),
+                null // Step 3 (Placeholders) has no specific highlight
+            ];
 
-                // Handle the current step
             const currentStepElement = tutorialSteps[stepIndex];
             const targetElement = highlightedElements[stepIndex];
-            const modalPosition = modalPositions[stepIndex];
-
+    
             if (currentStepElement) {
                 currentStepElement.classList.remove('hidden');
 
                 if (targetElement) {
                     targetElement.classList.add('highlight-target');
-                    // This is where you would add logic to position the modal
-                } else {
-                    // For steps with no specific highlight, the modal stays in the center
                 }
             }
+        }
 
             const tutorialBackBtn = document.getElementById('tutorial-back-btn');
             const tutorialNextBtn = document.getElementById('tutorial-next-btn');
@@ -2166,7 +2177,12 @@
                     const userDocRef = getUserRootDocRef(userId);
                     const userDoc = await getDoc(userDocRef);
                     const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
-                    if (!tutorialSeen) { document.getElementById('tutorial-modal').classList.remove('hidden'); showTutorialStep(0); } else { document.getElementById('tutorial-modal').classList.add('hidden'); }
+                    if (!tutorialSeen) {
+                        document.getElementById('tutorial-modal').classList.remove('hidden');
+                        renderTutorialStep(0); // Start the tutorial at the beginning
+                    } else {
+                            document.getElementById('tutorial-modal').classList.add('hidden');
+                    }                   
                     const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
                     cannedResponsesUnsubscribe = onSnapshot(userCannedResponsesDocRef, async (doc) => {
                         if (doc.exists()) { categories = doc.data().categories || {}; } else { try { const blueprint = await getCannedResponsesBlueprint(); categories = JSON.parse(JSON.stringify(blueprint)); await setDoc(userCannedResponsesDocRef, { categories: categories }); console.log("Migrated default data to Firestore for new user."); } catch (error) { console.error("Error migrating data for new user:", error); } }
