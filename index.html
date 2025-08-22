@@ -1712,7 +1712,6 @@ const renderSettingsPage = () => {
 };
 
 
-// --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
     document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
@@ -1824,7 +1823,7 @@ function attachEventListeners() {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
     });
     
- // --- Tutorial Listeners (Corrected) ---
+    // --- Tutorial Listeners (Corrected) ---
     document.getElementById('tutorial-next-btn').addEventListener('click', () => {
         if (currentTutorialStep < tutorialSteps.length - 1) {
             currentTutorialStep++;
@@ -1946,7 +1945,7 @@ function attachEventListeners() {
             option.value = catName;
             option.textContent = catName;
             if (catName === activeCategory) option.selected = true;
-            editCategorySelect.appendChild(option);
+            **newResponseCategorySelect**.appendChild(option); // <-- CORRECTED LINE
         });
         document.getElementById('new-response-modal').classList.remove('hidden');
     });
