@@ -1114,9 +1114,10 @@ const showTutorialStep = (stepIndex) => {
     
     // Dynamically apply the positioning class
     // This is the core change: It resets the modal's classes and applies the new one for the current step.
-    tutorialModal.className = 'modal hidden';
-    tutorialModal.classList.add(positionClasses[stepIndex]);
-    tutorialModal.classList.remove('hidden');
+    // Dynamically apply the positioning class and ensure the modal is visible
+tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left'); // Reset all positioning classes
+tutorialModal.classList.add('modal'); // Ensure the base modal class is present
+tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
     
     // Finally, manage the tutorial's navigation buttons and update the global step variable.
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
@@ -1913,10 +1914,8 @@ function attachEventListeners() {
     if (userId && !isAnonymous) {
         const userDocRef = getUserRootDocRef(userId);
         try {
-            // This line ensures the modal is fully visible and positioned correctly for the first step
-            document.getElementById('tutorial-modal').classList.add('show-modal');
             await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
-            showTutorialStep(0);
+            showTutorialStep(0); // This function call will now handle displaying the modal
         } catch (error) {
             console.error("Error resetting tutorialSeen flag:", error);
             showMessage("Error showing tutorial. Please try again.", 'error');
