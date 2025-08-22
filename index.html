@@ -1945,7 +1945,7 @@ function attachEventListeners() {
             option.value = catName;
             option.textContent = catName;
             if (catName === activeCategory) option.selected = true;
-            **newResponseCategorySelect**.appendChild(option); // <-- CORRECTED LINE
+            newResponseCategorySelect.appendChild(option); // <-- CORRECTED LINE
         });
         document.getElementById('new-response-modal').classList.remove('hidden');
     });
