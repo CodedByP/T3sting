@@ -958,9 +958,9 @@ const tutorialPages = [
 // An array to map each step to the modal's target position
 const positionClasses = [
     'center', // Step 0 (Welcome screen) is centered
-    'top-20 right-1/3', // Step 1 (Add Response) is in the top right
-    'bottom-20 right-1/3', // Step 2 (Categories) is in the bottom right
-    'center' // Step 3 (Placeholders) is centered
+    'top-right', // Step 1 (Add Response) is in the top right
+    'bottom-left', // Step 2 (Categories) is in the bottom right
+    'centered' // Step 3 (Placeholders) is centered
 ];
 
 // --- Master Blueprint Data for Initialization ---
@@ -1947,7 +1947,7 @@ function attachEventListeners() {
             option.value = catName;
             option.textContent = catName;
             if (catName === activeCategory) option.selected = true;
-            newResponseCategorySelect.appendChild(option); // <-- CORRECTED LINE
+            newResponseCategorySelect.appendChild(option); 
         });
         document.getElementById('new-response-modal').classList.remove('hidden');
     });
