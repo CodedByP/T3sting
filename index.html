@@ -73,26 +73,24 @@
         
 /* Update the main modal container to be a full-screen overlay */
 /* Refined modal container for full-screen overlay */
-.modal {
+/* This is a new rule for the full-screen overlay, detached from the modal content */
+#tutorial-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.75);
-    z-index: 1001;
-    display: flex; /* We want it to be a flex container when it's visible */
-    justify-content: center;
-    align-items: center;
-}
-
-/* This rule ensures that adding the 'hidden' class hides the modal completely */
-.modal.hidden {
+    z-index: 1000;
     display: none;
 }
 
-/* Base modal content styling, without positioning */
-.modal-content {
+#tutorial-overlay.active {
+    display: block;
+}
+
+/* This new rule styles the modal content itself, without relying on the parent's classes */
+.tutorial-modal-content {
     background-color: #1f2937;
     color: #e5e7eb;
     padding: 2.5rem;
@@ -100,40 +98,37 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
     width: 90%;
     max-width: 450px;
-    position: absolute;
+    position: fixed;
     transition: all 0.5s ease-in-out;
-}
-
-/* Tutorial Pop-up specific positioning */
-#tutorial-modal .modal-content {
     opacity: 0;
     transform: scale(0.95);
+    z-index: 1001; /* Must be between the overlay and the highlight */
 }
 
-#tutorial-modal.show-modal .modal-content {
-    opacity: 1;
-    transform: scale(1);
+/* These classes will be added by JavaScript to position the modal */
+.tutorial-modal-content.centered {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    opacity: 1;
 }
 
-#tutorial-modal.top-right .modal-content {
-    opacity: 1;
+.tutorial-modal-content.top-right {
     top: 20px;
     right: 20px;
     left: unset;
     transform: none;
     max-width: 400px;
+    opacity: 1;
 }
 
-#tutorial-modal.bottom-left .modal-content {
-    opacity: 1;
+.tutorial-modal-content.bottom-left {
     bottom: 20px;
     left: 20px;
     top: unset;
     transform: none;
     max-width: 400px;
+    opacity: 1;
 }
         /* Add these rules to ensure proper z-indexing for highlighting */
 #add-response-section,
@@ -877,66 +872,66 @@
         </div>
     </div>
 
-    <!-- Multi-step Tutorial Modal -->
-    <div id="tutorial-modal" class="modal hidden">
-        <div class="modal-content w-full max-w-lg">
-            <div id="tutorial-step-1" class="tutorial-step space-y-6">
-                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Welcome! 👋</h3>
-                <p class="text-lg text-gray-300 text-center">Thanks for signing in! Here's a quick tour to show you how to get the most out of this site.</p>
-            </div>
+<div id="tutorial-overlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[999]"></div>
 
-            <div id="tutorial-step-2" class="tutorial-step space-y-6 hidden">
-                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Canned Responses</h3>
-                <p class="text-lg text-gray-300">This is the main section for your responses. The left column lets you **add new responses** and **search** through your existing ones.</p>
-                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
-                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-plus-circle text-purple-400 mr-3"></i> Add New Responses
-                    </h4>
-                    <p class="text-gray-400">Click the **Add New Response** button to create a new response. You can give it a label and assign it to a category.</p>
-                </div>
-                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
-                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-search text-yellow-400 mr-3"></i> Search
-                    </h4>
-                    <p class="text-gray-400">Use the search bar to find responses quickly by their label or content.</p>
-                </div>
+<div id="tutorial-modal" class="hidden">
+    <div class="tutorial-modal-content w-full max-w-lg">
+        <div id="tutorial-step-1" class="tutorial-step space-y-6">
+            <h3 class="text-3xl font-extrabold text-blue-400 text-center">Welcome! 👋</h3>
+            <p class="text-lg text-gray-300 text-center">Thanks for signing in! Here's a quick tour to show you how to get the most out of this site.</p>
+        </div>
+        <div id="tutorial-step-2" class="tutorial-step space-y-6 hidden">
+            <h3 class="text-3xl font-extrabold text-blue-400 text-center">Canned Responses</h3>
+            <p class="text-lg text-gray-300">This is the main section for your responses. The left column lets you **add new responses** and **search** through your existing ones.</p>
+            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                    <i class="fas fa-plus-circle text-purple-400 mr-3"></i> Add New Responses
+                </h4>
+                <p class="text-gray-400">Click the **Add New Response** button to create a new response. You can give it a label and assign it to a category.</p>
             </div>
-
-            <div id="tutorial-step-3" class="tutorial-step space-y-6 hidden">
-                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Categories</h3>
-                <p class="text-lg text-gray-300">Organize your responses with custom categories. You can create new categories with the **<i class="fas fa-plus"></i>** button.</p>
-                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
-                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-ellipsis-v text-pink-400 mr-3"></i> Manage Categories
-                    </h4>
-                    <p class="text-gray-400">Click the vertical ellipsis (<i class="fas fa-ellipsis-v"></i>) next to a category to **rename** it, **change its color**, or **delete** it. </p>
-                </div>
-            </div>
-
-            <div id="tutorial-step-4" class="tutorial-step space-y-6 hidden">
-                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Dynamic Placeholders</h3>
-                <p class="text-lg text-gray-300">Many of the default responses contain special placeholders like `[Customer's Name]` or `[TrackingNumber]`. </p>
-                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
-                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-lightbulb text-yellow-400 mr-3"></i> How it Works
-                    </h4>
-                    <p class="text-gray-400">When you click **Copy** on a response with placeholders, a small window will pop up asking for the values. Fill them out, click copy again, and the final response will be ready to paste!</p>
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center mt-8">
-                <button id="tutorial-back-btn" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md hidden">
-                    <i class="fas fa-arrow-left mr-2"></i> Back
-                </button>
-                <button id="tutorial-next-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 transition duration-300 shadow-lg">
-                    Next <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-                <button id="tutorial-finish-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition duration-300 shadow-lg hidden">
-                    Finish <i class="fas fa-check ml-2"></i>
-                </button>
+            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                    <i class="fas fa-search text-yellow-400 mr-3"></i> Search
+                </h4>
+                <p class="text-gray-400">Use the search bar to find responses quickly by their label or content.</p>
             </div>
         </div>
+        
+        <div id="tutorial-step-3" class="tutorial-step space-y-6 hidden">
+            <h3 class="text-3xl font-extrabold text-blue-400 text-center">Categories</h3>
+            <p class="text-lg text-gray-300">Organize your responses with custom categories. You can create new categories with the **<i class="fas fa-plus"></i>** button.</p>
+            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                    <i class="fas fa-ellipsis-v text-pink-400 mr-3"></i> Manage Categories
+                </h4>
+                <p class="text-gray-400">Click the vertical ellipsis (<i class="fas fa-ellipsis-v"></i>) next to a category to **rename** it, **change its color**, or **delete** it. </p>
+            </div>
+        </div>
+
+        <div id="tutorial-step-4" class="tutorial-step space-y-6 hidden">
+            <h3 class="text-3xl font-extrabold text-blue-400 text-center">Dynamic Placeholders</h3>
+            <p class="text-lg text-gray-300">Many of the default responses contain special placeholders like `[Customer's Name]` or `[TrackingNumber]`. </p>
+            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                    <i class="fas fa-lightbulb text-yellow-400 mr-3"></i> How it Works
+                </h4>
+                <p class="text-gray-400">When you click **Copy** on a response with placeholders, a small window will pop up asking for the values. Fill them out, click copy again, and the final response will be ready to paste!</p>
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center mt-8">
+            <button id="tutorial-back-btn" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md hidden">
+                <i class="fas fa-arrow-left mr-2"></i> Back
+            </button>
+            <button id="tutorial-next-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 transition duration-300 shadow-lg">
+                Next <i class="fas fa-arrow-right ml-2"></i>
+            </button>
+            <button id="tutorial-finish-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition duration-300 shadow-lg hidden">
+                Finish <i class="fas fa-check ml-2"></i>
+            </button>
+        </div>
     </div>
+</div>
     
     <!-- Firebase SDKs -->
     <script type="module">
@@ -1095,55 +1090,53 @@ const showTutorialStep = (stepIndex) => {
     ];
     
     // New array to map each step to a positioning class
-    const positionClasses = [
-        'show-modal', // Step 0: Centered modal
-        'top-right',  // Step 1: Position for add response section
-        'bottom-left',  // Step 2: Position for category bar
-        'show-modal'  // Step 3: Centered modal again
-    ];
+        const positionClasses = [
+            'centered',
+            'top-right',
+            'bottom-left',
+            'centered'
+        ];
 
-    const tutorialModal = document.getElementById('tutorial-modal');
-    
-    // First, handle the page navigation.
-    const targetPage = 'canned-responses'; // The entire tutorial is on this page
-    if (currentPage !== targetPage) {
-        currentPage = targetPage;
-        renderContent();
-    }
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const modalContent = tutorialModal.querySelector('.tutorial-modal-content'); // <-- CORRECT: Target the new class
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
 
-    // Now, reset all highlight states and hide all steps.
-    tutorialSteps.forEach(step => step.classList.add('hidden'));
-    document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+        // First, hide everything to start fresh
+        modalContent.classList.remove('centered', 'top-right', 'bottom-left');
+        tutorialOverlay.classList.remove('active');
+        tutorialModal.classList.add('hidden');
 
-    const currentStepElement = tutorialSteps[stepIndex];
-    const targetElement = highlightedElements[stepIndex];
+        const currentStepElement = tutorialSteps[stepIndex];
+        const targetElement = highlightedElements[stepIndex];
 
-    if (currentStepElement) {
-        currentStepElement.classList.remove('hidden');
-        if (targetElement) {
-            targetElement.classList.add('highlight-target');
+        // Reset all highlight states and hide all steps.
+        document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+        tutorialSteps.forEach(step => step.classList.add('hidden'));
+
+        // Apply the new positioning class and make everything visible
+        if (currentStepElement) {
+            currentStepElement.classList.remove('hidden');
+            if (targetElement) {
+                targetElement.classList.add('highlight-target');
+            }
         }
-    }
-    
-    // Dynamically apply the positioning class
-    // This is the core change: It resets the modal's classes and applies the new one for the current step.
-    // Dynamically apply the positioning class and ensure the modal is visible
-tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left'); // Reset all positioning classes
-tutorialModal.classList.add('modal'); // Ensure the base modal class is present
-tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
-    
-    // Finally, manage the tutorial's navigation buttons and update the global step variable.
-    const tutorialBackBtn = document.getElementById('tutorial-back-btn');
-    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-    const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-    
-    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
-    tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
-    tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
-    
-    currentTutorialStep = stepIndex;
-};
 
+// Show the overlay and the modal container
+tutorialOverlay.classList.add('active');
+tutorialModal.classList.remove('hidden');
+modalContent.classList.add(positionClasses[stepIndex]); // <-- CORRECT: Apply positioning to the content
+
+// Finally, manage the navigation buttons
+const tutorialBackBtn = document.getElementById('tutorial-back-btn');
+const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
+
+tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
+
+currentTutorialStep = stepIndex;
+    
 const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
 const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
 const getUserCannedResponsesDocRef = (uid) => { return doc(db, 'artifacts', safeAppId, 'users', uid, 'canned_responses_data', 'app_data'); };
