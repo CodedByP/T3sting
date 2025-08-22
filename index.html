@@ -1020,22 +1020,51 @@ const showMessage = (text, type = 'success') => {
 
 // This is the new, combined function that handles all tutorial logic
 const showTutorialStep = (stepIndex) => {
-    // Hide all tutorial steps and remove highlight classes
+    // These arrays are defined here so they are always in scope when the function is called.
+    const tutorialSteps = [
+        document.getElementById('tutorial-step-1'),
+        document.getElementById('tutorial-step-2'),
+        document.getElementById('tutorial-step-3'),
+        document.getElementById('tutorial-step-4'),
+    ];
+
+    const highlightedElements = [
+        null, // Step 0 (Welcome screen) has no specific highlight
+        document.getElementById('add-response-section'),
+        document.getElementById('category-bar'),
+        null // Step 3 (Placeholders) has no specific highlight
+    ];
+    
+    // An array to map each step to the page it should render.
+    const tutorialPages = [
+        'canned-responses', // Step 0
+        'canned-responses', // Step 1
+        'canned-responses', // Step 2
+        'canned-responses' // Step 3
+    ];
+    
+    // First, handle the page navigation.
+    const targetPage = tutorialPages[stepIndex];
+    if (currentPage !== targetPage) {
+        currentPage = targetPage;
+        renderContent();
+    }
+
+    // Now, reset all highlight states and show the current step's modal content.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
     const currentStepElement = tutorialSteps[stepIndex];
     const targetElement = highlightedElements[stepIndex];
-    
+
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
-
         if (targetElement) {
             targetElement.classList.add('highlight-target');
         }
     }
     
-    // This is the core logic to show/hide the tutorial navigation buttons
+    // Finally, manage the tutorial's navigation buttons and update the global step variable.
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
     const tutorialNextBtn = document.getElementById('tutorial-next-btn');
     const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
@@ -1044,7 +1073,6 @@ const showTutorialStep = (stepIndex) => {
     tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
     tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
     
-    // Update the global step variable
     currentTutorialStep = stepIndex;
 };
  
