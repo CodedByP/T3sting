@@ -2215,9 +2215,10 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         try { await signInAnonymously(auth); } catch (error) { console.error("Anonymous sign-in failed", error); }
     }
+    attachEventListeners();
+
 });
 
-attachEventListeners();
 </script>
 </body>
 </html>
