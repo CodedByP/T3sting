@@ -1032,6 +1032,12 @@
                 'canned-responses', // Step 2
                 'canned-responses', // Step 3
             ];
+
+                        // Conditional Navigation
+            if (currentPage !== tutorialPages[stepIndex]) {
+                currentPage = tutorialPages[stepIndex];
+                renderContent();
+            }
     
             // The highlightedElements array needs to be defined globally as we discussed
             // and the code below will now handle highlighting
@@ -1042,11 +1048,6 @@
                 null // Step 3 (Placeholders) has no specific highlight
             ];
     
-            // Conditional Navigation
-            if (currentPage !== tutorialPages[stepIndex]) {
-                currentPage = tutorialPages[stepIndex];
-                renderContent();
-            }
 
             const currentStepElement = tutorialSteps[stepIndex];
             const targetElement = highlightedElements[stepIndex];
