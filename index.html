@@ -76,26 +76,81 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
             display: flex;
             justify-content: center;
             align-items: center;
+            background-color: transparent; /* Start with transparent background */
+            visibility: hidden;
+            opacity: 0;
+            transition: background-color 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
             z-index: 1001;
         }
+        .modal.visible {
+            background-color: rgba(0, 0, 0, 0.75);
+            visibility: visible;
+            opacity: 1;
+            transition: background-color 0.3s ease, opacity 0.3s ease, visibility 0s 0s;
+        }
+
         .modal-content {
             background-color: #1f2937;
             color: #e5e7eb;
             padding: 2.5rem;
             border-radius: 1rem;
-            box-shadow: 0 20px 25px -5-px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
             width: 90%;
             max-width: 450px;
+            position: absolute;
+            transition: all 0.5s ease-in-out;
+            opacity: 0;
             transform: scale(0.95);
-            transition: transform 0.3s ease-out;
+            pointer-events: none;
         }
-        .modal.show .modal-content {
+
+        .modal.visible .modal-content {
+            opacity: 1;
             transform: scale(1);
+            pointer-events: auto;
         }
+
+        /* Tutorial positioning classes will now be applied to the modal-content directly */
+#tutorial-modal .modal-content {
+    /* Base style, will be overridden */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#tutorial-modal.top-right .modal-content {
+    top: 20px;
+    right: 20px;
+    left: unset;
+    transform: none;
+    max-width: 400px;
+}
+
+#tutorial-modal.bottom-left .modal-content {
+    bottom: 20px;
+    left: 20px;
+    top: unset;
+    transform: none;
+    max-width: 400px;
+}
+
+/* The highlight effect */
+.highlight-target {
+    position: relative; 
+    z-index: 1002; /* This is the key: it's on top of the modal overlay */
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
+    border-radius: 1rem;
+    animation: pulse-highlight 1.5s infinite;
+}
+
+@keyframes pulse-highlight {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(100, 160, 255, 0.4); }
+    50% { transform: scale(1.01); box-shadow: 0 0 0 10px rgba(100, 160, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(100, 160, 255, 0.4); }
+}
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
@@ -1172,55 +1227,70 @@
         const tutorialResetSection = document.getElementById('tutorial-reset-section');
         
         // Multi-step tutorial elements
-        const tutorialSteps = [
-            document.getElementById('tutorial-step-1'),
-            document.getElementById('tutorial-step-2'),
-            document.getElementById('tutorial-step-3'),
-            document.getElementById('tutorial-step-4'),
-        ];
+       // This is the correct function that handles all tutorial logic
+const showTutorialStep = (stepIndex) => {
+    const tutorialSteps = [
+        document.getElementById('tutorial-step-1'),
+        document.getElementById('tutorial-step-2'),
+        document.getElementById('tutorial-step-3'),
+        document.getElementById('tutorial-step-4'),
+    ];
 
-        const highlightedElements = [
-            null, // Step 0 (Welcome screen) has no specific highlight
-            document.getElementById('add-response-section'),
-            document.getElementById('category-bar'),
-            null // Step 3 (Placeholders) has no specific highlight
-        ];
-        const tutorialPages = [
-            'canned-responses', // Step 0: Welcome screen (on the canned responses page)
-            'canned-responses', // Step 1: Add a response
-            'canned-responses', // Step 2: Categories
-            'canned-responses' // Step 3: Dynamic placeholders
-        ];
-        
-        let currentTutorialStep = 0;
-        const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-        const tutorialBackBtn = document.getElementById('tutorial-back-btn');
-        const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-        
-        cconst renderTutorialStep = (stepIndex) => {
-            // Hide all tutorial steps and remove highlight classes
-            tutorialSteps.forEach(step => step.classList.add('hidden'));
-            document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+    const highlightedElements = [
+        null, // Step 0 (Welcome screen) has no specific highlight
+        document.getElementById('add-response-section'),
+        document.getElementById('category-bar'),
+        null // Step 3 (Placeholders) has no specific highlight
+    ];
+
+    // New array to map each step to a positioning class
+    const positionClasses = [
+        'show-modal', // Step 0: Centered modal
+        'top-right',  // Step 1: Position for add response section
+        'bottom-left',  // Step 2: Position for category bar
+        'show-modal'  // Step 3: Centered modal again
+    ];
+
+    const tutorialModal = document.getElementById('tutorial-modal');
     
-            // An array to map each step to the element it should highlight
-            const highlightedElements = [
-                null, // Step 0 (Welcome screen) has no specific highlight
-                document.getElementById('add-response-section'),
-                document.getElementById('category-bar'),
-                null // Step 3 (Placeholders) has no specific highlight
-            ];
+    // First, handle the page navigation.
+    const targetPage = 'canned-responses';
+    if (currentPage !== targetPage) {
+        currentPage = targetPage;
+        renderContent();
+    }
 
-            const currentStepElement = tutorialSteps[stepIndex];
-            const targetElement = highlightedElements[stepIndex];
-    
-            if (currentStepElement) {
-                currentStepElement.classList.remove('hidden');
+    // Now, reset all highlight states and hide all steps.
+    tutorialSteps.forEach(step => step.classList.add('hidden'));
+    document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
-                if (targetElement) {
-                    targetElement.classList.add('highlight-target');
-                }
-            }
+    // Reset modal classes to prepare for the new state
+    tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left');
+
+    const currentStepElement = tutorialSteps[stepIndex];
+    const targetElement = highlightedElements[stepIndex];
+
+    if (currentStepElement) {
+        currentStepElement.classList.remove('hidden');
+        if (targetElement) {
+            targetElement.classList.add('highlight-target');
         }
+    }
+    
+    // Apply the new positioning class and make the modal visible
+    tutorialModal.classList.add(positionClasses[stepIndex]);
+    
+    // Finally, manage the tutorial's navigation buttons and update the global step variable.
+    const tutorialBackBtn = document.getElementById('tutorial-back-btn');
+    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+    const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
+    
+    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+    tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+    tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
+    
+    currentTutorialStep = stepIndex;
+};
 
         const renderSettingsPage = () => {
             if (document.body.classList.contains('light-mode')) {
