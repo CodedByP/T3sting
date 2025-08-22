@@ -70,39 +70,38 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
-        }
-        .modal-content {
-            background-color: #1f2937;
-            color: #e5e7eb;
-            padding: 2.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
-            width: 90%;
-            max-width: 450px;
-            position: absolute; /* New code starts here */
-            transition: all 0.5s ease-in-out;
-            pointer-events: auto; /* New code ends here */
-        }
-                /* Tutorial Pop-up specific positioning */
-        #tutorial-modal .modal-content {
-    /* Initially off-screen and transparent for animation */
-    opacity: 0;
-    transform: scale(0.95);
-    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+        
+/* Update the main modal container to be a full-screen overlay */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    z-index: 1001;
+    display: none; /* Keep it hidden until the tutorial starts */
 }
 
-/* This class will make the modal visible and centered */
+/* Base modal content styling, without positioning */
+.modal-content {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    width: 90%;
+    max-width: 450px;
+    position: absolute;
+    transition: all 0.5s ease-in-out;
+}
+
+/* Tutorial Pop-up specific positioning */
+#tutorial-modal .modal-content {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
 #tutorial-modal.show-modal .modal-content {
     opacity: 1;
     transform: scale(1);
@@ -111,13 +110,12 @@
     transform: translate(-50%, -50%);
 }
 
-/* New positioning classes for the tutorial modal */
 #tutorial-modal.top-right .modal-content {
     opacity: 1;
     top: 20px;
     right: 20px;
-    left: unset; /* Override the 'left: 50%' from the main modal rule */
-    transform: none; /* Override the translate transform */
+    left: unset;
+    transform: none;
     max-width: 400px;
 }
 
@@ -125,15 +123,15 @@
     opacity: 1;
     bottom: 20px;
     left: 20px;
-    top: unset; /* Override the 'top: 50%' from the main modal rule */
+    top: unset;
     transform: none;
     max-width: 400px;
 }
 
-/* This is the key for the background dimming and z-index */
+/* The highlight effect, this is the key to drawing attention. */
 .highlight-target {
     position: relative; 
-    z-index: 1000;
+    z-index: 1002; /* Needs to be higher than the modal overlay's z-index */
     box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
     border-radius: 1rem;
     animation: pulse-highlight 1.5s infinite;
