@@ -82,14 +82,20 @@
             background-color: transparent; /* Start with transparent background */
             visibility: hidden;
             opacity: 0;
-            transition: background-color 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
+            transition: opacity 0.3s ease, visibility 0s 0.3s;
             z-index: 1001;
         }
-        .modal.visible {
+        /* Add a pseudo-element for the dark overlay effect */
+        .modal.visible::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-color: rgba(0, 0, 0, 0.75);
-            visibility: visible;
-            opacity: 1;
-            transition: background-color 0.3s ease, opacity 0.3s ease, visibility 0s 0s;
+            z-index: 1000; /* This is the key: it's BELOW the modal and the highlight */
+            transition: background-color 0.3s ease;
         }
 
         .modal-content {
@@ -1252,6 +1258,8 @@ const showTutorialStep = (stepIndex) => {
     ];
 
     const tutorialModal = document.getElementById('tutorial-modal');
+    // The inner content of the modal that will be moved
+    const modalContent = tutorialModal.querySelector('.modal-content');
     
     // First, handle the page navigation.
     const targetPage = 'canned-responses';
@@ -1265,7 +1273,7 @@ const showTutorialStep = (stepIndex) => {
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
     // Reset modal classes to prepare for the new state
-    tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left');
+    modalContent.classList.remove('show-modal', 'top-right', 'bottom-left');
 
     const currentStepElement = tutorialSteps[stepIndex];
     const targetElement = highlightedElements[stepIndex];
@@ -1278,7 +1286,8 @@ const showTutorialStep = (stepIndex) => {
     }
     
     // Apply the new positioning class and make the modal visible
-    tutorialModal.classList.add(positionClasses[stepIndex]);
+    modalContent.classList.add(positionClasses[stepIndex]);
+    tutorialModal.classList.add('visible');    
     
     // Finally, manage the tutorial's navigation buttons and update the global step variable.
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
