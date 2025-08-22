@@ -135,6 +135,11 @@
     transform: none;
     max-width: 400px;
 }
+        /* Add these rules to ensure proper z-indexing for highlighting */
+#add-response-section,
+#category-bar {
+    position: relative;
+}
 
 /* The highlight effect, this is the key to drawing attention. */
 .highlight-target {
