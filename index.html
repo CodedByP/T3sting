@@ -1066,7 +1066,6 @@ const showMessage = (text, type = 'success') => {
 
 // This is the new, combined function that handles all tutorial logic
 const showTutorialStep = (stepIndex) => {
-    // These arrays are defined here so they are always in scope when the function is called.
     const tutorialSteps = [
         document.getElementById('tutorial-step-1'),
         document.getElementById('tutorial-step-2'),
@@ -1081,22 +1080,25 @@ const showTutorialStep = (stepIndex) => {
         null // Step 3 (Placeholders) has no specific highlight
     ];
     
-    // An array to map each step to the page it should render.
-    const tutorialPages = [
-        'canned-responses', // Step 0
-        'canned-responses', // Step 1
-        'canned-responses', // Step 2
-        'canned-responses' // Step 3
+    // New array to map each step to a positioning class
+    const positionClasses = [
+        'show-modal', // Step 0: Centered modal
+        'top-right',  // Step 1: Position for add response section
+        'bottom-left',  // Step 2: Position for category bar
+        'show-modal'  // Step 3: Centered modal again
     ];
+
+    const tutorialModal = document.getElementById('tutorial-modal');
+    const tutorialContent = tutorialModal.querySelector('.modal-content');
     
     // First, handle the page navigation.
-    const targetPage = tutorialPages[stepIndex];
+    const targetPage = 'canned-responses'; // The entire tutorial is on this page
     if (currentPage !== targetPage) {
         currentPage = targetPage;
         renderContent();
     }
 
-    // Now, reset all highlight states and show the current step's modal content.
+    // Now, reset all highlight states and hide all steps.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
@@ -1110,6 +1112,11 @@ const showTutorialStep = (stepIndex) => {
         }
     }
     
+    // Dynamically apply the positioning class
+    tutorialModal.className = 'modal hidden'; // Reset all classes first
+    tutorialModal.classList.add(positionClasses[stepIndex]);
+    tutorialModal.classList.remove('hidden'); // Then show the modal
+    
     // Finally, manage the tutorial's navigation buttons and update the global step variable.
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
     const tutorialNextBtn = document.getElementById('tutorial-next-btn');
@@ -1121,7 +1128,6 @@ const showTutorialStep = (stepIndex) => {
     
     currentTutorialStep = stepIndex;
 };
- 
 
 const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
 const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
