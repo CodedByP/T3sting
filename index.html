@@ -1178,23 +1178,48 @@
             document.getElementById('tutorial-step-3'),
             document.getElementById('tutorial-step-4'),
         ];
+
+        const highlightedElements = [
+            null, // Step 0 (Welcome screen) has no specific highlight
+            document.getElementById('add-response-section'),
+            document.getElementById('category-bar'),
+            null // Step 3 (Placeholders) has no specific highlight
+        ];
+        const tutorialPages = [
+            'canned-responses', // Step 0: Welcome screen (on the canned responses page)
+            'canned-responses', // Step 1: Add a response
+            'canned-responses', // Step 2: Categories
+            'canned-responses' // Step 3: Dynamic placeholders
+        ];
+        
         let currentTutorialStep = 0;
         const tutorialNextBtn = document.getElementById('tutorial-next-btn');
         const tutorialBackBtn = document.getElementById('tutorial-back-btn');
         const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
         
-        const showTutorialStep = (stepIndex) => {
-            tutorialSteps.forEach((step, index) => {
-                step.classList.add('hidden');
-            });
-            tutorialSteps[stepIndex].classList.remove('hidden');
-            
-            // Show/hide navigation buttons based on step
-            tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
-            tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
-            tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
-            
-            currentTutorialStep = stepIndex;
+        cconst renderTutorialStep = (stepIndex) => {
+            // Hide all tutorial steps and remove highlight classes
+            tutorialSteps.forEach(step => step.classList.add('hidden'));
+            document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
+    
+            // An array to map each step to the element it should highlight
+            const highlightedElements = [
+                null, // Step 0 (Welcome screen) has no specific highlight
+                document.getElementById('add-response-section'),
+                document.getElementById('category-bar'),
+                null // Step 3 (Placeholders) has no specific highlight
+            ];
+
+            const currentStepElement = tutorialSteps[stepIndex];
+            const targetElement = highlightedElements[stepIndex];
+    
+            if (currentStepElement) {
+                currentStepElement.classList.remove('hidden');
+
+                if (targetElement) {
+                    targetElement.classList.add('highlight-target');
+                }
+            }
         }
 
         const renderSettingsPage = () => {
@@ -2033,11 +2058,12 @@
                     const userDoc = await getDoc(userDocRef);
                     const tutorialSeen = userDoc.exists() && userDoc.data().tutorialSeen;
 
+                    // Inside your onAuthStateChanged block
                     if (!tutorialSeen) {
-                        tutorialModal.classList.remove('hidden');
-                        showTutorialStep(0); // Start the tutorial at the beginning
+                        document.getElementById('tutorial-modal').classList.remove('hidden');
+                        renderTutorialStep(0); // Start the tutorial at the beginning
                     } else {
-                        tutorialModal.classList.add('hidden');
+                        document.getElementById('tutorial-modal').classList.add('hidden');
                     }
                     
                     const userCannedResponsesDocRef = getUserCannedResponsesDocRef(userId);
