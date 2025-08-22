@@ -72,6 +72,7 @@
         }
         
 /* Update the main modal container to be a full-screen overlay */
+/* Refined modal container for full-screen overlay */
 .modal {
     position: fixed;
     top: 0;
@@ -80,7 +81,14 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.75);
     z-index: 1001;
-    display: none; /* Keep it hidden until the tutorial starts */
+    display: flex; /* We want it to be a flex container when it's visible */
+    justify-content: center;
+    align-items: center;
+}
+
+/* This rule ensures that adding the 'hidden' class hides the modal completely */
+.modal.hidden {
+    display: none;
 }
 
 /* Base modal content styling, without positioning */
