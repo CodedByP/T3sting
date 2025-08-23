@@ -932,8 +932,30 @@
                     <p class="text-gray-400">You can also **change a category's color** here to make it stand out!</p>
                 </div>
             </div>
+            
+            <div id="tutorial-step-6" class="tutorial-step space-y-6 hidden">
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Manage Responses</h3>
+                <p class="text-lg text-gray-300">Each canned response has buttons to **Copy**, **Edit**, or **Delete** it. Use them to manage your content!</p>
+                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                        <i class="fas fa-copy text-green-400 mr-3"></i> Quick Actions
+                    </h4>
+                    <p class="text-gray-400">The **Copy** button instantly copies the text. The other buttons allow you to easily edit or delete the entry from your list.</p>
+                </div>
+            </div>
 
-             <div id="tutorial-step-6" class="tutorial-step space-y-6 hidden">
+            <div id="tutorial-step-7" class="tutorial-step space-y-6 hidden">
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Pin Your Favorites</h3>
+                <p class="text-lg text-gray-300">The **pin button** allows you to pin your most-used responses to the top of the list for quick access.</p>
+                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                        <i class="fas fa-thumbtack text-white mr-3"></i> Pinning Tips
+                    </h4>
+                    <p class="text-gray-400">Click the pin icon again to unpin a response, and it will return to its alphabetical position.</p>
+                </div>
+             </div>
+            
+             <div id="tutorial-step-8" class="tutorial-step space-y-6 hidden">
                 <h3 class="text-3xl font-extrabold text-blue-400 text-center">Dynamic Placeholders</h3>
                 <p class="text-lg text-gray-300">Many of the default responses contain special placeholders like `[Customer's Name]` or `[TrackingNumber]`. </p>
                 <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
@@ -1005,6 +1027,7 @@ let userLinks = [];
 let renderedStaticLinks = false;
 let isSubmittingLink = false;
 
+
 const tutorialSteps = [
     document.getElementById('tutorial-step-1'),
     document.getElementById('tutorial-step-2'),
@@ -1012,6 +1035,9 @@ const tutorialSteps = [
     document.getElementById('tutorial-step-4'),
     document.getElementById('tutorial-step-5'), 
     document.getElementById('tutorial-step-6'), 
+    document.getElementById('tutorial-step-7'),
+    document.getElementById('tutorial-step-8'),
+
 ];
 
 const highlightedElements = [
@@ -1020,16 +1046,21 @@ const highlightedElements = [
     document.getElementById('search-bar-container'), // Step 2: Search Bar (New Step!)
     document.getElementById('category-bar'), // Step 3: Categories
     document.getElementById('category-menu-container'), // Step 4: Kebab menu
-    null, // Step 5: Dynamic Placeholders
+    // The elements for these steps are now dynamically highlighted within renderResponses
+    null, // Step 5: Copy, Edit, Delete buttons
+    null, // Step 6: Pin button
+    null, // Step 7: Dynamic Placeholders
 ];
  
 const tutorialPages = [
     'canned-responses', // Step 0: Welcome screen
     'canned-responses', // Step 1: Add a response
-    'canned-responses', // Step 2: Categories
-    'canned-responses', // Step 3: Dynamic placeholders
-    'canned-responses', // Step 4: Categories
-    'canned-responses', // Step 5: Categories
+    'canned-responses', // Step 2: Search
+    'canned-responses', // Step 3: Categories
+    'canned-responses', // Step 4: Manage Categories
+    'canned-responses', // Step 5: Manage Responses (new)
+    'canned-responses', // Step 6: Pinning (new)
+    'canned-responses', // Step 7: Dynamic placeholders
 ];
 
 // An array to map each step to the modal's target position
@@ -1039,7 +1070,9 @@ const modalPositions = [
     'top-right',  // Step 2: Position for the search bar
     'bottom-left',  // Step 3: Position for category bar
     'upper-right', //Step 4: Position for Kebab menu
-    'show-modal'  // Step 5: Centered modal again
+    'bottom-left', // Step 5: Response buttons (new)
+    'top-right',  // Step 6: Pin button (new)
+    'show-modal' // Step 7: Dynamic placeholders
 ];
 
 // --- Master Blueprint Data for Initialization ---
@@ -1115,15 +1148,19 @@ const showTutorialStep = (stepIndex) => {
         document.getElementById('tutorial-step-4'),
         document.getElementById('tutorial-step-5'),
         document.getElementById('tutorial-step-6'),
+        document.getElementById('tutorial-step-7'),
+        document.getElementById('tutorial-step-8'),
     ];
-
+    
     const highlightedElements = [
         null, // Step 0 (Welcome)
         document.getElementById('add-response-section'), // Step 1: Add New Response
         document.getElementById('search-bar-container'), // Step 2: Search Bar
         document.getElementById('category-bar'), // Step 3: Categories
         document.getElementById('category-menu-container'), // New Step 4: Kebab menu
-        null, // Step 5: Dynamic Placeholders
+        responseButtons, // Step 5: Copy, Edit, Delete buttons
+        pinButton, // Step 6: Pin button
+        null, // Step 7: Dynamic Placeholders
     ];
     
     // New array to map each step to a positioning class
@@ -1459,6 +1496,20 @@ const renderResponses = (searchQuery = '') => {
             });
             responsesList.appendChild(labelSection);
         }
+        if (currentTutorialStep === 5 || currentTutorialStep === 6) {
+            const firstResponse = document.querySelector('.response-item');
+            if (firstResponse) {
+                if (currentTutorialStep === 5) {
+                    // Highlight the copy, edit, and delete buttons
+                    const buttons = firstResponse.querySelectorAll('.copy-btn, .edit-btn, .delete-btn');
+                    buttons.forEach(button => button.classList.add('highlight-target'));
+                } else if (currentTutorialStep === 6) {
+                    // Highlight the pin button
+                    const pinButton = firstResponse.querySelector('.pin-btn');
+                    if (pinButton) pinButton.classList.add('highlight-target');
+                }
+            }
+        }        
     } else {
         emptyState.classList.add('hidden');
     }
