@@ -1197,18 +1197,32 @@ const showTutorialStep = (stepIndex) => {
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
         
+        if (stepIndex === 5) {
+            const firstResponse = document.querySelector('.response-item');
+            if (firstResponse) {
+                const buttons = firstResponse.querySelectorAll('.copy-btn, .edit-btn, .delete-btn');
+                buttons.forEach(button => button.classList.add('highlight-target'));
+            }
+        } else if (stepIndex === 6) {
+            const firstResponse = document.querySelector('.response-item');
+            if (firstResponse) {
+                const pinButton = firstResponse.querySelector('.pin-btn');
+                if (pinButton) pinButton.classList.add('highlight-target');
+            }
+        } else {
+            // This is the general case for all other steps
+            const targetElement = highlightedElements[stepIndex];
             if (targetElement) {
                 if (Array.isArray(targetElement)) {
-                    // If it's an array, loop through each element and apply the class
                     targetElement.forEach(el => {
                         el.classList.add('highlight-target');
                     });
                 } else {
-                    // Otherwise, apply the class to the single element
                     targetElement.classList.add('highlight-target');
                 }
             }
         }
+    }
     
     // Dynamically apply the positioning class
     // This is the core change: It resets the modal's classes and applies the new one for the current step.
