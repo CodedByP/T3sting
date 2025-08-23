@@ -137,11 +137,8 @@
 }
         /* Add these rules to ensure proper z-indexing for highlighting */
 #add-response-section,
-#category-bar 
-#category-actions-btn { /* Add the kebab button here */        
+#category-bar {
     position: relative;
-    z-index: 1002; /* Needs to be higher than the tutorial overlay's z-index of 999 */
-
 }
 
 
@@ -1002,7 +999,7 @@ const highlightedElements = [
     null, // Step 0: Welcome
     document.getElementById('add-response-section'), // Step 1: Add New Response
     document.getElementById('search-bar-container'), // Step 2: Search Bar (New Step!)
-[document.getElementById('category-bar'), document.getElementById('category-menu-container')], // Step 3: Categories
+    document.getElementById('category-bar'), // Step 3: Categories
     null, // Step 4: Dynamic Placeholders
 ];
  
@@ -1127,10 +1124,6 @@ const showTutorialStep = (stepIndex) => {
         renderContent();
     }
 
-     if (stepIndex === 3) {
-      document.getElementById('category-actions-btn').classList.remove('hidden');
-    }
-
     // Now, reset all highlight states and hide all steps.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
@@ -1145,9 +1138,7 @@ const showTutorialStep = (stepIndex) => {
                 if (Array.isArray(targetElement)) {
                     // If it's an array, loop through each element and apply the class
                     targetElement.forEach(el => {
-                       if (el) { // Ensure the element exists before trying to add a class
-                            el.classList.add('highlight-target');
-                        }
+                        el.classList.add('highlight-target');
                     });
                 } else {
                     // Otherwise, apply the class to the single element
@@ -1239,8 +1230,6 @@ const renderContent = () => {
             addResponseSection.classList.remove('hidden');
             if (Object.keys(categories).length > 0) {
                 categoryActionsBtn.classList.remove('hidden');
-                } else {
-                    categoryActionsBtn.classList.add('hidden');
             }
         } else {
             addCategoryBtn.classList.add('hidden');
