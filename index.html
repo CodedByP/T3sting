@@ -1090,21 +1090,25 @@ const showTutorialStep = (stepIndex) => {
         document.getElementById('tutorial-step-2'),
         document.getElementById('tutorial-step-3'),
         document.getElementById('tutorial-step-4'),
+        document.getElementById('tutorial-step-5'),
+
     ];
 
     const highlightedElements = [
-        null, // Step 0 (Welcome screen) has no specific highlight
-        document.getElementById('add-response-section'),
-        document.getElementById('category-bar'),
-        null // Step 3 (Placeholders) has no specific highlight
+        null, // Step 0 (Welcome)
+        document.getElementById('add-response-section'), // Step 1: Add New Response
+        document.getElementById('search-bar-container'), // Step 2: Search Bar
+        document.getElementById('category-bar'), // Step 3: Categories
+        null, // Step 4: Dynamic Placeholders
     ];
     
     // New array to map each step to a positioning class
     const positionClasses = [
         'show-modal', // Step 0: Centered modal
         'top-right',  // Step 1: Position for add response section
-        'bottom-left',  // Step 2: Position for category bar
-        'show-modal'  // Step 3: Centered modal again
+        'top-right',  // Step 2: Top-right for "Search Your Responses"
+        'bottom-left',  // Step 3: Position for category bar
+        'show-modal'  // Step 4: Centered modal again
     ];
 
     const tutorialModal = document.getElementById('tutorial-modal');
