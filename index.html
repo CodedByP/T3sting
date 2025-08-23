@@ -965,14 +965,19 @@
                 </div>
              </div>
             
-             <div id="tutorial-step-8" class="tutorial-step space-y-6 hidden">
+            <div id="tutorial-step-8" class="tutorial-step space-y-6 hidden">
                 <h3 class="text-3xl font-extrabold text-blue-400 text-center">Dynamic Placeholders</h3>
-                <p class="text-lg text-gray-300">Many of the default responses contain special placeholders like `[Customer's Name]` or `[TrackingNumber]`. </p>
+                <p class="text-lg text-gray-300">Many responses use special placeholders like `[Customer's Name]`. These are simple tags that you can replace with real information.</p>
                 <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
                     <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-lightbulb text-yellow-400 mr-3"></i> How it Works
+                        <i class="fas fa-magic text-purple-400 mr-3"></i> Try It Now!
                     </h4>
-                    <p class="text-gray-400">When you click **Copy** on a response with placeholders, a small window will pop up asking for the values. Fill them out, click copy again, and the final response will be ready to paste!</p>
+                    <p class="text-gray-400">Let's try it with a sample response. Click the button below to see the magic happen!</p>
+                </div>
+                <div class="flex justify-center mt-6">
+                    <button id="show-placeholder-example-btn" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-purple-700 transition duration-300">
+                        Fill it Out
+                    </button>
                 </div>
             </div>
 
@@ -1059,6 +1064,7 @@ const highlightedElements = [
     null, // Step 5: Copy, Edit, Delete buttons (highlighting handled dynamically)
     null, // Step 6: Pin button (highlighting handled dynamically)
     null, // Step 7: Dynamic Placeholders
+    null, // This will be handled dynamically inside the function
 ];
  
 const tutorialPages = [
@@ -1170,6 +1176,7 @@ const showTutorialStep = (stepIndex) => {
         null, // Step 5: Will find dynamically below
         null, // Step 6: Will find dynamically below
         null, // Step 7: Dynamic Placeholders
+        null, // This will be handled dynamically inside the function
     ];
     
     // New array to map each step to a positioning class
@@ -1218,6 +1225,13 @@ const showTutorialStep = (stepIndex) => {
             if (firstResponse) {
                 const pinButton = firstResponse.querySelector('.pin-btn');
                 if (pinButton) pinButton.classList.add('highlight-target');
+            }
+        } else if (stepIndex === 7) {
+            const responseWithPlaceholder = document.querySelector('.response-item[data-id="guts-3"]');
+            if (responseWithPlaceholder) {
+                responseWithPlaceholder.classList.add('highlight-target');
+                // Automatically scroll to the highlighted item
+                responseWithPlaceholder.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         } else {
             // This is the general case for all other steps
@@ -1906,6 +1920,18 @@ const renderSettingsPage = () => {
     }
 };
 
+    const showPlaceholderDemo = () => {
+    // Define a sample text with placeholders for the demo
+    const demoText = "Hello [Customer's Name],\n\nYour order has shipped with tracking number [TrackingNumber]. Thanks for being a great customer!";
+    
+    // Call your existing function to process and show the placeholder modal
+    processAndCopy(demoText);
+    
+    // Hide the tutorial modal and overlay so the placeholder modal is the main focus
+    document.getElementById('tutorial-modal').classList.add('hidden');
+    document.getElementById('tutorial-overlay').classList.add('hidden');
+};
+
 
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
@@ -2337,6 +2363,8 @@ function attachEventListeners() {
         }
     });
     document.getElementById('close-update-btn').addEventListener('click', () => { document.getElementById('update-modal').classList.add('hidden'); });
+    document.getElementById('show-placeholder-example-btn').addEventListener('click', showPlaceholderDemo);
+
 }
 
 // --- Core Application Logic (Auth and Data Sync) ---
