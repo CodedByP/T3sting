@@ -119,20 +119,20 @@
 }
 
 #tutorial-modal.top-right .modal-content {
-    /* Set the new final position using a combination of calc() and transform */
+    /* Refactored to use top and left for positioning and a transform for a smooth animation */
     opacity: 1;
     top: 200px;
-    left: calc(80% - 800px);
-    transform: translate(0, 0);
+    left: calc(100% - 400px - 800px); /* Adjusting left to match your right: 800px value */
+    transform: translate(0, 0) scale(1);
     max-width: 400px;
 }
 
 #tutorial-modal.bottom-left .modal-content {
-    /* Set the new final position using a combination of calc() and transform */
+    /* Refactored to use top and left for positioning and a transform for a smooth animation */
     opacity: 1;
-    bottom: 380px;
+    top: calc(100% - 380px - 400px); /* Adjusting top to match your bottom: 380px value */
     left: 40%;
-    transform: translate(0, 0);
+    transform: translate(0, 0) scale(1);
     max-width: 400px;
 }
         /* Add these rules to ensure proper z-indexing for highlighting */
