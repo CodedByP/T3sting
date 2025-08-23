@@ -883,19 +883,23 @@
             </div>
 
             <div id="tutorial-step-2" class="tutorial-step space-y-6 hidden">
-                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Canned Responses</h3>
-                <p class="text-lg text-gray-300">This is the main section for your responses. The left column lets you **add new responses** and **search** through your existing ones.</p>
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Add New Responses</h3>
+                <p class="text-lg text-gray-300">This button is where you can create new canned responses. You can give it a label and assign it to a category.</p>
                 <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
                     <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-plus-circle text-purple-400 mr-3"></i> Add New Responses
+                        <i class="fas fa-plus-circle text-purple-400 mr-3"></i> Tips
                     </h4>
-                    <p class="text-gray-400">Click the **Add New Response** button to create a new response. You can give it a label and assign it to a category.</p>
+                    <p class="text-gray-400">Add responses for your most common requests to save time!</p>
                 </div>
+            </div>
+            <div id="tutorial-step-3" class="tutorial-step space-y-6 hidden">
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Search Your Responses</h3>
+                <p class="text-lg text-gray-300">Quickly find any response by using the search box at the top of the left column.</p>
                 <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
                     <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-search text-yellow-400 mr-3"></i> Search
+                        <i class="fas fa-search text-yellow-400 mr-3"></i> How it Works
                     </h4>
-                    <p class="text-gray-400">Use the search bar to find responses quickly by their label or content.</p>
+                    <p class="text-gray-400">Type any keyword into the search bar, and the list below will instantly filter to show you matching responses.</p>
                 </div>
             </div>
 
@@ -987,16 +991,16 @@ const tutorialSteps = [
     document.getElementById('tutorial-step-2'),
     document.getElementById('tutorial-step-3'),
     document.getElementById('tutorial-step-4'),
+    document.getElementById('tutorial-step-5'), 
+
 ];
 
 const highlightedElements = [
-    null, // Step 0
-    [
-        document.getElementById('add-response-section'),
-        document.getElementById('search-bar-container') // **MODIFY THIS LINE**
-    ],
-    document.getElementById('category-bar'), // Step 2
-    null // Step 3
+    null, // Step 0: Welcome
+    document.getElementById('add-response-section'), // Step 1: Add New Response
+    document.getElementById('search-bar-container'), // Step 2: Search Bar (New Step!)
+    document.getElementById('category-bar'), // Step 3: Categories
+    null, // Step 4: Dynamic Placeholders
 ];
  
 const tutorialPages = [
@@ -1008,10 +1012,11 @@ const tutorialPages = [
 
 // An array to map each step to the modal's target position
 const modalPositions = [
-    'center', // Step 0 (Welcome screen) is centered
-    'top-20 right-1/3', // Step 1 (Add Response) is in the top right
-    'bottom-20 right-1/3', // Step 2 (Categories) is in the bottom right
-    'center' // Step 3 (Placeholders) is centered
+    'show-modal', // Step 0: Centered modal
+    'top-right',  // Step 1: Position for add response section
+    'top-right',  // Step 2: Position for the search bar
+    'bottom-left',  // Step 3: Position for category bar
+    'show-modal'  // Step 4: Centered modal again
 ];
 
 // --- Master Blueprint Data for Initialization ---
