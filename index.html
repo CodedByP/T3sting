@@ -1163,14 +1163,16 @@ const showTutorialStep = (stepIndex) => {
     ];
     
     // New array to map each step to a positioning class
-    const positionClasses = [
-        'show-modal', // Step 0: Centered modal
-        'top-right',  // Step 1: Position for add response section
-        'top-right',  // Step 2: Top-right for "Search Your Responses"
-        'bottom-left',  // Step 3: Position for category bar
-        'upper-right', // New Step 4: Position for Kebab menu
-        'show-modal'  // Step 4: Centered modal again
-    ];
+        const positionClasses = [
+            'show-modal',    // Step 0: Welcome screen
+            'top-right',     // Step 1: Add response section
+            'top-right',     // Step 2: Search bar
+            'bottom-left',   // Step 3: Category bar
+            'upper-right',   // Step 4: Kebab menu
+            'bottom-left',   // Step 5: Manage Responses (new)
+            'top-right',     // Step 6: Pinning (new)
+            'show-modal'     // Step 7: Dynamic placeholders
+        ];
 
     const tutorialModal = document.getElementById('tutorial-modal');
     const tutorialOverlay = document.getElementById('tutorial-overlay'); // Get the overlay element
