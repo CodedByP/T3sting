@@ -1238,6 +1238,8 @@ const renderContent = () => {
             addResponseSection.classList.remove('hidden');
             if (Object.keys(categories).length > 0) {
                 categoryActionsBtn.classList.remove('hidden');
+                } else {
+                    categoryActionsBtn.classList.add('hidden');
             }
         } else {
             addCategoryBtn.classList.add('hidden');
