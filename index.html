@@ -1124,18 +1124,16 @@ const showTutorialStep = (stepIndex) => {
         renderContent();
     }
 
+     if (stepIndex === 3) {
+      document.getElementById('category-actions-btn').classList.remove('hidden');
+    }
+
     // Now, reset all highlight states and hide all steps.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
     const currentStepElement = tutorialSteps[stepIndex];
     const targetElement = highlightedElements[stepIndex];
-     if (stepIndex === 3) {
-        const categoryActionsBtn = document.getElementById('category-actions-btn');
-        if (categoryActionsBtn) {
-            categoryActionsBtn.classList.remove('hidden');
-        }
-    }
 
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
