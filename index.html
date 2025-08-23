@@ -226,6 +226,11 @@
             z-index: 1000;
             box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
             border-radius: 1rem; /* Adjust this to match your modal's border radius */
+            animation: pulse-highlight 1.5s infinite;
+
+            /* ADD THIS LINE to give the element a permanent, bright glow */
+            border: 3px solid white; /* Adds a solid, white border for more visibility */
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); /* Adds a soft glow effect */    
         }
 
         /* Light Mode Styles */
