@@ -135,6 +135,14 @@
     transform: translate(0, 0) scale(1);
     max-width: 400px;
 }
+#tutorial-modal.upper-right .modal-content {
+    /* Refactored to use top and left for positioning and a transform for a smooth animation */
+    opacity: 1;
+    top: calc(100% - 380px - 400px); /* Adjusting top to match your bottom: 380px value */
+    left: 40%;
+    transform: translate(0, 0) scale(1);
+    max-width: 400px;
+}
         /* Add these rules to ensure proper z-indexing for highlighting */
 #add-response-section,
 #category-bar {
@@ -913,8 +921,19 @@
                     <p class="text-gray-400">Click the vertical ellipsis (<i class="fas fa-ellipsis-v"></i>) next to a category to **rename** it, **change its color**, or **delete** it. </p>
                 </div>
             </div>
-
+            
             <div id="tutorial-step-5" class="tutorial-step space-y-6 hidden">
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Manage Categories</h3>
+                <p class="text-lg text-gray-300">Once you have a category selected, click on the **kebab menu button** to edit, rename, or delete it.</p>
+                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                        <i class="fas fa-lightbulb text-yellow-400 mr-3"></i> Tip
+                    </h4>
+                    <p class="text-gray-400">You can also **change a category's color** here to make it stand out!</p>
+                </div>
+            </div>
+
+             <div id="tutorial-step-6" class="tutorial-step space-y-6 hidden">
                 <h3 class="text-3xl font-extrabold text-blue-400 text-center">Dynamic Placeholders</h3>
                 <p class="text-lg text-gray-300">Many of the default responses contain special placeholders like `[Customer's Name]` or `[TrackingNumber]`. </p>
                 <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
@@ -992,7 +1011,7 @@ const tutorialSteps = [
     document.getElementById('tutorial-step-3'),
     document.getElementById('tutorial-step-4'),
     document.getElementById('tutorial-step-5'), 
-
+    document.getElementById('tutorial-step-6'), 
 ];
 
 const highlightedElements = [
@@ -1000,7 +1019,8 @@ const highlightedElements = [
     document.getElementById('add-response-section'), // Step 1: Add New Response
     document.getElementById('search-bar-container'), // Step 2: Search Bar (New Step!)
     document.getElementById('category-bar'), // Step 3: Categories
-    null, // Step 4: Dynamic Placeholders
+    document.getElementById('category-menu-container'), // Step 4: Kebab menu
+    null, // Step 5: Dynamic Placeholders
 ];
  
 const tutorialPages = [
@@ -1008,6 +1028,8 @@ const tutorialPages = [
     'canned-responses', // Step 1: Add a response
     'canned-responses', // Step 2: Categories
     'canned-responses' // Step 3: Dynamic placeholders
+    'canned-responses', // Step 4: Categories
+    'canned-responses', // Step 5: Categories
 ];
 
 // An array to map each step to the modal's target position
@@ -1016,7 +1038,8 @@ const modalPositions = [
     'top-right',  // Step 1: Position for add response section
     'top-right',  // Step 2: Position for the search bar
     'bottom-left',  // Step 3: Position for category bar
-    'show-modal'  // Step 4: Centered modal again
+    'upper-right', //Step 4: Position for Kebab menu
+    'show-modal'  // Step 5: Centered modal again
 ];
 
 // --- Master Blueprint Data for Initialization ---
