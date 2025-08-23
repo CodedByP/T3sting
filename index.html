@@ -999,7 +999,7 @@ const highlightedElements = [
     null, // Step 0: Welcome
     document.getElementById('add-response-section'), // Step 1: Add New Response
     document.getElementById('search-bar-container'), // Step 2: Search Bar (New Step!)
-    document.getElementById('category-bar'), // Step 3: Categories
+    [document.getElementById('category-bar'), document.getElementById('category-actions-btn')], // Step 3: Categories
     null, // Step 4: Dynamic Placeholders
 ];
  
@@ -1138,7 +1138,9 @@ const showTutorialStep = (stepIndex) => {
                 if (Array.isArray(targetElement)) {
                     // If it's an array, loop through each element and apply the class
                     targetElement.forEach(el => {
-                        el.classList.add('highlight-target');
+                       if (el) { // Ensure the element exists before trying to add a class
+                            el.classList.add('highlight-target');
+                        }
                     });
                 } else {
                     // Otherwise, apply the class to the single element
