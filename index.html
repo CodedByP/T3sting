@@ -1130,6 +1130,12 @@ const showTutorialStep = (stepIndex) => {
 
     const currentStepElement = tutorialSteps[stepIndex];
     const targetElement = highlightedElements[stepIndex];
+     if (stepIndex === 3) {
+        const categoryActionsBtn = document.getElementById('category-actions-btn');
+        if (categoryActionsBtn) {
+            categoryActionsBtn.classList.remove('hidden');
+        }
+    }
 
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
