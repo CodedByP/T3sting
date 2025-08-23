@@ -990,10 +990,13 @@ const tutorialSteps = [
 ];
 
 const highlightedElements = [
-    null, // Step 0 (Welcome screen) has no specific highlight
-    document.getElementById('add-response-section'),
-    document.getElementById('category-bar'),
-    null // Step 3 (Placeholders) has no specific highlight
+    null, // Step 0
+    [
+        document.getElementById('add-response-section'),
+        document.getElementById('search-bar-container') // **MODIFY THIS LINE**
+    ],
+    document.getElementById('category-bar'), // Step 2
+    null // Step 3
 ];
  
 const tutorialPages = [
@@ -1121,17 +1124,26 @@ const showTutorialStep = (stepIndex) => {
 
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
-        if (targetElement) {
-            targetElement.classList.add('highlight-target');
+        
+            if (targetElement) {
+                if (Array.isArray(targetElement)) {
+                    // If it's an array, loop through each element and apply the class
+                    targetElement.forEach(el => {
+                        el.classList.add('highlight-target');
+                    });
+                } else {
+                    // Otherwise, apply the class to the single element
+                    targetElement.classList.add('highlight-target');
+                }
+            }
         }
-    }
     
     // Dynamically apply the positioning class
     // This is the core change: It resets the modal's classes and applies the new one for the current step.
     // Dynamically apply the positioning class and ensure the modal is visible
-tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left'); // Reset all positioning classes
-tutorialModal.classList.add('modal'); // Ensure the base modal class is present
-tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
+        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left'); // Reset all positioning classes
+        tutorialModal.classList.add('modal'); // Ensure the base modal class is present
+        tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
     
     // Finally, manage the tutorial's navigation buttons and update the global step variable.
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
