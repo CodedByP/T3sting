@@ -2458,13 +2458,27 @@ function attachEventListeners() {
         copyToClipboard(finalContent);
         // Check if this action was triggered by the tutorial demo
         const placeholderModal = document.getElementById('placeholder-modal');
+        
         if (placeholderModal.dataset.isTutorial === 'true') {
+            // Remove the highlight from the response on the main page
+            clearTutorialHighlights();
+
+            // Hide the placeholder modal
             placeholderModal.classList.add('hidden');
+            
+            // Now, show the main tutorial modal again, specifically for step 8
+            const tutorialModal = document.getElementById('tutorial-modal');
+            const tutorialOverlay = document.getElementById('tutorial-overlay');
+
+            tutorialModal.classList.remove('hidden');
+            tutorialOverlay.classList.remove('hidden');
+
+            // Find and show the 'paste here' container inside the tutorial modal
             document.getElementById('paste-here-container').classList.remove('hidden');
             document.getElementById('show-placeholder-example-btn').classList.add('hidden');
-        
         } else {
-            document.getElementById('placeholder-modal').classList.add('hidden');
+            // For a regular copy action, just hide the modal
+            placeholderModal.classList.add('hidden');
         }
     });
 
