@@ -985,16 +985,16 @@
             
             <div id="tutorial-step-8" class="tutorial-step space-y-6 hidden">
                 <h3 class="text-3xl font-extrabold text-blue-400 text-center">Dynamic Placeholders</h3>
-                <p class="text-lg text-gray-300">Many responses use special placeholders like `[Customer's Name]`. These are simple tags that you can replace with real information.</p>
+                <p class="text-lg text-gray-300">Some responses use special placeholders like `[TrackingNumber]` that you can quickly fill in.</p>
                 <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
                     <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-magic text-purple-400 mr-3"></i> See a live example below!
+                        <i class="fas fa-magic text-purple-400 mr-3"></i> Try it out!
                     </h4>
-                    <p class="text-gray-400 mt-2">Hello <span class="highlight-placeholder">[Customer's Name]</span>,<br><br>Your order has shipped with tracking number <span class="highlight-placeholder">[TrackingNumber]</span>. Thanks for being a great customer!</p>
+                    <p class="text-gray-400 mt-2">Notice the highlighted response on the left. Click the button below to see how to fill in its placeholders!</p>
                 </div>
                 <div class="flex justify-center mt-6">
                     <button id="show-placeholder-example-btn" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-purple-700 transition duration-300">
-                        Copy this example
+                        Fill it Out
                     </button>
                 </div>
             </div>
@@ -1938,16 +1938,27 @@ const renderSettingsPage = () => {
     }
 };
 
-    const showPlaceholderDemo = () => {
-    // Define the demo text with placeholders
-    const demoText = "Hello [Customer's Name],\n\nYour order has shipped with tracking number [TrackingNumber]. Thanks for being a great customer!";
-    
-    // Process the demo text, which will open the placeholder modal
-    processAndCopy(demoText);
-    
+const showPlaceholderDemo = () => {
+    const tutorialModal = document.getElementById('tutorial-modal');
+    const tutorialOverlay = document.getElementById('tutorial-overlay');
+
+    // Get the element that is highlighted for the tutorial
+    const highlightedResponse = document.querySelector('.response-item.highlight-target');
+
+    // Check if the highlighted element exists and has the necessary text
+    if (highlightedResponse) {
+        const textToCopy = highlightedResponse.querySelector('.response-text-display').textContent;
+        processAndCopy(textToCopy);
+    } else {
+        // Fallback or error handling if the highlighted item isn't found
+        console.error("No highlighted response found for the tutorial demo.");
+        const fallbackText = "Hello [Customer's Name], this is a default message. There was an issue loading the dynamic placeholder example.";
+        processAndCopy(fallbackText);
+    }
+
     // Hide the tutorial modal and overlay so the placeholder modal is the main focus
-    document.getElementById('tutorial-modal').classList.add('hidden');
-    document.getElementById('tutorial-overlay').classList.add('hidden');
+    tutorialModal.classList.add('hidden');
+    tutorialOverlay.classList.add('hidden');
 };
 
 
