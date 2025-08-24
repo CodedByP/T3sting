@@ -1243,12 +1243,15 @@ const showTutorialStep = (stepIndex) => {
         renderContent();
     }
 
+   // Always clear the paste area when navigating steps
+    document.getElementById('paste-here-container').classList.add('hidden');
+    document.getElementById('show-placeholder-example-btn').classList.remove('hidden');
+    
     // Now, reset all highlight states and hide all steps.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
     const currentStepElement = tutorialSteps[stepIndex];
-    const targetElement = highlightedElements[stepIndex];
 
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
@@ -1266,11 +1269,8 @@ const showTutorialStep = (stepIndex) => {
                 if (pinButton) pinButton.classList.add('highlight-target');
             }
         } else if (stepIndex === 7) {
-            // **[MODIFIED CODE BLOCK]**
             // Find a response that contains placeholders, prioritizing the active category
             const responsesWithPlaceholders = [];
-            
-            // First, search the active category for a response with placeholders
             if (categories[activeCategory]) {
                 categories[activeCategory].responses.forEach(response => {
                     if (response.text.match(/\[([^\]]+)\]/g)) {
@@ -1278,8 +1278,7 @@ const showTutorialStep = (stepIndex) => {
                     }
                 });
             }
-            
-            // If no response is found in the active category, search all categories
+
             if (responsesWithPlaceholders.length === 0) {
                 for (const category in categories) {
                     categories[category].responses.forEach(response => {
@@ -1297,12 +1296,9 @@ const showTutorialStep = (stepIndex) => {
 
             if (responseToHighlight) {
                 responseToHighlight.classList.add('highlight-target');
-                // Temporarily switch to the correct category to show the example
                 if (responseToHighlight.dataset.category !== activeCategory) {
                     activeCategory = responseToHighlight.dataset.category;
                     renderCategories();
-                    
-                    // Re-add highlight after rendering
                     const newHighlight = document.querySelector(`.response-item[data-id="${responseToHighlight.dataset.id}"]`);
                     if (newHighlight) {
                         newHighlight.classList.add('highlight-target');
@@ -1312,49 +1308,33 @@ const showTutorialStep = (stepIndex) => {
                     responseToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             } else {
-                // Handle the case where no responses with placeholders are found at all.
-                // This prevents an error and gracefully moves on.
                 console.warn("No canned response with dynamic placeholders found for the tutorial.");
-            }
-            
-            document.getElementById('show-placeholder-example-btn').onclick = () => {
-                showPlaceholderDemo(true);
-                
-            };
-        } else {
-            // This is the general case for all other steps
-            const targetElement = highlightedElements[stepIndex];
-            if (targetElement) {
-                if (Array.isArray(targetElement)) {
-                    targetElement.forEach(el => {
-                        el.classList.add('highlight-target');
-                    });
-                } else {
-                    targetElement.classList.add('highlight-target');
-                }
             }
         }
     }
-    
-    // Dynamically apply the positioning class
-    // This is the core change: It resets the modal's classes and applies the new one for the current step.
-    // Dynamically apply the positioning class and ensure the modal is visible
-        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response'); // Reset all positioning classes
-        tutorialModal.classList.add('modal'); // Ensure the base modal class is present
-        tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
-    
-    // Finally, manage the tutorial's navigation buttons and update the global step variable.
+
+    tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response');
+    tutorialModal.classList.add('modal');
+    tutorialModal.classList.add(positionClasses[stepIndex]);
+
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
     const tutorialNextBtn = document.getElementById('tutorial-next-btn');
     const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
     
-    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+    // The "Next" button should always be visible unless a sub-flow takes over
     tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
     tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
     
+    // Hide the main nav buttons for step 8 until the sub-flow is complete
+    if (stepIndex === 7) {
+        tutorialNextBtn.classList.add('hidden');
+        tutorialBackBtn.classList.add('hidden');
+    }
+
     currentTutorialStep = stepIndex;
 };
-
+        
 const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
 const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
 const getUserCannedResponsesDocRef = (uid) => { return doc(db, 'artifacts', safeAppId, 'users', uid, 'canned_responses_data', 'app_data'); };
@@ -2020,26 +2000,73 @@ const renderSettingsPage = () => {
 };
 
 const showPlaceholderDemo = () => {
+    const placeholderInputsContainer = document.getElementById('placeholder-inputs');
+    const placeholderModal = document.getElementById('placeholder-modal');
     const tutorialModal = document.getElementById('tutorial-modal');
-    const tutorialOverlay = document.getElementById('tutorial-overlay');
 
     // Get the element that is highlighted for the tutorial
     const highlightedResponse = document.querySelector('.response-item.highlight-target');
 
-    // Check if the highlighted element exists and has the necessary text
-    if (highlightedResponse) {
-        const textToCopy = highlightedResponse.querySelector('.response-text-display').textContent;
-        processAndCopy(textToCopy);
-    } else {
-        // Fallback or error handling if the highlighted item isn't found
+    // Only proceed if a highlighted element is found
+    if (!highlightedResponse) {
         console.error("No highlighted response found for the tutorial demo.");
-        const fallbackText = "Hello [Customer's Name], this is a default message. There was an issue loading the dynamic placeholder example.";
-        processAndCopy(fallbackText);
+        return; // Exit the function if no element is found
     }
 
-    // Hide the tutorial modal and overlay so the placeholder modal is the main focus
-    tutorialModal.classList.add('hidden');
-    tutorialOverlay.classList.add('hidden');
+    const text = highlightedResponse.querySelector('.response-text-display').textContent;
+    currentTextToCopy = text;
+
+    const matches = text.match(placeholderRegex);
+    const placeholders = matches ? [...new Set(matches.map(m => m.slice(1, -1)))] : [];
+
+    if (placeholders.length > 0 && !(placeholders.length === 1 && placeholders[0] === 'Name')) {
+        placeholderInputsContainer.innerHTML = '';
+        const today = new Date().toISOString().split('T')[0];
+        
+        placeholders.forEach(placeholder => {
+            if (placeholder !== 'Name') {
+                const inputGroup = document.createElement('div');
+                inputGroup.className = 'flex flex-col';
+
+                const label = document.createElement('label');
+                label.className = 'block text-sm font-medium text-gray-400 mb-1';
+                label.textContent = placeholder;
+                
+                let input;
+                if (placeholder.toLowerCase().includes('date')) {
+                    input = document.createElement('input');
+                    input.type = 'date';
+                    input.value = today;
+                } else {
+                    input = document.createElement('input');
+                    input.type = 'text';
+                }
+                
+                input.dataset.placeholder = placeholder;
+                input.id = `placeholder-${placeholder.replace(/\s/g, '-')}`;
+                input.className = 'w-full border-2 border-gray-600 rounded-xl p-3 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 text-lg';
+                
+                inputGroup.appendChild(label);
+                inputGroup.appendChild(input);
+                placeholderInputsContainer.appendChild(inputGroup);
+            }
+        });
+        
+        // Hide the main tutorial modal and show the placeholder modal
+        tutorialModal.classList.add('hidden');
+        placeholderModal.classList.remove('hidden');
+        placeholderModal.dataset.isTutorial = 'true';
+        document.querySelector('#placeholder-inputs input')?.focus();
+
+    } else {
+        // If there are no placeholders (other than [Name]), copy the text directly
+        const finalContent = replacePlaceholders(currentTextToCopy, {});
+        copyToClipboard(finalContent);
+
+        // Hide the main tutorial modal and show the paste area for the next step
+        tutorialModal.classList.add('hidden');
+        document.getElementById('paste-here-container').classList.remove('hidden');
+    }
 };
 
 
@@ -2052,6 +2079,12 @@ function attachEventListeners() {
     document.getElementById('nav-fedex-tracker').addEventListener('click', () => { currentPage = 'fedex-tracker'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
     document.getElementById('nav-helpful-links').addEventListener('click', () => { currentPage = 'helpful-links'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
     document.getElementById('nav-settings').addEventListener('click', () => { currentPage = 'settings'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
+
+
+    document.getElementById('show-placeholder-example-btn').addEventListener('click', () => {
+        showPlaceholderDemo();
+    });
+
     
     // Form Submission Listener (Attached only once)
     document.getElementById('add-link-form').addEventListener('submit', async (e) => {
@@ -2427,20 +2460,32 @@ function attachEventListeners() {
             document.getElementById('paste-here-container').classList.remove('hidden');
             document.getElementById('show-placeholder-example-btn').classList.add('hidden');
         
-            // This is a subtle but important detail: the tutorial's main "Next" button is hidden.
-            // We need to show the specific "Next" button for this part of the tutorial.
-            document.getElementById('tutorial-next-btn').classList.add('hidden');
         } else {
             document.getElementById('placeholder-modal').classList.add('hidden');
         }
     });
+
+        // NEW event listener to move to the next step directly
+    document.getElementById('next-from-paste-btn').addEventListener('click', () => {
+        // Clear the paste container
+        document.getElementById('paste-here-container').classList.add('hidden');
+        // Manually trigger the next step of the tutorial
+        currentTutorialStep++;
+        showTutorialStep(currentTutorialStep);
+    });
+
+    // Clean up the old onclick from the showTutorialStep function
+    document.getElementById('show-placeholder-example-btn').onclick = null;
+    
+    // ... (rest of your event listeners)
+
 
         // Add this new event listener here, before the end of the function
     document.getElementById('next-from-paste-btn').addEventListener('click', () => {
         document.getElementById('paste-here-container').classList.add('hidden');
         document.getElementById('tutorial-next-btn').classList.remove('hidden');
     });
-}
+
     document.getElementById('cancel-placeholder-btn').addEventListener('click', () => { document.getElementById('placeholder-modal').classList.add('hidden'); });
     document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
