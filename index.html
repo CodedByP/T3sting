@@ -1335,6 +1335,8 @@ const highlightedElements = [
     }
 
     tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response');
+    tutorialModal.classList.remove('hidden');
+    tutorialOverlay.classList.remove('hidden');
     tutorialModal.classList.add('modal');
     tutorialModal.classList.add(positionClasses[stepIndex]);
 
@@ -2478,11 +2480,8 @@ function attachEventListeners() {
         const placeholderModal = document.getElementById('placeholder-modal');
         
         if (placeholderModal.dataset.isTutorial === 'true') {
-            // Remove the highlight from the response on the main page
-            clearTutorialHighlights();
-
-            // Hide the placeholder modal
-            placeholderModal.classList.add('hidden');
+            clearTutorialHighlights(); // Remove the highlight from the response on the main page
+            placeholderModal.classList.add('hidden'); // Hide the placeholder modal
             
             // Now, show the main tutorial modal again, specifically for step 8
             const tutorialModal = document.getElementById('tutorial-modal');
@@ -2491,8 +2490,11 @@ function attachEventListeners() {
             tutorialModal.classList.remove('hidden');
             tutorialOverlay.classList.remove('hidden');
             
-            // Add the new layout class for the paste box
-            document.querySelector('#tutorial-modal .modal-content').classList.add('paste-layout');
+            // Remove all other positioning classes before adding the paste-layout one
+            tutorialModal.classList.remove('show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response');
+
+            // Add the new layout class to the main modal
+            tutorialModal.classList.add('paste-layout');
 
             // Find and show the 'paste here' container inside the tutorial modal
             document.getElementById('paste-here-container').classList.remove('hidden');
