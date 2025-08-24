@@ -144,6 +144,14 @@
     transform: translate(0, 0) scale(1);
     max-width: 400px;
 }
+
+#tutorial-modal.on-tracker-page .modal-content {
+    opacity: 1;
+    top: 5%;
+    right: 5%;
+    transform: translate(0, 0) scale(1);
+    max-width: 400px;
+}        
         
 #tutorial-modal.upper-right .modal-content {
     /* Refactored to use top and left for positioning and a transform for a smooth animation */
@@ -1010,6 +1018,28 @@
             </div>
         </div>
 
+        <div id="tutorial-step-10" class="tutorial-step space-y-6 hidden">
+            <h3 class="text-3xl font-extrabold text-blue-400 text-center">FedEx Tracker Page 📦</h3>
+            <p class="text-lg text-gray-300">This page allows you to quickly extract FedEx tracking numbers from any block of text you paste in.</p>
+            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                    <i class="fas fa-clipboard-check text-green-400 mr-3"></i> Try it out!
+                </h4>
+                 <p class="text-gray-400">Paste an email or text containing one or more FedEx tracking numbers into the box on the left, and watch them appear on the right.</p>
+            </div>
+        </div> 
+
+      <div id="tutorial-step-11" class="tutorial-step space-y-6 hidden">
+            <h3 class="text-3xl font-extrabold text-blue-400 text-center">Copy & Open FedEx 🔗</h3>
+            <p class="text-lg text-gray-300">After the numbers are extracted, this button copies all of them and automatically opens a new FedEx tracking tab for you.</p>
+            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                    <i class="fas fa-truck text-red-400 mr-3"></i> Why it's useful
+                </h4>
+                <p class="text-gray-400">This saves you from copying each number one by one and pasting them into the FedEx website, streamlining your workflow.</p>
+            </div>
+        </div>      
+
         <div id="copy-success-modal" class="modal hidden">
             <div class="modal-content">
                 <h3 class="text-2xl font-bold text-gray-200 mb-4">Text Copied! ✅</h3>
@@ -1098,6 +1128,7 @@ const tutorialSteps = [
     document.getElementById('tutorial-step-7'),
     document.getElementById('tutorial-step-8'),
     document.getElementById('tutorial-step-9'),
+    document.getElementById('tutorial-step-10'),
 ];
 
 const highlightedElements = [
@@ -1111,6 +1142,8 @@ const highlightedElements = [
     null, // Step 7: Dynamic Placeholders
     null, // This will be handled dynamically inside the function
     null,
+    document.getElementById('input-text-fedex'), // Step 10
+    document.getElementById('copy-button-fedex'), // Step 11: New highlight
 ];
  
 const tutorialPages = [
@@ -1123,6 +1156,8 @@ const tutorialPages = [
     'canned-responses', // Step 6: Pinning (new)
     'canned-responses', // Step 7: Dynamic placeholders
     'canned-responses', 
+    'fedex-tracker', // Step 10: Change page to FedEx tracker
+    'fedex-tracker', // Step 11: Change page to FedEx tracker    
 ];
 
 // An array to map each step to the modal's target position
@@ -1135,7 +1170,9 @@ const modalPositions = [
     'on-response', // Step 5: Response buttons (new)
     'on-response',  // Step 6: Pin button (new)
     'left-response', // Step 7: Dynamic placeholders
-    'show-modal'
+    'show-modal',
+    'on-tracker-page', // Step 10: New position
+    'on-tracker-page' // Step 11: Position on the tracker page    
 ];
 
 // --- Master Blueprint Data for Initialization ---
@@ -1233,6 +1270,8 @@ const showTutorialStep = (stepIndex) => {
         null, // Step 7: Dynamic Placeholders
         null, // This will be handled dynamically inside the function
         null,
+        document.getElementById('input-text-fedex'), // Step 10
+        document.getElementById('copy-button-fedex'), // Step 11: New highlight    
     ];
     
     // New array to map each step to a positioning class
@@ -1245,7 +1284,9 @@ const showTutorialStep = (stepIndex) => {
             'on-response',   // Step 5: Manage Responses (new)
             'on-response',     // Step 6: Pinning (new)
             'left-response',     // Step 7: Dynamic placeholders
-            'show-modal'
+            'show-modal',
+            'on-tracker-page', // Step 11: Position on the tracker page
+            'on-tracker-page' // Step 11: Position on the tracker page   
         ];
 
     const tutorialModal = document.getElementById('tutorial-modal');
@@ -1255,7 +1296,7 @@ const showTutorialStep = (stepIndex) => {
     tutorialModal.classList.remove('hidden');
     tutorialOverlay.classList.remove('hidden');    
     // First, handle the page navigation.
-    const targetPage = 'canned-responses'; // The entire tutorial is on this page
+    const targetPage = tutorialPages[stepIndex];
     if (currentPage !== targetPage) {
         currentPage = targetPage;
         renderContent();
@@ -1295,7 +1336,14 @@ const showTutorialStep = (stepIndex) => {
                         responsesWithPlaceholders.push(document.querySelector(`.response-item[data-id="${response.id}"]`));
                     }
                 });
-            }
+            }        
+        } else if (stepIndex === 10) {
+            document.getElementById('input-text-fedex').classList.add('highlight-target');
+            document.getElementById('input-text-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (stepIndex === 11) {
+            document.getElementById('copy-button-fedex').classList.add('highlight-target');
+            document.getElementById('copy-button-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
             
             // If no response is found in the active category, search all categories
             if (responsesWithPlaceholders.length === 0) {
@@ -1352,7 +1400,7 @@ const showTutorialStep = (stepIndex) => {
     // Dynamically apply the positioning class
     // This is the core change: It resets the modal's classes and applies the new one for the current step.
     // Dynamically apply the positioning class and ensure the modal is visible
-        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response'); // Reset all positioning classes
+        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response', 'on-tracker-page'); // Reset all positioning classes
         tutorialModal.classList.add('modal'); // Ensure the base modal class is present
         tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
     
