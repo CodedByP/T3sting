@@ -1337,13 +1337,6 @@ const showTutorialStep = (stepIndex) => {
                     }
                 });
             }        
-        } else if (stepIndex === 10) {
-            document.getElementById('input-text-fedex').classList.add('highlight-target');
-            document.getElementById('input-text-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else if (stepIndex === 11) {
-            document.getElementById('copy-button-fedex').classList.add('highlight-target');
-            document.getElementById('copy-button-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
             
             // If no response is found in the active category, search all categories
             if (responsesWithPlaceholders.length === 0) {
@@ -1382,6 +1375,12 @@ const showTutorialStep = (stepIndex) => {
                 // This prevents an error and gracefully moves on.
                 console.warn("No canned response with dynamic placeholders found for the tutorial.");
             }
+        } else if (stepIndex === 10) {
+                document.getElementById('input-text-fedex').classList.add('highlight-target');
+                document.getElementById('input-text-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (stepIndex === 11) {
+                document.getElementById('copy-button-fedex').classList.add('highlight-target');
+                document.getElementById('copy-button-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });     
         } else {
             // This is the general case for all other steps
             const targetElement = highlightedElements[stepIndex];
