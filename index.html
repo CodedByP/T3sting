@@ -997,7 +997,22 @@
                         Fill it Out
                     </button>
                 </div>
-            </div>
+
+                <div id="paste-here-container" class="space-y-4 hidden animate-fade-in">
+                    <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                        <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                            <i class="fas fa-clipboard-check text-green-400 mr-3"></i> Paste Here
+                        </h4>
+                        <p class="text-gray-400">The response is now on your clipboard. Paste it into the box below to see the result!</p>
+                        <textarea id="tutorial-paste-area" class="w-full mt-4 p-3 border border-gray-600 rounded-xl bg-gray-700 text-gray-200" rows="5" placeholder="Paste your copied text here..."></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button id="next-from-paste-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300">
+                            Next <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+                </div>
 
             <div class="flex justify-between items-center mt-8">
                 <button id="tutorial-back-btn" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md hidden">
@@ -1301,6 +1316,11 @@ const showTutorialStep = (stepIndex) => {
                 // This prevents an error and gracefully moves on.
                 console.warn("No canned response with dynamic placeholders found for the tutorial.");
             }
+            
+            document.getElementById('show-placeholder-example-btn').onclick = () => {
+                showPlaceholderDemo(true);
+                
+            };
         } else {
             // This is the general case for all other steps
             const targetElement = highlightedElements[stepIndex];
@@ -1741,7 +1761,7 @@ const importData = (file) => {
     reader.readAsText(file);
 };
 const placeholderRegex = /\[([^\]]+)\]/g;
-const processAndCopy = (text) => {
+const processAndCopy = (text, isTutorial = false) => { // Added isTutorial parameter
     const placeholderInputsContainer = document.getElementById('placeholder-inputs');
     const placeholderModal = document.getElementById('placeholder-modal');
     currentTextToCopy = text;
@@ -1776,9 +1796,20 @@ const processAndCopy = (text) => {
         });
         placeholderModal.classList.remove('hidden');
         document.querySelector('#placeholder-inputs input')?.focus();
+        // Here we add a data attribute to the modal to track if it's for the tutorial
+        if (isTutorial) {
+            placeholderModal.dataset.isTutorial = 'true';
+        } else {
+            delete placeholderModal.dataset.isTutorial;
+        }
     } else {
         const finalContent = replacePlaceholders(currentTextToCopy, {});
         copyToClipboard(finalContent);
+        // If it's the tutorial demo, show the paste area immediately
+        if (isTutorial) {
+            document.getElementById('paste-here-container').classList.remove('hidden');
+            document.getElementById('show-placeholder-example-btn').classList.add('hidden');
+        }
     }
 };
 const replacePlaceholders = (text, userValues) => {
@@ -2389,8 +2420,27 @@ function attachEventListeners() {
         inputs.forEach(input => { const key = input.dataset.placeholder; userValues[key] = input.value; });
         const finalContent = replacePlaceholders(currentTextToCopy, userValues);
         copyToClipboard(finalContent);
-        document.getElementById('placeholder-modal').classList.add('hidden');
+        // Check if this action was triggered by the tutorial demo
+        const placeholderModal = document.getElementById('placeholder-modal');
+        if (placeholderModal.dataset.isTutorial === 'true') {
+            placeholderModal.classList.add('hidden');
+            document.getElementById('paste-here-container').classList.remove('hidden');
+            document.getElementById('show-placeholder-example-btn').classList.add('hidden');
+        
+            // This is a subtle but important detail: the tutorial's main "Next" button is hidden.
+            // We need to show the specific "Next" button for this part of the tutorial.
+            document.getElementById('tutorial-next-btn').classList.add('hidden');
+        } else {
+            document.getElementById('placeholder-modal').classList.add('hidden');
+        }
     });
+
+        // Add this new event listener here, before the end of the function
+    document.getElementById('next-from-paste-btn').addEventListener('click', () => {
+        document.getElementById('paste-here-container').classList.add('hidden');
+        document.getElementById('tutorial-next-btn').classList.remove('hidden');
+    });
+}
     document.getElementById('cancel-placeholder-btn').addEventListener('click', () => { document.getElementById('placeholder-modal').classList.add('hidden'); });
     document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
