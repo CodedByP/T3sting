@@ -239,6 +239,14 @@
             border-radius: 4px;
         }
 
+        .highlight-placeholder {
+            color: #80e8ff; /* A color that stands out from the prose */
+            font-weight: 700;
+            background-color: rgba(128, 232, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
             .highlight-target {
             position: relative; /* This is crucial for z-index to work */
             z-index: 1000;
@@ -970,13 +978,13 @@
                 <p class="text-lg text-gray-300">Many responses use special placeholders like `[Customer's Name]`. These are simple tags that you can replace with real information.</p>
                 <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
                     <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                        <i class="fas fa-magic text-purple-400 mr-3"></i> Try It Now!
+                        <i class="fas fa-magic text-purple-400 mr-3"></i> See a live example below!
                     </h4>
-                    <p class="text-gray-400">Let's try it with a sample response. Click the button below to see the magic happen!</p>
+                    <p class="text-gray-400 mt-2">Hello <span class="highlight-placeholder">[Customer's Name]</span>,<br><br>Your order has shipped with tracking number <span class="highlight-placeholder">[TrackingNumber]</span>. Thanks for being a great customer!</p>
                 </div>
                 <div class="flex justify-center mt-6">
                     <button id="show-placeholder-example-btn" class="bg-purple-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-purple-700 transition duration-300">
-                        Fill it Out
+                        Copy this example
                     </button>
                 </div>
             </div>
@@ -1921,10 +1929,10 @@ const renderSettingsPage = () => {
 };
 
     const showPlaceholderDemo = () => {
-    // Define a sample text with placeholders for the demo
+    // Define the demo text with placeholders
     const demoText = "Hello [Customer's Name],\n\nYour order has shipped with tracking number [TrackingNumber]. Thanks for being a great customer!";
     
-    // Call your existing function to process and show the placeholder modal
+    // Process the demo text, which will open the placeholder modal
     processAndCopy(demoText);
     
     // Hide the tutorial modal and overlay so the placeholder modal is the main focus
