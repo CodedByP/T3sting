@@ -118,6 +118,16 @@
     transform: translate(-50%, -50%);
 }
 
+/* Custom positioning for the tutorial paste box */
+#tutorial-modal.paste-layout .modal-content {
+    /* Adjust these values to fine-tune the size and position */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 600px;
+    width: 90%;
+}
+
 #tutorial-modal.top-right .modal-content {
     /* Refactored to use top and left for positioning and a transform for a smooth animation */
     opacity: 1;
@@ -2472,6 +2482,9 @@ function attachEventListeners() {
 
             tutorialModal.classList.remove('hidden');
             tutorialOverlay.classList.remove('hidden');
+            
+            // Add the new layout class for the paste box
+            document.querySelector('#tutorial-modal .modal-content').classList.add('paste-layout');
 
             // Find and show the 'paste here' container inside the tutorial modal
             document.getElementById('paste-here-container').classList.remove('hidden');
@@ -2486,6 +2499,9 @@ function attachEventListeners() {
     document.getElementById('next-from-paste-btn').addEventListener('click', () => {
         // Clear the paste container
         document.getElementById('paste-here-container').classList.add('hidden');
+        
+        document.querySelector('#tutorial-modal .modal-content').classList.remove('paste-layout');
+
         // Manually trigger the next step of the tutorial
         currentTutorialStep++;
         showTutorialStep(currentTutorialStep);
