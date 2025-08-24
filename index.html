@@ -1172,6 +1172,12 @@ const showMessage = (text, type = 'success') => {
     }, 3000);
 };
 
+   const clearTutorialHighlights = () => {
+    document.querySelectorAll('.highlight-target').forEach(el => {
+        el.classList.remove('highlight-target');
+    });
+};     
+
 // This is the new, combined function that handles all tutorial logic
 const showTutorialStep = (stepIndex) => {
     const tutorialSteps = [
@@ -2090,8 +2096,12 @@ function attachEventListeners() {
     });
 
     document.getElementById('tutorial-finish-btn').addEventListener('click', async () => {
+        // Clear all highlights before hiding the modal
+        clearTutorialHighlights();
+        
         document.getElementById('tutorial-modal').classList.add('hidden');
-        document.getElementById('tutorial-overlay').classList.add('hidden'); // ADD THIS LINE
+        document.getElementById('tutorial-overlay').classList.add('hidden'); 
+        
         if (userId) {
             const userDocRef = getUserRootDocRef(userId);
             try {
