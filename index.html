@@ -1089,15 +1089,14 @@ const tutorialSteps = [
 ];
 
 const highlightedElements = [
-    null, // Step 0: Welcome
+    null, // Step 0: Welcome (no highlight needed)
     document.getElementById('add-response-section'), // Step 1: Add New Response
     document.getElementById('search-bar-container'), // Step 2: Search Bar
     document.getElementById('category-bar'), // Step 3: Categories
     document.getElementById('category-menu-container'), // Step 4: Kebab menu
-    null, // Step 5: Copy, Edit, Delete buttons (highlighting handled dynamically)
-    null, // Step 6: Pin button (highlighting handled dynamically)
-    null, // Step 7: Dynamic Placeholders
-    null, // This will be handled dynamically inside the function
+    null, // Step 5: This step's highlight is handled with special logic below
+    null, // Step 6: This step's highlight is handled with special logic below
+    null, // Step 7: This step's highlight is handled with special logic below
 ];
  
 const tutorialPages = [
@@ -1206,17 +1205,16 @@ const showTutorialStep = (stepIndex) => {
         document.getElementById('tutorial-step-8'),
     ];
     
-    const highlightedElements = [
-        null, // Step 0 (Welcome)
-        document.getElementById('add-response-section'), // Step 1: Add New Response
-        document.getElementById('search-bar-container'), // Step 2: Search Bar
-        document.getElementById('category-bar'), // Step 3: Categories
-        document.getElementById('category-menu-container'), // Step 4: Kebab menu
-        null, // Step 5: Will find dynamically below
-        null, // Step 6: Will find dynamically below
-        null, // Step 7: Dynamic Placeholders
-        null, // This will be handled dynamically inside the function
-    ];
+const highlightedElements = [
+    null, // Step 0: Welcome (no highlight needed)
+    document.getElementById('add-response-section'), // Step 1: Add New Response
+    document.getElementById('search-bar-container'), // Step 2: Search Bar
+    document.getElementById('category-bar'), // Step 3: Categories
+    document.getElementById('category-menu-container'), // Step 4: Kebab menu
+    null, // Step 5: This step's highlight is handled with special logic below
+    null, // Step 6: This step's highlight is handled with special logic below
+    null, // Step 7: This step's highlight is handled with special logic below
+];
     
     // New array to map each step to a positioning class
         const positionClasses = [
