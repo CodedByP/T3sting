@@ -2391,7 +2391,13 @@ function attachEventListeners() {
         copyToClipboard(finalContent);
         document.getElementById('placeholder-modal').classList.add('hidden');
     });
-    document.getElementById('cancel-placeholder-btn').addEventListener('click', () => { document.getElementById('placeholder-modal').classList.add('hidden'); });
+    document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
+        // Hide the placeholder modal
+        document.getElementById('placeholder-modal').classList.add('hidden');
+        // Show the tutorial modal and its overlay again
+        document.getElementById('tutorial-modal').classList.remove('hidden');
+        document.getElementById('tutorial-overlay').classList.remove('hidden');
+    });    
     document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
     });
