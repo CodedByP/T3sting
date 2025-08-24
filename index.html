@@ -1251,11 +1251,55 @@ const showTutorialStep = (stepIndex) => {
                 if (pinButton) pinButton.classList.add('highlight-target');
             }
         } else if (stepIndex === 7) {
-            const responseWithPlaceholder = document.querySelector('.response-item[data-id="guts-3"]');
-            if (responseWithPlaceholder) {
-                responseWithPlaceholder.classList.add('highlight-target');
-                // Automatically scroll to the highlighted item
-                responseWithPlaceholder.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // **[MODIFIED CODE BLOCK]**
+            // Find a response that contains placeholders, prioritizing the active category
+            const responsesWithPlaceholders = [];
+            
+            // First, search the active category for a response with placeholders
+            if (categories[activeCategory]) {
+                categories[activeCategory].responses.forEach(response => {
+                    if (response.text.match(/\[([^\]]+)\]/g)) {
+                        responsesWithPlaceholders.push(document.querySelector(`.response-item[data-id="${response.id}"]`));
+                    }
+                });
+            }
+            
+            // If no response is found in the active category, search all categories
+            if (responsesWithPlaceholders.length === 0) {
+                for (const category in categories) {
+                    categories[category].responses.forEach(response => {
+                        if (response.text.match(/\[([^\]]+)\]/g)) {
+                            const foundResponse = document.querySelector(`.response-item[data-id="${response.id}"]`);
+                            if (foundResponse) {
+                                responsesWithPlaceholders.push(foundResponse);
+                            }
+                        }
+                    });
+                }
+            }
+
+            const responseToHighlight = responsesWithPlaceholders[0];
+
+            if (responseToHighlight) {
+                responseToHighlight.classList.add('highlight-target');
+                // Temporarily switch to the correct category to show the example
+                if (responseToHighlight.dataset.category !== activeCategory) {
+                    activeCategory = responseToHighlight.dataset.category;
+                    renderCategories();
+                    
+                    // Re-add highlight after rendering
+                    const newHighlight = document.querySelector(`.response-item[data-id="${responseToHighlight.dataset.id}"]`);
+                    if (newHighlight) {
+                        newHighlight.classList.add('highlight-target');
+                        newHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                } else {
+                    responseToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // Handle the case where no responses with placeholders are found at all.
+                // This prevents an error and gracefully moves on.
+                console.warn("No canned response with dynamic placeholders found for the tutorial.");
             }
         } else {
             // This is the general case for all other steps
