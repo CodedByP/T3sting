@@ -153,6 +153,16 @@
     transform: translate(0, 0) scale(1);
     max-width: 400px;
 }
+ #tutorial-modal.left-response .modal-content {
+    /* Refactored to use top and left for positioning and a transform for a smooth animation */
+    opacity: 1;
+    top: calc(85% - 400px - 400px); /* Adjusting top to match your bottom: 380px value */
+    left: 60%;
+    transform: translate(0, 0) scale(1);
+    max-width: 400px;
+}      
+
+
         /* Add these rules to ensure proper z-indexing for highlighting */
 #add-response-section,
 #category-bar {
@@ -1095,7 +1105,7 @@ const modalPositions = [
     'upper-right', //Step 4: Position for Kebab menu
     'on-response', // Step 5: Response buttons (new)
     'on-response',  // Step 6: Pin button (new)
-    'show-modal' // Step 7: Dynamic placeholders
+    'left-response' // Step 7: Dynamic placeholders
 ];
 
 // --- Master Blueprint Data for Initialization ---
@@ -1196,7 +1206,7 @@ const showTutorialStep = (stepIndex) => {
             'upper-right',   // Step 4: Kebab menu
             'on-response',   // Step 5: Manage Responses (new)
             'on-response',     // Step 6: Pinning (new)
-            'show-modal'     // Step 7: Dynamic placeholders
+            'left-response'     // Step 7: Dynamic placeholders
         ];
 
     const tutorialModal = document.getElementById('tutorial-modal');
@@ -1259,7 +1269,7 @@ const showTutorialStep = (stepIndex) => {
     // Dynamically apply the positioning class
     // This is the core change: It resets the modal's classes and applies the new one for the current step.
     // Dynamically apply the positioning class and ensure the modal is visible
-        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response'); // Reset all positioning classes
+        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response'); // Reset all positioning classes
         tutorialModal.classList.add('modal'); // Ensure the base modal class is present
         tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
     
