@@ -999,6 +999,33 @@
                 </div>
             </div>
 
+        <div id="tutorial-step-9" class="tutorial-step space-y-6 hidden">
+            <h3 class="text-3xl font-extrabold text-blue-400 text-center">You're All Set! 🎉</h3>
+            <p class="text-lg text-gray-300">You've successfully copied a response with placeholders filled in. Now you can paste it anywhere you need!</p>
+            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                    <i class="fas fa-paste text-green-400 mr-3"></i> Try it out
+                </h4>
+                <p class="text-gray-400">Paste the text into a document or email to see the final result. All your responses are now ready to be used with a single click.</p>
+            </div>
+        </div>
+
+        <div id="copy-success-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 class="text-2xl font-bold text-gray-200 mb-4">Text Copied! ✅</h3>
+                <p class="text-gray-400 text-base mb-2">Here is the final response you just copied:</p>
+                <div class="bg-gray-700 p-4 rounded-xl border border-gray-600 mb-4 overflow-auto max-h-60">
+                    <pre id="copied-text-display" class="whitespace-pre-wrap text-gray-200"></pre>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">Feel free to paste this into your application.</p>
+                <div class="flex justify-end">
+                    <button id="close-copy-success-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-blue-700 transition duration-300">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        </div>
+
             <div class="flex justify-between items-center mt-8">
                 <button id="tutorial-back-btn" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md hidden">
                     <i class="fas fa-arrow-left mr-2"></i> Back
@@ -1070,7 +1097,7 @@ const tutorialSteps = [
     document.getElementById('tutorial-step-6'), 
     document.getElementById('tutorial-step-7'),
     document.getElementById('tutorial-step-8'),
-
+    document.getElementById('tutorial-step-9'),
 ];
 
 const highlightedElements = [
@@ -1105,7 +1132,8 @@ const modalPositions = [
     'upper-right', //Step 4: Position for Kebab menu
     'on-response', // Step 5: Response buttons (new)
     'on-response',  // Step 6: Pin button (new)
-    'left-response' // Step 7: Dynamic placeholders
+    'left-response', // Step 7: Dynamic placeholders
+    'show-modal'
 ];
 
 // --- Master Blueprint Data for Initialization ---
@@ -1189,6 +1217,7 @@ const showTutorialStep = (stepIndex) => {
         document.getElementById('tutorial-step-6'),
         document.getElementById('tutorial-step-7'),
         document.getElementById('tutorial-step-8'),
+        document.getElementById('tutorial-step-9'),
     ];
     
     const highlightedElements = [
@@ -1213,6 +1242,7 @@ const showTutorialStep = (stepIndex) => {
             'on-response',   // Step 5: Manage Responses (new)
             'on-response',     // Step 6: Pinning (new)
             'left-response'     // Step 7: Dynamic placeholders
+            'show-modal'
         ];
 
     const tutorialModal = document.getElementById('tutorial-modal');
@@ -2123,6 +2153,10 @@ function attachEventListeners() {
         }
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
     });
+
+    document.getElementById('close-copy-success-btn').addEventListener('click', () => {
+        document.getElementById('copy-success-modal').classList.add('hidden');
+    });
     
  // --- Tutorial Listeners (Corrected) ---
     document.getElementById('tutorial-next-btn').addEventListener('click', () => {
@@ -2390,6 +2424,12 @@ function attachEventListeners() {
         const finalContent = replacePlaceholders(currentTextToCopy, userValues);
         copyToClipboard(finalContent);
         document.getElementById('placeholder-modal').classList.add('hidden');
+        document.getElementById('copied-text-display').textContent = finalContent;
+        document.getElementById('copy-success-modal').classList.remove('hidden');
+        
+        currentTutorialStep++;
+        showTutorialStep(currentTutorialStep);
+
     });
     document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
         // Hide the placeholder modal
