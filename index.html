@@ -936,6 +936,28 @@
                 <p class="text-lg text-gray-300 text-center">Thanks for signing in! Here's a quick tour to show you how to get the most out of this site.</p>
             </div>
 
+                <div id="tutorial-paste-modal" class="modal hidden">
+                    <div class="modal-content">
+                        <div id="paste-here-container" class="space-y-4 animate-fade-in">
+                            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                                    <i class="fas fa-clipboard-check text-green-400 mr-3"></i> Paste Here
+                                </h4>
+                                <p class="text-gray-400">The response is now on your clipboard. Paste it into the box below to see the result!</p>
+                                <textarea id="tutorial-paste-area" class="w-full mt-4 p-3 border border-gray-600 rounded-xl bg-gray-700 text-gray-200" rows="5" placeholder="Paste your copied text here..."></textarea>
+                            </div>
+                            <div class="flex justify-between mt-6">
+                                <button id="cancel-paste-btn" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md">
+                                    Cancel
+                                </button>
+                                <button id="next-from-paste-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300">
+                                    Next <i class="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            </div>
+                    </div>
+                    </div>
+                </div>
+
             <div id="tutorial-step-2" class="tutorial-step space-y-6 hidden">
                 <h3 class="text-3xl font-extrabold text-blue-400 text-center">Add New Responses</h3>
                 <p class="text-lg text-gray-300">This button is where you can create new canned responses. You can give it a label and assign it to a category.</p>
@@ -2088,7 +2110,7 @@ const showPlaceholderDemo = () => {
 
         // Hide the main tutorial modal and show the paste area for the next step
         tutorialModal.classList.add('hidden');
-        document.getElementById('paste-here-container').classList.remove('hidden');
+        document.getElementById('tutorial-paste-modal').classList.remove('hidden');
     }
 };
 
@@ -2470,52 +2492,50 @@ function attachEventListeners() {
         const file = e.target.files[0];
         if (file) importData(file);
     });
-    document.getElementById('confirm-placeholder-btn').addEventListener('click', () => {
-        const inputs = document.getElementById('placeholder-inputs').querySelectorAll('input, textarea');
-        const userValues = {};
-        inputs.forEach(input => { const key = input.dataset.placeholder; userValues[key] = input.value; });
-        const finalContent = replacePlaceholders(currentTextToCopy, userValues);
-        copyToClipboard(finalContent);
-        // Check if this action was triggered by the tutorial demo
-        const placeholderModal = document.getElementById('placeholder-modal');
+document.getElementById('confirm-placeholder-btn').addEventListener('click', () => {
+    const inputs = document.getElementById('placeholder-inputs').querySelectorAll('input, textarea');
+    const userValues = {};
+    inputs.forEach(input => { const key = input.dataset.placeholder; userValues[key] = input.value; });
+    const finalContent = replacePlaceholders(currentTextToCopy, userValues);
+    copyToClipboard(finalContent);
+    
+    const placeholderModal = document.getElementById('placeholder-modal');
+    
+    if (placeholderModal.dataset.isTutorial === 'true') {
+        clearTutorialHighlights();
+        placeholderModal.classList.add('hidden');
         
-        if (placeholderModal.dataset.isTutorial === 'true') {
-            clearTutorialHighlights(); // Remove the highlight from the response on the main page
-            placeholderModal.classList.add('hidden'); // Hide the placeholder modal
-            
-            // Now, show the main tutorial modal again, specifically for step 8
-            const tutorialModal = document.getElementById('tutorial-modal');
-            const tutorialOverlay = document.getElementById('tutorial-overlay');
+        // Show the new dedicated paste modal
+        document.getElementById('tutorial-paste-modal').classList.remove('hidden');
 
-            tutorialModal.classList.remove('hidden');
-            tutorialOverlay.classList.remove('hidden');
-            
-            // Remove all other positioning classes before adding the paste-layout one
-            tutorialModal.classList.remove('show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response');
+    } else {
+        placeholderModal.classList.add('hidden');
+    }
+});
 
-            // Add the new layout class to the main modal
-            tutorialModal.classList.add('paste-layout');
+// Listener to move from the paste box to the next tutorial step
+document.getElementById('next-from-paste-btn').addEventListener('click', () => {
+    // Hide the dedicated paste modal
+    document.getElementById('tutorial-paste-modal').classList.add('hidden');
 
-            // Find and show the 'paste here' container inside the tutorial modal
-            document.getElementById('paste-here-container').classList.remove('hidden');
-            document.getElementById('show-placeholder-example-btn').classList.add('hidden');
-        } else {
-            // For a regular copy action, just hide the modal
-            placeholderModal.classList.add('hidden');
-        }
-    });
+    // Manually trigger the next step of the tutorial
+    currentTutorialStep++;
+    showTutorialStep(currentTutorialStep);
+});
 
-        // NEW event listener to move to the next step directly
-    document.getElementById('next-from-paste-btn').addEventListener('click', () => {
-        // Clear the paste container
-        document.getElementById('paste-here-container').classList.add('hidden');
-        
-        document.querySelector('#tutorial-modal .modal-content').classList.remove('paste-layout');
+// Listener for the new cancel button on the paste modal
+document.getElementById('cancel-paste-btn').addEventListener('click', () => {
+    // Hide the paste modal
+    document.getElementById('tutorial-paste-modal').classList.add('hidden');
 
-        // Manually trigger the next step of the tutorial
-        currentTutorialStep++;
-        showTutorialStep(currentTutorialStep);
-    });
+    // Restore the main tutorial modal for the current step (Step 8)
+    const tutorialModal = document.getElementById('tutorial-modal');
+    tutorialModal.classList.remove('hidden');
+    tutorialOverlay.classList.remove('hidden');
+
+    // This will re-render step 8, showing the original content
+    showTutorialStep(currentTutorialStep);
+});
 
     // Clean up the old onclick from the showTutorialStep function
     document.getElementById('show-placeholder-example-btn').onclick = null;
