@@ -126,6 +126,7 @@
     transform: translate(-50%, -50%);
     max-width: 600px;
     width: 90%;
+    z-index: 1002;
 }
 
 #tutorial-modal.top-right .modal-content {
@@ -135,6 +136,13 @@
     left: calc(100% - 400px - 800px); /* Adjusting left to match your right: 800px value */
     transform: translate(0, 0) scale(1);
     max-width: 400px;
+}
+        
+#tutorial-modal.paste-layout .tutorial-step {
+    display: none;
+}
+#tutorial-modal.paste-layout #paste-here-container {
+    display: block; /* Make sure this is visible when the class is active */
 }
 
 #tutorial-modal.bottom-left .modal-content {
@@ -2519,7 +2527,30 @@ function attachEventListeners() {
         document.getElementById('tutorial-next-btn').classList.remove('hidden');
     });
 
-    document.getElementById('cancel-placeholder-btn').addEventListener('click', () => { document.getElementById('placeholder-modal').classList.add('hidden'); });
+// Inside your `attachEventListeners` function
+document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
+    const placeholderModal = document.getElementById('placeholder-modal');
+    
+    // Check if this action is part of the tutorial
+    if (placeholderModal.dataset.isTutorial === 'true') {
+        // Hide the placeholder modal
+        placeholderModal.classList.add('hidden');
+        
+        // Re-display the main tutorial modal for the current step (Step 8)
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+
+        tutorialModal.classList.remove('hidden');
+        tutorialOverlay.classList.remove('hidden');
+
+        // Show the correct tutorial step content and re-apply the highlight
+        showTutorialStep(currentTutorialStep);
+    } else {
+        // If it's a regular usage, just hide the modal
+        placeholderModal.classList.add('hidden');
+    }
+});
+    
     document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
     });
