@@ -1253,6 +1253,11 @@ const highlightedElements = [
 
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
+
+         const elementToHighlight = highlightedElements[stepIndex];
+            if (elementToHighlight) {
+                elementToHighlight.classList.add('highlight-target');
+        }
         
         if (stepIndex === 5) {
             const firstResponse = document.querySelector('.response-item');
