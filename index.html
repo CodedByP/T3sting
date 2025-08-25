@@ -1230,9 +1230,13 @@ const showTutorialStep = async (stepIndex) => {
 
     const tutorialModal = document.getElementById('tutorial-modal');
     const tutorialOverlay = document.getElementById('tutorial-overlay');
+	tutorialModal.classList.add('hidden'); // Simplified class management
+    tutorialModal.classList.remove(...positionClasses); // Remove all position classes
 
     // First, clear any previous highlights
     clearTutorialHighlights();
+	tutorialSteps.forEach(step => step.classList.add('hidden'));
+
 
     // Determine the target page based on the tutorial step
     const targetPage = tutorialPages[stepIndex];
@@ -1251,9 +1255,6 @@ const showTutorialStep = async (stepIndex) => {
         });
     }
 
-    // Hide all step content and modal position classes before showing the correct one
-    tutorialSteps.forEach(step => step.classList.add('hidden'));
-    tutorialModal.className = 'modal hidden';
 
     const currentStepElement = tutorialSteps[stepIndex];
     if (currentStepElement) {
