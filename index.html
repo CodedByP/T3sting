@@ -1248,6 +1248,7 @@ const showMessage = (text, type = 'success') => {
 
 // This is the new, combined function that handles all tutorial logic
 // This is the new, combined function that handles all tutorial logic
+// This is the new, combined function that handles all tutorial logic
 const showTutorialStep = async (stepIndex) => {
     const highlightedElements = [
         null, // Step 0 (Welcome)
@@ -1263,18 +1264,32 @@ const showTutorialStep = async (stepIndex) => {
         document.getElementById('input-text-fedex'), // Step 10
         document.getElementById('copy-button-fedex'), // Step 11: New highlight
     ];
+    
+    const tutorialPages = [
+        'canned-responses', // Step 0: Welcome screen
+        'canned-responses', // Step 1: Add a response
+        'canned-responses', // Step 2: Search
+        'canned-responses', // Step 3: Categories
+        'canned-responses', // Step 4: Manage Categories
+        'canned-responses', // Step 5: Manage Responses (new)
+        'canned-responses', // Step 6: Pinning (new)
+        'canned-responses', // Step 7: Dynamic placeholders
+        'canned-responses', 
+        'fedex-tracker', // Step 10: Change page to FedEx tracker
+        'fedex-tracker', // Step 11: Change page to FedEx tracker
+    ];
 
-    const positionClasses = [
-        'show-modal', // Step 0: Welcome screen
-        'top-right', // Step 1: Add response section
-        'top-right', // Step 2: Search bar
-        'bottom-left', // Step 3: Category bar
+    const modalPositions = [
+        'show-modal', // Step 0: Centered modal
+        'top-right', // Step 1: Position for add response section
+        'top-right', // Step 2: Position for the search bar
+        'bottom-left', // Step 3: Position for category bar
         'upper-right', //Step 4: Position for Kebab menu
-        'on-response', // Step 5: Manage Responses (new)
-        'on-response', // Step 6: Pinning (new)
+        'on-response', // Step 5: Response buttons (new)
+        'on-response', // Step 6: Pin button (new)
         'left-response', // Step 7: Dynamic placeholders
         'show-modal',
-        'on-tracker-page', // Step 11: Position on the tracker page
+        'on-tracker-page', // Step 10: New position
         'on-tracker-page' // Step 11: Position on the tracker page
     ];
 
