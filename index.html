@@ -1089,6 +1089,7 @@ let helpfulLinksUnsubscribe = null;
 let userLinks = [];
 let renderedStaticLinks = false;
 let isSubmittingLink = false;
+let isTutorialActive = false;		
 
 
 const tutorialSteps = [
@@ -1224,6 +1225,7 @@ const showMessage = (text, type = 'success') => {
 
 // This is the new, combined function that handles all tutorial logic
 const showTutorialStep = async (stepIndex) => {
+	    isTutorialActive = true;
     // Define the elements and their positions for each step
     const highlightedElements = [
         null, // Step 0 (Welcome)
@@ -2206,6 +2208,7 @@ function attachEventListeners() {
     });
 
     document.getElementById('tutorial-finish-btn').addEventListener('click', async () => {
+		 isTutorialActive = false;
         // Clear all highlights before hiding the modal
         clearTutorialHighlights();
         
@@ -2466,10 +2469,17 @@ function attachEventListeners() {
     document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
         // Hide the placeholder modal
         document.getElementById('placeholder-modal').classList.add('hidden');
-        // Show the tutorial modal and its overlay again
-        document.getElementById('tutorial-modal').classList.remove('hidden');
-        document.getElementById('tutorial-overlay').classList.remove('hidden');
-    });	
+   		 // Conditionally show the tutorial based on the global flag
+    	if (isTutorialActive) {
+        	// This is the tutorial-specific logic
+        	document.getElementById('tutorial-modal').classList.remove('hidden');
+        	document.getElementById('tutorial-overlay').classList.remove('hidden');
+        	showTutorialStep(currentTutorialStep);
+    	} else {
+        // This is the normal operation; just close the modal.
+        // No need to show the tutorial or do anything else.
+   		 }
+	});
     document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
     });
