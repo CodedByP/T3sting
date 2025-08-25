@@ -1348,8 +1348,9 @@ const showTutorialStep = async (stepIndex) => {
                 console.warn("No canned response with dynamic placeholders found for the tutorial.");
             }
 		} else if (stepIndex === 9) { // New logic for the hamburger icon
-            document.getElementById('hamburger-menu-btn').classList.add('highlight-target');
-			    hamburgerBtn.scrollIntoView({
+		const hamburgerBtn = document.getElementById('hamburger-menu-btn');
+        hamburgerBtn.classList.add('highlight-target', 'bg-gray-700');	
+			hamburgerBtn.scrollIntoView({
             		behavior: 'smooth',
             		block: 'start' // This positions the element at the top of the viewport
         });
