@@ -2196,9 +2196,7 @@ function attachEventListeners() {
 
     document.getElementById('close-copy-success-btn').addEventListener('click', () => {
         document.getElementById('copy-success-modal').classList.add('hidden');
-
-        currentTutorialStep++;
-        showTutorialStep(currentTutorialStep);    
+    
     });
     
  // --- Tutorial Listeners (Corrected) ---
@@ -2469,6 +2467,9 @@ function attachEventListeners() {
         document.getElementById('placeholder-modal').classList.add('hidden');
         document.getElementById('copied-text-display').textContent = finalContent;
         document.getElementById('copy-success-modal').classList.remove('hidden');
+
+        currentTutorialStep++;
+        showTutorialStep(currentTutorialStep);
         
     });
     document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
