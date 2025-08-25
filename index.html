@@ -1247,8 +1247,8 @@ const showMessage = (text, type = 'success') => {
 };     
 
 // This is the new, combined function that handles all tutorial logic
-const showTutorialStep = (stepIndex) => {
-    
+// This is the new, combined function that handles all tutorial logic
+const showTutorialStep = async (stepIndex) => {
     const highlightedElements = [
         null, // Step 0 (Welcome)
         document.getElementById('add-response-section'), // Step 1: Add New Response
@@ -1261,62 +1261,46 @@ const showTutorialStep = (stepIndex) => {
         null, // This will be handled dynamically inside the function
         null,
         document.getElementById('input-text-fedex'), // Step 10
-        document.getElementById('copy-button-fedex'), // Step 11: New highlight    
+        document.getElementById('copy-button-fedex'), // Step 11: New highlight
     ];
-    
-    // New array to map each step to a positioning class
-        const positionClasses = [
-            'show-modal',    // Step 0: Welcome screen
-            'top-right',     // Step 1: Add response section
-            'top-right',     // Step 2: Search bar
-            'bottom-left',   // Step 3: Category bar
-            'upper-right',   // Step 4: Kebab menu
-            'on-response',   // Step 5: Manage Responses (new)
-            'on-response',     // Step 6: Pinning (new)
-            'left-response',     // Step 7: Dynamic placeholders
-            'show-modal',
-            'on-tracker-page', // Step 11: Position on the tracker page
-            'on-tracker-page' // Step 11: Position on the tracker page   
-        ];
+
+    const positionClasses = [
+        'show-modal', // Step 0: Welcome screen
+        'top-right', // Step 1: Add response section
+        'top-right', // Step 2: Search bar
+        'bottom-left', // Step 3: Category bar
+        'upper-right', //Step 4: Position for Kebab menu
+        'on-response', // Step 5: Manage Responses (new)
+        'on-response', // Step 6: Pinning (new)
+        'left-response', // Step 7: Dynamic placeholders
+        'show-modal',
+        'on-tracker-page', // Step 11: Position on the tracker page
+        'on-tracker-page' // Step 11: Position on the tracker page
+    ];
 
     const tutorialModal = document.getElementById('tutorial-modal');
-    const tutorialOverlay = document.getElementById('tutorial-overlay'); // Get the overlay element
+    const tutorialOverlay = document.getElementById('tutorial-overlay');
 
-    // ADD THIS SECTION: Show both the modal and the overlay
+    // Always show the overlay and modal initially
     tutorialModal.classList.remove('hidden');
-    tutorialOverlay.classList.remove('hidden');    
-    // First, handle the page navigation.
-// A single source of truth for the current page and tutorial step.
-const targetPage = tutorialPages[stepIndex];
+    tutorialOverlay.classList.remove('hidden');
 
-// Check if a page change is necessary
-if (currentPage !== targetPage) {
-    // We only change the page if necessary
-    currentPage = targetPage;
+    const targetPage = tutorialPages[stepIndex];
 
-    // Use a Promise to ensure renderContent completes before we proceed
-    const renderPromise = new Promise(resolve => {
-        // We'll add an event listener or check for a signal to know when the render is done
-        // For simplicity, we'll use a small delay here to simulate the rendering time.
-        setTimeout(() => {
+    if (currentPage !== targetPage) {
+        currentPage = targetPage;
+        
+        // This is the critical change: Await the render process.
+        await new Promise(resolve => {
             renderContent();
-            resolve();
-        }, 50); // A small delay to let the DOM re-render the page content
-    });
+            // We use a short delay to ensure the DOM has fully updated
+            // after the new content has been rendered.
+            setTimeout(resolve, 50); 
+        });
+    }
 
-    renderPromise.then(() => {
-        // AFTER the page has rendered, then we display the new tutorial step.
-        _displayTutorialStepContent(stepIndex);
-    });
-
-} else {
-    // No page change needed, just display the content for the current step.
-    _displayTutorialStepContent(stepIndex);
-}
-
-// Private helper function to handle displaying the modal content and highlights.
-function _displayTutorialStepContent(stepIndex) {
-    // Reset all highlight states and hide all steps.
+    // Now that the page is guaranteed to be rendered, we can safely
+    // update the tutorial modal content and position.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
@@ -1367,20 +1351,32 @@ function _displayTutorialStepContent(stepIndex) {
                     const newHighlight = document.querySelector(`.response-item[data-id="${responseToHighlight.dataset.id}"]`);
                     if (newHighlight) {
                         newHighlight.classList.add('highlight-target');
-                        newHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        newHighlight.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
                     }
                 } else {
-                    responseToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    responseToHighlight.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
                 }
             } else {
                 console.warn("No canned response with dynamic placeholders found for the tutorial.");
             }
         } else if (stepIndex === 10) {
             document.getElementById('input-text-fedex').classList.add('highlight-target');
-            document.getElementById('input-text-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('input-text-fedex').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
         } else if (stepIndex === 11) {
             document.getElementById('copy-button-fedex').classList.add('highlight-target');
-            document.getElementById('copy-button-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('copy-button-fedex').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
         } else {
             const targetElement = highlightedElements[stepIndex];
             if (targetElement) {
@@ -1395,16 +1391,11 @@ function _displayTutorialStepContent(stepIndex) {
         }
     }
 
-    // Now, apply the positioning classes to the modal itself.
-    const tutorialModal = document.getElementById('tutorial-modal');
-    const tutorialOverlay = document.getElementById('tutorial-overlay');
-
     tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response', 'on-tracker-page');
-    tutorialModal.classList.add('modal', modalPositions[stepIndex]);
+    tutorialModal.classList.add('modal', positionClasses[stepIndex]);
     tutorialModal.classList.remove('hidden'); // Ensure it's not hidden
     tutorialOverlay.classList.remove('hidden'); // Ensure the overlay is also visible
 
-    // Finally, manage the navigation buttons
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
     const tutorialNextBtn = document.getElementById('tutorial-next-btn');
     const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
@@ -1413,8 +1404,7 @@ function _displayTutorialStepContent(stepIndex) {
     tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
 
     currentTutorialStep = stepIndex;
-    }
-}
+};
 
 const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
 const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
