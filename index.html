@@ -1349,6 +1349,10 @@ const showTutorialStep = async (stepIndex) => {
             }
 		} else if (stepIndex === 9) { // New logic for the hamburger icon
             document.getElementById('hamburger-menu-btn').classList.add('highlight-target');
+			    hamburgerBtn.scrollIntoView({
+            		behavior: 'smooth',
+            		block: 'start' // This positions the element at the top of the viewport
+        });
         } else if (stepIndex === 10) {
             document.getElementById('input-text-fedex').classList.add('highlight-target');
             document.getElementById('input-text-fedex').scrollIntoView({
