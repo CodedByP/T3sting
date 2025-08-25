@@ -1593,8 +1593,14 @@ if (!isAnonymous && categoryNames.length > 0) {
     
     categoryNames.forEach(name => {
         const button = document.createElement('button');
+		
+         // Determine the border color based on the theme
+        const activeClass = name === activeCategory ? 
+            (document.body.classList.contains('light-mode') ? 'border-2 border-gray-900' : 'border-2 border-white') : 
+            '';
+
         button.className = `category-item font-bold py-2 px-4 rounded-lg shadow-md text-white transition-colors
-            ${name === activeCategory ? 'border-2 border-white' : ''}
+            ${activeClass}
             hover:scale-105 active:scale-95 transition-all duration-300`;
         // Get the original color from the categories object
         let categoryColor = categories[name].color || '#60a5fa';
