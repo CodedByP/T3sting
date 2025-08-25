@@ -1196,7 +1196,7 @@ const showMessage = (text, type = 'success') => {
 };		
 
 // This is the new, combined function that handles all tutorial logic
-const showTutorialStep = async (stepIndex) => {
+const showTutorialStep = (stepIndex) => {
     const highlightedElements = [
         null, // Step 0 (Welcome)
         document.getElementById('add-response-section'), // Step 1: Add New Response
@@ -1212,169 +1212,159 @@ const showTutorialStep = async (stepIndex) => {
         document.getElementById('copy-button-fedex'), // Step 11: New highlight
     ];
     
-    const positionClasses = [
+    const tutorialPages = [
+        'canned-responses', // Step 0: Welcome screen
+        'canned-responses', // Step 1: Add a response
+        'canned-responses', // Step 2: Search
+        'canned-responses', // Step 3: Categories
+        'canned-responses', // Step 4: Manage Categories
+        'canned-responses', // Step 5: Manage Responses (new)
+        'canned-responses', // Step 6: Pinning (new)
+        'canned-responses', // Step 7: Dynamic placeholders
+        'canned-responses', 
+        'fedex-tracker', // Step 10: Change page to FedEx tracker
+        'fedex-tracker', // Step 11: Change page to FedEx tracker   
+    ];
+
+    const modalPositions = [
         'show-modal', // Step 0: Centered modal
-        'top-right', // Step 1: Add response section
-        'top-right', // Step 2: Search bar
-        'bottom-left', // Step 3: Category bar
+        'top-right',  // Step 1: Position for add response section
+        'top-right',  // Step 2: Position for the search bar
+        'bottom-left', // Step 3: Position for category bar
         'upper-right', //Step 4: Position for Kebab menu
-        'on-response', // Step 5: Manage Responses (new)
-        'on-response', // Step 6: Pin button (new)
+        'on-response', // Step 5: Response buttons (new)
+        'on-response',  // Step 6: Pin button (new)
         'left-response', // Step 7: Dynamic placeholders
         'show-modal',
         'on-tracker-page', // Step 10: New position
         'on-tracker-page' // Step 11: Position on the tracker page
     ];
+    
+    // Function to handle the tutorial UI display, extracted for clarity.
+    const displayTutorialStepUI = () => {
+        // Now that the page is guaranteed to be rendered, we can safely
+        // update the tutorial modal content and position.
+        tutorialSteps.forEach(step => step.classList.add('hidden'));
+        document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
-    const tutorialModal = document.getElementById('tutorial-modal');
-    const tutorialOverlay = document.getElementById('tutorial-overlay');
+        const currentStepElement = tutorialSteps[stepIndex];
+        if (currentStepElement) {
+            currentStepElement.classList.remove('hidden');
 
-    // Always show the overlay and modal initially
-    tutorialModal.classList.remove('hidden');
-    tutorialOverlay.classList.remove('hidden');
-
-    const targetPage = tutorialPages[stepIndex];
-
-    if (currentPage !== targetPage) {
-        currentPage = targetPage;
-        
-        await new Promise(resolve => {
-            renderContent();
-            setTimeout(resolve, 50); // We use a short delay to ensure the DOM has fully updated
-        });
-    }
-
-    // This block of code is now OUTSIDE of the conditional logic
-    // and will execute every time `showTutorialStep` is called.
-    tutorialSteps.forEach(step => step.classList.add('hidden'));
-    document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
-
-    const currentStepElement = tutorialSteps[stepIndex];
-    if (currentStepElement) {
-        currentStepElement.classList.remove('hidden');
-
-        // Dynamically set highlights based on stepIndex
-        if (stepIndex === 5) {
-            const firstResponse = document.querySelector('.response-item');
-            if (firstResponse) {
-                const buttons = firstResponse.querySelectorAll('.copy-btn, .edit-btn, .delete-btn');
-                buttons.forEach(button => button.classList.add('highlight-target'));
-            }
-        } else if (stepIndex === 6) {
-            const firstResponse = document.querySelector('.response-item');
-            if (firstResponse) {
-                const pinButton = firstResponse.querySelector('.pin-btn');
-                if (pinButton) pinButton.classList.add('highlight-target');
-            }
-        } else if (stepIndex === 7) {
-            const responsesWithPlaceholders = [];
-            if (categories[activeCategory]) {
-                categories[activeCategory].responses.forEach(response => {
-                    if (response.text.match(/\[([^\]]+)\]/g)) {
-                        responsesWithPlaceholders.push(document.querySelector(`.response-item[data-id="${response.id}"]`));
-                    }
-                });
-            }
-            if (responsesWithPlaceholders.length === 0) {
-                for (const category in categories) {
-                    categories[category].responses.forEach(response => {
+            // Dynamically set highlights based on stepIndex
+            if (stepIndex === 5) {
+                const firstResponse = document.querySelector('.response-item');
+                if (firstResponse) {
+                    const buttons = firstResponse.querySelectorAll('.copy-btn, .edit-btn, .delete-btn');
+                    buttons.forEach(button => button.classList.add('highlight-target'));
+                }
+            } else if (stepIndex === 6) {
+                const firstResponse = document.querySelector('.response-item');
+                if (firstResponse) {
+                    const pinButton = firstResponse.querySelector('.pin-btn');
+                    if (pinButton) pinButton.classList.add('highlight-target');
+                }
+            } else if (stepIndex === 7) {
+                const responsesWithPlaceholders = [];
+                if (categories[activeCategory]) {
+                    categories[activeCategory].responses.forEach(response => {
                         if (response.text.match(/\[([^\]]+)\]/g)) {
-                            const foundResponse = document.querySelector(`.response-item[data-id="${response.id}"]`);
-                            if (foundResponse) {
-                                responsesWithPlaceholders.push(foundResponse);
-                            }
+                            responsesWithPlaceholders.push(document.querySelector(`.response-item[data-id="${response.id}"]`));
                         }
                     });
                 }
-            }
-            const responseToHighlight = responsesWithPlaceholders[0];
-            if (responseToHighlight) {
-                responseToHighlight.classList.add('highlight-target');
-                if (responseToHighlight.dataset.category !== activeCategory) {
-                    activeCategory = responseToHighlight.dataset.category;
-                    renderCategories();
-                    const newHighlight = document.querySelector(`.response-item[data-id="${responseToHighlight.dataset.id}"]`);
-                    if (newHighlight) {
-                        newHighlight.classList.add('highlight-target');
-                        newHighlight.scrollIntoView({
+                if (responsesWithPlaceholders.length === 0) {
+                    for (const category in categories) {
+                        categories[category].responses.forEach(response => {
+                            if (response.text.match(/\[([^\]]+)\]/g)) {
+                                const foundResponse = document.querySelector(`.response-item[data-id="${response.id}"]`);
+                                if (foundResponse) {
+                                    responsesWithPlaceholders.push(foundResponse);
+                                }
+                            }
+                        });
+                    }
+                }
+                const responseToHighlight = responsesWithPlaceholders[0];
+                if (responseToHighlight) {
+                    responseToHighlight.classList.add('highlight-target');
+                    if (responseToHighlight.dataset.category !== activeCategory) {
+                        activeCategory = responseToHighlight.dataset.category;
+                        renderCategories();
+                        const newHighlight = document.querySelector(`.response-item[data-id="${responseToHighlight.dataset.id}"]`);
+                        if (newHighlight) {
+                            newHighlight.classList.add('highlight-target');
+                            newHighlight.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+                    } else {
+                        responseToHighlight.scrollIntoView({
                             behavior: 'smooth',
                             block: 'center'
                         });
                     }
                 } else {
-                    responseToHighlight.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
+                    console.warn("No canned response with dynamic placeholders found for the tutorial.");
                 }
+            } else if (stepIndex === 10) {
+                const inputElement = document.getElementById('input-text-fedex');
+                if (inputElement) inputElement.classList.add('highlight-target');
+                inputElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            } else if (stepIndex === 11) {
+                const buttonElement = document.getElementById('copy-button-fedex');
+                if (buttonElement) buttonElement.classList.add('highlight-target');
+                buttonElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
             } else {
-                console.warn("No canned response with dynamic placeholders found for the tutorial.");
-            }
-        } else if (stepIndex === 10) {
-            document.getElementById('input-text-fedex').classList.add('highlight-target');
-            document.getElementById('input-text-fedex').scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        } else if (stepIndex === 11) {
-            document.getElementById('copy-button-fedex').classList.add('highlight-target');
-            document.getElementById('copy-button-fedex').scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        } else {
-            const targetElement = highlightedElements[stepIndex];
-            if (targetElement) {
-                if (Array.isArray(targetElement)) {
-                    targetElement.forEach(el => {
-                        el.classList.add('highlight-target');
-                    });
-                } else {
+                const targetElement = highlightedElements[stepIndex];
+                if (targetElement) {
                     targetElement.classList.add('highlight-target');
                 }
             }
         }
-    }
 
-    tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response', 'on-tracker-page');
-    tutorialModal.classList.add('modal', positionClasses[stepIndex]);
-    tutorialModal.classList.remove('hidden'); // Ensure it's not hidden
-    tutorialOverlay.classList.remove('hidden'); // Ensure the overlay is also visible
+        const tutorialModal = document.getElementById('tutorial-modal');
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
 
-    const tutorialBackBtn = document.getElementById('tutorial-back-btn');
-    const tutorialNextBtn = document.getElementById('tutorial-next-btn');
-    const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-    tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
-    tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
-    tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
+        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response', 'on-tracker-page');
+        tutorialModal.classList.add('modal', positionClasses[stepIndex]);
+        tutorialModal.classList.remove('hidden'); // Ensure it's not hidden
+        tutorialOverlay.classList.remove('hidden'); // Ensure the overlay is also visible
 
-    currentTutorialStep = stepIndex;
-};
+        const tutorialBackBtn = document.getElementById('tutorial-back-btn');
+        const tutorialNextBtn = document.getElementById('tutorial-next-btn');
+        const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
+        tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
+        tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
+        tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
 
-const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
-const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
-const getUserCannedResponsesDocRef = (uid) => { return doc(db, 'artifacts', safeAppId, 'users', uid, 'canned_responses_data', 'app_data'); };
-const getUserHelpfulLinksCollectionRef = (uid) => { return collection(db, 'artifacts', safeAppId, 'users', uid, 'helpful_links_data'); };
-const getUserRootDocRef = (uid) => { return doc(db, 'artifacts', safeAppId, 'users', uid); }
+        currentTutorialStep = stepIndex;
+    };
+    
+    // Check if a page change is necessary
+    const targetPage = tutorialPages[stepIndex];
+    if (currentPage !== targetPage) {
+        currentPage = targetPage;
+        
+        // Listen for the custom event before proceeding.
+        window.addEventListener('contentRendered', function handleRendered() {
+            displayTutorialStepUI();
+            window.removeEventListener('contentRendered', handleRendered);
+        });
+        
+        // Trigger the render
+        renderContent();
 
-const saveToFirestore = async (dataToSave) => {
-    if (!userId || isAnonymous) {
-        console.error("User not authenticated or is anonymous. Cannot save data.");
-        showMessage("Please sign in to save your data.", 'error');
-        return;
-    }
-    const userDocRef = getUserCannedResponsesDocRef(userId);
-    try {
-        const cleanedData = JSON.parse(JSON.stringify(dataToSave));
-        for (const key in cleanedData) {
-            if (!cleanedData[key].responses) {
-                cleanedData[key].responses = [];
-            }
-        }
-        await setDoc(userDocRef, { categories: cleanedData });
-    } catch (error) {
-        console.error("Error saving to Firestore:", error);
-        showMessage("Error saving data. Check your permissions.", 'error');
+    } else {
+        // No page change needed, just display the content for the current step.
+        displayTutorialStepUI();
     }
 };
 
