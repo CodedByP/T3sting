@@ -1231,6 +1231,8 @@ const showTutorialStep = async (stepIndex) => {
     const tutorialModal = document.getElementById('tutorial-modal');
     const tutorialOverlay = document.getElementById('tutorial-overlay');
 
+	tutorialSteps.forEach(step => step.classList.add('hidden'));
+
     // Determine the target page based on the tutorial step
     const targetPage = tutorialPages[stepIndex];
 
@@ -1250,8 +1252,6 @@ const showTutorialStep = async (stepIndex) => {
 	
     // We now clear the highlights and hide the modal AFTER the page content is rendered.
     clearTutorialHighlights();
-    tutorialSteps.forEach(step => step.classList.add('hidden'));
-    tutorialModal.classList.add('hidden');
     tutorialModal.classList.remove(...positionClasses);
 
     const currentStepElement = tutorialSteps[stepIndex];
