@@ -1220,7 +1220,6 @@ const showMessage = (text, type = 'success') => {
     document.querySelectorAll('.highlight-target').forEach(el => {
         el.classList.remove('highlight-target');
     });
-	document.getElementById('hamburger-menu-btn').classList.remove('bg-gray-700');
 };		
 
 // This is the new, combined function that handles all tutorial logic
@@ -1350,7 +1349,6 @@ const showTutorialStep = async (stepIndex) => {
             }
 		} else if (stepIndex === 9) { // New logic for the hamburger icon
             document.getElementById('hamburger-menu-btn').classList.add('highlight-target');
-			hamburgerBtn.classList.add('highlight-target', 'bg-gray-700'); // Add the background color class
         } else if (stepIndex === 10) {
             document.getElementById('input-text-fedex').classList.add('highlight-target');
             document.getElementById('input-text-fedex').scrollIntoView({
