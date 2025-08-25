@@ -1091,7 +1091,6 @@ const highlightedElements = [
     null, // Step 6: Pin button (highlighting handled dynamically)
     null, // Step 7: Dynamic Placeholders
     null, // This will be handled dynamically inside the function
-    null,
     document.getElementById('input-text-fedex'), // Step 10
     document.getElementById('copy-button-fedex'), // Step 11: New highlight
 ];
@@ -1208,7 +1207,6 @@ const showTutorialStep = async (stepIndex) => {
         null, // Step 6: Will find dynamically below
         null, // Step 7: Dynamic Placeholders
         null, // Step 8: Placeholder Demo
-        null, // Step 9: All Set
         document.getElementById('input-text-fedex'), // Step 10: FedEx Tracker
         document.getElementById('copy-button-fedex'), // Step 11: New highlight
     ];
@@ -1223,7 +1221,7 @@ const showTutorialStep = async (stepIndex) => {
         'on-response', // Step 6: Pin button (new)
         'left-response', // Step 7: Dynamic placeholders
         'show-modal', // Step 8: Placeholder demo
-        'left-response', // Step 10: New position
+        'on-tracker-page', // Step 10: New position
         'on-tracker-page' // Step 11: Position on the tracker page
     ];
 
