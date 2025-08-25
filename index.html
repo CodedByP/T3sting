@@ -1610,13 +1610,21 @@ if (!isAnonymous && categoryNames.length > 0) {
             categoryColor = lightenColor(categoryColor);
         }
 
-        // Apply the potentially modified color to the button
-        button.style.backgroundColor = categoryColor;
-        button.style.borderColor = categoryColor;
-        button.textContent = name;
-        button.dataset.category = name;
+    // Apply the potentially modified color to the button background
+    button.style.backgroundColor = categoryColor;
 
-        categoryList.appendChild(button);
+    // Corrected logic for setting the border color
+    if (name === activeCategory) {
+        button.style.borderColor = document.body.classList.contains('light-mode') ? '#111827' : '#FFFFFF';
+    } else {
+        // Set the border color to match the button background color when not active
+        button.style.borderColor = categoryColor;
+    }
+    
+    button.textContent = name;
+    button.dataset.category = name;
+
+    categoryList.appendChild(button);
     });
     
     if (!categories[activeCategory]) {
