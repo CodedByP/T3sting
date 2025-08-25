@@ -1264,28 +1264,14 @@ const showTutorialStep = async (stepIndex) => {
         document.getElementById('input-text-fedex'), // Step 10
         document.getElementById('copy-button-fedex'), // Step 11: New highlight
     ];
-    
-    const tutorialPages = [
-        'canned-responses', // Step 0: Welcome screen
-        'canned-responses', // Step 1: Add a response
-        'canned-responses', // Step 2: Search
-        'canned-responses', // Step 3: Categories
-        'canned-responses', // Step 4: Manage Categories
-        'canned-responses', // Step 5: Manage Responses (new)
-        'canned-responses', // Step 6: Pinning (new)
-        'canned-responses', // Step 7: Dynamic placeholders
-        'canned-responses', 
-        'fedex-tracker', // Step 10: Change page to FedEx tracker
-        'fedex-tracker', // Step 11: Change page to FedEx tracker
-    ];
 
-    const modalPositions = [
+    const positionClasses = [
         'show-modal', // Step 0: Centered modal
-        'top-right', // Step 1: Position for add response section
-        'top-right', // Step 2: Position for the search bar
-        'bottom-left', // Step 3: Position for category bar
+        'top-right', // Step 1: Add response section
+        'top-right', // Step 2: Search bar
+        'bottom-left', // Step 3: Category bar
         'upper-right', //Step 4: Position for Kebab menu
-        'on-response', // Step 5: Response buttons (new)
+        'on-response', // Step 5: Manage Responses (new)
         'on-response', // Step 6: Pin button (new)
         'left-response', // Step 7: Dynamic placeholders
         'show-modal',
@@ -1305,17 +1291,14 @@ const showTutorialStep = async (stepIndex) => {
     if (currentPage !== targetPage) {
         currentPage = targetPage;
         
-        // This is the critical change: Await the render process.
         await new Promise(resolve => {
             renderContent();
-            // We use a short delay to ensure the DOM has fully updated
-            // after the new content has been rendered.
             setTimeout(resolve, 50); 
         });
     }
 
-    // Now that the page is guaranteed to be rendered, we can safely
-    // update the tutorial modal content and position.
+    // This block of code is now OUTSIDE of the conditional logic
+    // and will execute every time `showTutorialStep` is called.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
