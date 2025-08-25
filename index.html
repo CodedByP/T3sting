@@ -1596,11 +1596,20 @@ if (!isAnonymous && categoryNames.length > 0) {
         button.className = `category-item font-bold py-2 px-4 rounded-lg shadow-md text-white transition-colors
             ${name === activeCategory ? 'border-2 border-white' : ''}
             hover:scale-105 active:scale-95 transition-all duration-300`;
-        const categoryColor = categories[name].color || '#60a5fa';
+        // Get the original color from the categories object
+        let categoryColor = categories[name].color || '#60a5fa';
+
+        // Add this conditional logic to check for light mode
+        if (document.body.classList.contains('light-mode')) {
+            categoryColor = lightenColor(categoryColor);
+        }
+
+        // Apply the potentially modified color to the button
         button.style.backgroundColor = categoryColor;
+        button.style.borderColor = categoryColor;
         button.textContent = name;
         button.dataset.category = name;
-        
+
         categoryList.appendChild(button);
     });
     
