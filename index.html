@@ -1231,8 +1231,13 @@ const showTutorialStep = async (stepIndex) => {
     const tutorialModal = document.getElementById('tutorial-modal');
     const tutorialOverlay = document.getElementById('tutorial-overlay');
 
-	tutorialSteps.forEach(step => step.classList.add('hidden'));
-
+    tutorialSteps.forEach((step, index) => {
+        if (index !== stepIndex) {
+            step.classList.add('hidden');
+        } else {
+            step.classList.remove('hidden');
+        }
+    });
     // Determine the target page based on the tutorial step
     const targetPage = tutorialPages[stepIndex];
 
