@@ -151,8 +151,8 @@
     right: 5%;
     transform: translate(0, 0) scale(1);
     max-width: 400px;
-}        
-        
+}		
+		
 #tutorial-modal.upper-right .modal-content {
     /* Refactored to use top and left for positioning and a transform for a smooth animation */
     opacity: 1;
@@ -168,7 +168,7 @@
     left: 15%;
     transform: translate(0, 0) scale(1);
     max-width: 500px;
-}      
+}		 	
 
 
         /* Add these rules to ensure proper z-indexing for highlighting */
@@ -183,7 +183,7 @@
     50% { transform: scale(1.01); box-shadow: 0 0 0 10px rgba(100, 160, 255, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(100, 160, 255, 0.4); }
 }
-        
+		
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
@@ -265,7 +265,7 @@
             border-radius: 4px;
         }
 
-            .highlight-target {
+        .highlight-target {
             position: relative; /* This is crucial for z-index to work */
             z-index: 1000;
             box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
@@ -274,7 +274,7 @@
 
             /* ADD THIS LINE to give the element a permanent, bright glow */
             border: 3px solid white; /* Adds a solid, white border for more visibility */
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); /* Adds a soft glow effect */    
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); /* Adds a soft glow effect */		
         }
 
         /* Light Mode Styles */
@@ -319,7 +319,7 @@
         .light-mode .hover\:text-white:hover { color: #1f2937; }
         .light-mode .tracking-numbers-container { background-color: #f3f4f6; }
         .light-mode .tracking-tab { background-color: #e5e7eb; }
-        
+		
         .kebab-button.active svg {
             transform: rotate(90deg);
             transition: transform 0.2s ease-in-out;
@@ -370,29 +370,23 @@
         }
 
     </style>
-    
-    <!-- Favicon links for all browsers and devices -->
+		
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 
-    <!-- Legacy favicon link for older browsers -->
     <link rel="shortcut icon" href="favicon.ico">
 
-    <!-- Apple touch icon for iOS devices -->
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 
-    <!-- Manifest for Progressive Web Apps (PWAs) -->
     <link rel="manifest" href="site.webmanifest">
 </head>
 <body class="flex flex-col min-h-screen bg-gray-900 relative">
 
-    <!-- Tutorial Overlay -->
     <div id="tutorial-overlay" class="fixed inset-0 bg-black bg-opacity-75 hidden z-[999]"></div>
 
-    <!-- Sidebar -->
     <div id="sidebar" class="sidebar flex flex-col">
         <h2 class="text-3xl font-extrabold text-gray-100 mb-8">Tools </h2>
         <nav class="flex flex-col space-y-3">
@@ -416,7 +410,6 @@
         </button>
     </div>
 
-    <!-- Main Content -->
     <div id="main-content" class="flex-1 p-6 sm:p-10 flex flex-col items-center transition-all duration-300 ease-in-out">
         <header class="w-full mb-8">
             <div class="flex items-center justify-between relative">
@@ -428,13 +421,11 @@
                 <div class="flex items-center space-x-4">
                     <h1 id="main-title" class="text-3xl sm:text-5xl font-extrabold text-gray-100 transition-colors duration-300">Canned Responses</h1>
                     <div id="category-menu-container" class="relative">
-                        <!-- New Category Actions Button -->
                         <button id="category-actions-btn" class="kebab-button p-2 rounded-full hover:bg-gray-700 transition duration-300 relative hidden" aria-expanded="true" aria-haspopup="true">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                             </svg>
                         </button>
-                        <!-- New centralized Category Actions menu -->
                         <div id="category-actions-menu" class="hidden absolute top-full right-0 mt-3 w-56 bg-gray-700 rounded-xl shadow-2xl z-50 transform scale-95 opacity-0 transition-all duration-300 origin-top-right">
                             <button id="rename-category-btn" class="w-full text-left px-5 py-3 hover:bg-gray-600 rounded-t-xl transition duration-200"><i class="fas fa-pencil-alt mr-2"></i>Rename Category</button>
                             <button id="delete-category-btn" class="w-full text-left px-5 py-3 hover:bg-gray-600 text-red-400 transition duration-200"><i class="fas fa-trash-alt mr-2"></i>Delete Category</button>
@@ -451,29 +442,22 @@
                 </div>
             </div>
             
-            <!-- Floating Category Bar at the top -->
             <div id="category-bar" class="mt-6 p-4 bg-gray-800 shadow-2xl flex items-center justify-between rounded-2xl">
                 <div class="flex-grow overflow-x-auto whitespace-nowrap scrollbar-hide">
                     <div id="category-list" class="flex gap-4">
-                        <!-- Category buttons will be dynamically added here -->
-                    </div>
+                        </div>
                 </div>
-                <!-- This button is now conditionally rendered for non-anonymous users -->
                 <button id="add-category-btn" class="flex-shrink-0 ml-4 bg-blue-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300">
                     <i class="fas fa-plus"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Message box for user feedback -->
         <div id="message-box" class="message-box"></div>
 
-        <!-- Canned Responses App Content -->
         <div id="canned-responses-app" class="w-full container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-start justify-center py-12 hidden">
             <div class="w-full max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
-                <!-- Left Column: Search & Add Response -->
                 <div class="w-full md:w-1/3 flex flex-col">
-                    <!-- Search Bar -->
                     <div id="search-bar-container" class="floating-card mb-8 relative p-6 sm:p-8">
                         <div class="absolute inset-y-0 left-0 pl-11 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -488,8 +472,6 @@
                         />
                     </div>
                     
-                    <!-- Add Response Section -->
-                    <!-- This section is now conditionally rendered for non-anonymous users -->
                     <div id="add-response-section" class="floating-card mb-8 p-6 sm:p-8 flex justify-center items-start">
                         <button id="open-add-response-modal-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:bg-blue-700 transition duration-300">
                             <i class="fas fa-plus mr-2"></i> Add New Response
@@ -497,14 +479,12 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Responses List -->
                 <div class="w-full md:w-2/3">
                     <div id="responses-container" class="w-full floating-card p-6 sm:p-8">
                         <h2 id="responses-heading" class="text-3xl font-bold text-gray-200 mb-6 hidden"></h2>
                         
                         <div id="responses-list" class="space-y-6">
-                            <!-- Responses will be dynamically added here, grouped by label -->
-                        </div>
+                            </div>
                         <div id="empty-state" class="text-center text-gray-400 mt-8 hidden">
                             <p class="text-lg">No canned responses in this category. Add one above!</p>
                         </div>
@@ -513,24 +493,20 @@
             </div>
         </div>
 
-        <!-- FedEx Tracker Content -->
         <div id="fedex-tracker-app" class="w-full container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-center justify-center py-12 hidden">
             <div class="main-card p-8 w-full max-w-2xl mx-auto">
                 <h1 class="text-4xl font-bold text-center text-gray-100 mb-4">FedEx Tracking</h1>
                 <p class="text-center text-gray-400 mb-8 text-lg">Extract and manage your FedEx tracking numbers easily.</p>
-    
-                <!-- Input Section -->
+		
                 <div class="mb-6">
                     <label for="input-text" class="block text-sm font-medium text-gray-300 mb-2">Paste or type your text here:</label>
                     <textarea id="input-text-fedex" rows="8" class="text-placeholder w-full p-4 border-2 border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-800 text-gray-100 transition duration-300 text-lg" placeholder="e.g., 'Your package with tracking number 794829370821 has been shipped.'"></textarea>
                 </div>
-    
-                <!-- Extracted Numbers Section -->
+		
                 <div class="mb-6">
                     <h2 class="text-2xl font-semibold text-gray-200 mb-4">Extracted Tracking Numbers</h2>
                     <div id="tracking-numbers-container" class="tracking-numbers-container border-2 border-dashed border-gray-700 rounded-xl p-4 scrollable-box shadow-inner">
                         <p id="no-numbers-message" class="text-center text-gray-500 text-base">No tracking numbers found yet.</p>
-                        <!-- Loading indicator -->
                         <div id="loading-indicator" class="hidden flex justify-center items-center">
                             <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -540,8 +516,7 @@
                         </div>
                     </div>
                 </div>
-    
-                <!-- Action Buttons -->
+		
                 <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                     <button id="clear-button-fedex" class="w-full sm:w-auto bg-gray-700 text-gray-200 font-semibold py-3 px-8 rounded-xl shadow-md hover:bg-gray-600 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50">
                         Clear
@@ -557,7 +532,6 @@
             </div>
         </div>
 
-        <!-- Helpful Links Content -->
         <div id="helpful-links-app" class="w-full hidden container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-center justify-center py-12">
             <div class="container mx-auto px-4">
                 <header class="text-center mb-16 animate-fade-in">
@@ -567,22 +541,17 @@
                     <div id="links-user-info" class="mt-4 text-sm text-gray-500"></div>
                 </header>
 
-                <!-- Main links container -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     
-                    <!-- Category: Static Resources (Your pre-defined links) -->
                     <section class="col-span-1 md:col-span-2 lg:col-span-3">
                         <h2 class="text-3xl font-bold text-center mb-8 link-title">
                             Static Resources
                         </h2>
                         <div id="static-links-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Static links will be dynamically added here from Firestore -->
                             <p class="text-center text-gray-400 col-span-full">Loading static links...</p>
                         </div>
                     </section>
                     
-                    <!-- Category: User-Added Links -->
-                    <!-- This section is now conditionally rendered for non-anonymous users -->
                     <section id="user-links-section" class="col-span-1 md:col-span-2 lg:col-span-3 mt-12">
                         <h2 class="text-3xl font-bold text-center mb-8 link-title">
                             Your Links
@@ -592,8 +561,6 @@
                         </div>
                     </section>
 
-                    <!-- Form to add new links -->
-                    <!-- This section is now conditionally rendered for non-anonymous users -->
                     <section id="add-link-section" class="col-span-1 md:col-span-2 lg:col-span-3 flex justify-center">
                         <div class="floating-card rounded-2xl p-8 max-w-lg w-full">
                             <h2 id="form-title" class="text-2xl font-bold text-blue-400 mb-4">Add a New Link</h2>
@@ -625,12 +592,10 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Settings App Content -->
+		
         <div id="settings-page" class="w-full container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-start justify-center py-12 hidden">
             <div class="w-full max-w-7xl mx-auto space-y-8 md:flex md:flex-wrap md:gap-8">
                 
-                <!-- Account Section -->
                 <div class="floating-card p-6 sm:p-8 flex flex-col items-center flex-1 md:w-1/2 min-h-full">
                     <h2 class="text-2xl font-bold text-gray-200 mb-4 flex items-center">
                         <i class="fas fa-user-circle mr-3 text-3xl text-blue-400"></i> Account
@@ -646,7 +611,6 @@
                     </div>
                 </div>
 
-                <!-- Theme & Updates Section -->
                 <div class="floating-card p-6 sm:p-8 flex-1 md:w-1/2 min-h-full space-y-6">
                     <h2 class="text-2xl font-bold text-gray-200 mb-4 flex items-center">
                         <i class="fas fa-paint-brush mr-3 text-3xl text-purple-400"></i> Appearance
@@ -665,7 +629,6 @@
                     </div>
                 </div>
 
-                <!-- Data Management Section -->
                 <div class="floating-card p-6 sm:p-8 flex flex-col items-center md:w-full">
                     <h2 class="text-2xl font-bold text-gray-200 mb-4 flex items-center">
                         <i class="fas fa-database mr-3 text-3xl text-green-400"></i> Data Management
@@ -686,14 +649,12 @@
         </div>
     </div>
 
-    <!-- Universal Placeholder Modal -->
     <div id="placeholder-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Customize Response</h3>
             <p class="text-gray-400 text-base mb-4">Please fill in the details for the placeholders below.</p>
             <div id="placeholder-inputs" class="space-y-4">
-                <!-- Dynamic input fields will be added here -->
-            </div>
+                </div>
             <div class="flex justify-end mt-6 space-x-4">
                 <button id="cancel-placeholder-btn" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md">
                     Cancel
@@ -705,7 +666,6 @@
         </div>
     </div>
 
-    <!-- Edit Response Modal -->
     <div id="edit-response-modal" class="modal hidden">
         <div class="modal-content w-full max-w-3xl" data-original-category="">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Edit Response</h3>
@@ -736,7 +696,6 @@
     </div>
 
 
-    <!-- Import/Export Modal -->
     <div id="import-export-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Import or Export Data</h3>
@@ -762,7 +721,6 @@
         </div>
     </div>
 
-    <!-- New Add Response Modal -->
     <div id="new-response-modal" class="modal hidden">
         <div class="modal-content w-full max-w-3xl">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Create New Response</h3>
@@ -792,7 +750,6 @@
     </div>
 
 
-    <!-- Add Category Modal -->
     <div id="add-category-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Add a New Category</h3>
@@ -814,7 +771,6 @@
         </div>
     </div>
 
-    <!-- Edit Category Modal -->
     <div id="edit-category-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Edit Category</h3>
@@ -836,7 +792,6 @@
         </div>
     </div>
 
-    <!-- Delete Category Modal -->
     <div id="delete-category-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Confirm Category Deletion</h3>
@@ -852,7 +807,6 @@
         </div>
     </div>
 
-    <!-- Color Picker Modal -->
     <div id="color-picker-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Change Category Color</h3>
@@ -871,7 +825,6 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="modal hidden">
         <div class="modal-content">
             <h3 class="text-2xl font-bold text-gray-200 mb-4">Confirm Deletion</h3>
@@ -887,7 +840,6 @@
         </div>
     </div>
 
-    <!-- Update Confirmation Modal -->
     <div id="update-modal" class="modal hidden">
         <div class="modal-content">
             <h3 id="update-modal-title" class="text-2xl font-bold text-gray-200 mb-4">Checking for Updates...</h3>
@@ -899,8 +851,7 @@
             </div>
         </div>
     </div>
-    
-    <!-- Login Modal - This is the new, modal pop-up container -->
+		
     <div id="login-popup-modal" class="modal hidden">
         <div class="login-popup flex flex-col space-y-3">
             <div class="flex items-center justify-between">
@@ -918,7 +869,6 @@
         </div>
     </div>
 
-    <!-- Multi-step Tutorial Modal -->
     <div id="tutorial-modal" class="modal hidden">
         <div class="modal-content w-full max-w-lg">
             <div id="tutorial-step-1" class="tutorial-step space-y-6">
@@ -989,7 +939,7 @@
                     </h4>
                     <p class="text-gray-400">Click the pin icon again to unpin a response, and it will return to its alphabetical position.</p>
                 </div>
-             </div>
+            </div>
             
             <div id="tutorial-step-8" class="tutorial-step space-y-6 hidden">
                 <h3 class="text-3xl font-extrabold text-blue-400 text-center">Dynamic Placeholders</h3>
@@ -1007,54 +957,54 @@
                 </div>
             </div>
 
-        <div id="tutorial-step-9" class="tutorial-step space-y-6 hidden">
-            <h3 class="text-3xl font-extrabold text-blue-400 text-center">You're All Set! 🎉</h3>
-            <p class="text-lg text-gray-300">You've successfully copied a response with placeholders filled in. Now you can paste it anywhere you need!</p>
-            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
-                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                    <i class="fas fa-paste text-green-400 mr-3"></i> Try it out
-                </h4>
-                <p class="text-gray-400">Paste the text into a document or email to see the final result. All your responses are now ready to be used with a single click.</p>
-            </div>
-        </div>
-
-        <div id="tutorial-step-10" class="tutorial-step space-y-6 hidden">
-            <h3 class="text-3xl font-extrabold text-blue-400 text-center">FedEx Tracker Page 📦</h3>
-            <p class="text-lg text-gray-300">This page allows you to quickly extract FedEx tracking numbers from any block of text you paste in.</p>
-            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
-                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                    <i class="fas fa-clipboard-check text-green-400 mr-3"></i> Try it out!
-                </h4>
-                 <p class="text-gray-400">Paste an email or text containing one or more FedEx tracking numbers into the box on the left, and watch them appear on the right.</p>
-            </div>
-        </div> 
-
-      <div id="tutorial-step-11" class="tutorial-step space-y-6 hidden">
-            <h3 class="text-3xl font-extrabold text-blue-400 text-center">Copy & Open FedEx 🔗</h3>
-            <p class="text-lg text-gray-300">After the numbers are extracted, this button copies all of them and automatically opens a new FedEx tracking tab for you.</p>
-            <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
-                <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
-                    <i class="fas fa-truck text-red-400 mr-3"></i> Why it's useful
-                </h4>
-                <p class="text-gray-400">This saves you from copying each number one by one and pasting them into the FedEx website, streamlining your workflow.</p>
-            </div>
-        </div>      
-
-        <div id="copy-success-modal" class="modal hidden">
-            <div class="modal-content">
-                <h3 class="text-2xl font-bold text-gray-200 mb-4">Text Copied! ✅</h3>
-                <p class="text-gray-400 text-base mb-2">Here is the final response you just copied:</p>
-                <div class="bg-gray-700 p-4 rounded-xl border border-gray-600 mb-4 overflow-auto max-h-60">
-                    <pre id="copied-text-display" class="whitespace-pre-wrap text-gray-200"></pre>
-                </div>
-                <p class="text-sm text-gray-500 mb-4">Feel free to paste this into your application.</p>
-                <div class="flex justify-end">
-                    <button id="close-copy-success-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-blue-700 transition duration-300">
-                        Got it!
-                    </button>
+            <div id="tutorial-step-9" class="tutorial-step space-y-6 hidden">
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">You're All Set! 🎉</h3>
+                <p class="text-lg text-gray-300">You've successfully copied a response with placeholders filled in. Now you can paste it anywhere you need!</p>
+                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                        <i class="fas fa-paste text-green-400 mr-3"></i> Try it out
+                    </h4>
+                    <p class="text-gray-400">Paste the text into a document or email to see the final result. All your responses are now ready to be used with a single click.</p>
                 </div>
             </div>
-        </div>
+
+            <div id="tutorial-step-10" class="tutorial-step space-y-6 hidden">
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">FedEx Tracker Page 📦</h3>
+                <p class="text-lg text-gray-300">This page allows you to quickly extract FedEx tracking numbers from any block of text you paste in.</p>
+                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                        <i class="fas fa-clipboard-check text-green-400 mr-3"></i> Try it out!
+                    </h4>
+                    <p class="text-gray-400">Paste an email or text containing one or more FedEx tracking numbers into the box on the left, and watch them appear on the right.</p>
+                </div>
+            </div>	
+
+            <div id="tutorial-step-11" class="tutorial-step space-y-6 hidden">
+                <h3 class="text-3xl font-extrabold text-blue-400 text-center">Copy & Open FedEx 🔗</h3>
+                <p class="text-lg text-gray-300">After the numbers are extracted, this button copies all of them and automatically opens a new FedEx tracking tab for you.</p>
+                <div class="p-4 rounded-xl bg-gray-800 shadow-lg border border-gray-700">
+                    <h4 class="text-xl font-bold text-gray-200 flex items-center mb-2">
+                        <i class="fas fa-truck text-red-400 mr-3"></i> Why it's useful
+                    </h4>
+                    <p class="text-gray-400">This saves you from copying each number one by one and pasting them into the FedEx website, streamlining your workflow.</p>
+                </div>
+            </div>		
+
+            <div id="copy-success-modal" class="modal hidden">
+                <div class="modal-content">
+                    <h3 class="text-2xl font-bold text-gray-200 mb-4">Text Copied! ✅</h3>
+                    <p class="text-gray-400 text-base mb-2">Here is the final response you just copied:</p>
+                    <div class="bg-gray-700 p-4 rounded-xl border border-gray-600 mb-4 overflow-auto max-h-60">
+                        <pre id="copied-text-display" class="whitespace-pre-wrap text-gray-200"></pre>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">Feel free to paste this into your application.</p>
+                    <div class="flex justify-end">
+                        <button id="close-copy-success-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-xl hover:bg-blue-700 transition duration-300">
+                            Got it!
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <div class="flex justify-between items-center mt-8">
                 <button id="tutorial-back-btn" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md hidden">
@@ -1069,8 +1019,7 @@
             </div>
         </div>
     </div>
-    
-    <!-- Firebase SDKs -->
+		
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -1095,7 +1044,7 @@
         const db = getFirestore(app);
         setLogLevel('debug');
         
-       // --- Global State Variables ---
+        // --- Global State Variables ---
 let currentTutorialStep = 0;
 let categories = {};
 let activeCategory = '';
@@ -1129,7 +1078,7 @@ const tutorialSteps = [
     document.getElementById('tutorial-step-8'),
     document.getElementById('tutorial-step-9'),
     document.getElementById('tutorial-step-10'),
-    document.getElementById('tutorial-step-11'),    
+    document.getElementById('tutorial-step-11'),   
 ];
 
 const highlightedElements = [
@@ -1158,7 +1107,7 @@ const tutorialPages = [
     'canned-responses', // Step 7: Dynamic placeholders
     'canned-responses', 
     'fedex-tracker', // Step 10: Change page to FedEx tracker
-    'fedex-tracker', // Step 11: Change page to FedEx tracker    
+    'fedex-tracker', // Step 11: Change page to FedEx tracker   
 ];
 
 // An array to map each step to the modal's target position
@@ -1166,14 +1115,14 @@ const modalPositions = [
     'show-modal', // Step 0: Centered modal
     'top-right',  // Step 1: Position for add response section
     'top-right',  // Step 2: Position for the search bar
-    'bottom-left',  // Step 3: Position for category bar
+    'bottom-left', // Step 3: Position for category bar
     'upper-right', //Step 4: Position for Kebab menu
     'on-response', // Step 5: Response buttons (new)
     'on-response',  // Step 6: Pin button (new)
     'left-response', // Step 7: Dynamic placeholders
     'show-modal',
     'on-tracker-page', // Step 10: New position
-    'on-tracker-page' // Step 11: Position on the tracker page    
+    'on-tracker-page' // Step 11: Position on the tracker page   
 ];
 
 // --- Master Blueprint Data for Initialization ---
@@ -1244,10 +1193,8 @@ const showMessage = (text, type = 'success') => {
     document.querySelectorAll('.highlight-target').forEach(el => {
         el.classList.remove('highlight-target');
     });
-};     
+};		
 
-// This is the new, combined function that handles all tutorial logic
-// This is the new, combined function that handles all tutorial logic
 // This is the new, combined function that handles all tutorial logic
 const showTutorialStep = async (stepIndex) => {
     const highlightedElements = [
@@ -1264,7 +1211,7 @@ const showTutorialStep = async (stepIndex) => {
         document.getElementById('input-text-fedex'), // Step 10
         document.getElementById('copy-button-fedex'), // Step 11: New highlight
     ];
-
+    
     const positionClasses = [
         'show-modal', // Step 0: Centered modal
         'top-right', // Step 1: Add response section
@@ -1293,7 +1240,7 @@ const showTutorialStep = async (stepIndex) => {
         
         await new Promise(resolve => {
             renderContent();
-            setTimeout(resolve, 50); 
+            setTimeout(resolve, 50); // We use a short delay to ensure the DOM has fully updated
         });
     }
 
@@ -1685,7 +1632,7 @@ const renderResponses = (searchQuery = '') => {
                     if (pinButton) pinButton.classList.add('highlight-target');
                 }
             }
-        }        
+        }		
     } else {
         emptyState.classList.add('hidden');
     }
@@ -2198,7 +2145,7 @@ function attachEventListeners() {
     
     });
     
- // --- Tutorial Listeners (Corrected) ---
+// --- Tutorial Listeners (Corrected) ---
     document.getElementById('tutorial-next-btn').addEventListener('click', () => {
         if (currentTutorialStep < tutorialSteps.length - 1) {
             currentTutorialStep++;
@@ -2471,13 +2418,13 @@ function attachEventListeners() {
         showTutorialStep(currentTutorialStep);
         
     });
-    document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
-        // Hide the placeholder modal
-        document.getElementById('placeholder-modal').classList.add('hidden');
-        // Show the tutorial modal and its overlay again
-        document.getElementById('tutorial-modal').classList.remove('hidden');
-        document.getElementById('tutorial-overlay').classList.remove('hidden');
-    });    
+    document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
+        // Hide the placeholder modal
+        document.getElementById('placeholder-modal').classList.add('hidden');
+        // Show the tutorial modal and its overlay again
+        document.getElementById('tutorial-modal').classList.remove('hidden');
+        document.getElementById('tutorial-overlay').classList.remove('hidden');
+    });	
     document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
     });
