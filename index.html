@@ -2091,6 +2091,15 @@ const showLinksStatus = (message, colorClass) => {
         linksStatusMessage.className = 'text-center mt-2 text-sm text-gray-400';
     }, 3000);
 };
+
+// Add this helper function somewhere in your script block
+const closeSidebar = () => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+    }
+};
+
 const resetLinksForm = () => {
     const linksFormTitle = document.getElementById('form-title');
     const linkTitleInput = document.getElementById('link-title');
@@ -2238,12 +2247,12 @@ const showPlaceholderDemo = () => {
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
-    document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
-    document.getElementById('close-sidebar-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.remove('open'); });
-    document.getElementById('nav-canned-responses').addEventListener('click', () => { currentPage = 'canned-responses'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
-    document.getElementById('nav-fedex-tracker').addEventListener('click', () => { currentPage = 'fedex-tracker'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
-    document.getElementById('nav-helpful-links').addEventListener('click', () => { currentPage = 'helpful-links'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
-    document.getElementById('nav-settings').addEventListener('click', () => { currentPage = 'settings'; renderContent(); document.getElementById('sidebar').classList.remove('open'); });
+document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
+document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
+document.getElementById('nav-canned-responses').addEventListener('click', () => { currentPage = 'canned-responses'; renderContent(); closeSidebar(); });
+document.getElementById('nav-fedex-tracker').addEventListener('click', () => { currentPage = 'fedex-tracker'; renderContent(); closeSidebar(); });
+document.getElementById('nav-helpful-links').addEventListener('click', () => { currentPage = 'helpful-links'; renderContent(); closeSidebar(); });
+document.getElementById('nav-settings').addEventListener('click', () => { currentPage = 'settings'; renderContent(); closeSidebar(); });
     
     // Form Submission Listener (Attached only once)
     document.getElementById('add-link-form').addEventListener('submit', async (e) => {
