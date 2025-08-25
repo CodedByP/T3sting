@@ -1286,22 +1286,45 @@ const showTutorialStep = (stepIndex) => {
     tutorialModal.classList.remove('hidden');
     tutorialOverlay.classList.remove('hidden');    
     // First, handle the page navigation.
-    const targetPage = tutorialPages[stepIndex];
-    if (currentPage !== targetPage) {
-        currentPage = targetPage;
-        renderContent();
-    }
+// A single source of truth for the current page and tutorial step.
+const targetPage = tutorialPages[stepIndex];
 
-    // Now, reset all highlight states and hide all steps.
+// Check if a page change is necessary
+if (currentPage !== targetPage) {
+    // We only change the page if necessary
+    currentPage = targetPage;
+
+    // Use a Promise to ensure renderContent completes before we proceed
+    const renderPromise = new Promise(resolve => {
+        // We'll add an event listener or check for a signal to know when the render is done
+        // For simplicity, we'll use a small delay here to simulate the rendering time.
+        setTimeout(() => {
+            renderContent();
+            resolve();
+        }, 50); // A small delay to let the DOM re-render the page content
+    });
+
+    renderPromise.then(() => {
+        // AFTER the page has rendered, then we display the new tutorial step.
+        _displayTutorialStepContent(stepIndex);
+    });
+
+} else {
+    // No page change needed, just display the content for the current step.
+    _displayTutorialStepContent(stepIndex);
+}
+
+// Private helper function to handle displaying the modal content and highlights.
+function _displayTutorialStepContent(stepIndex) {
+    // Reset all highlight states and hide all steps.
     tutorialSteps.forEach(step => step.classList.add('hidden'));
     document.querySelectorAll('.highlight-target').forEach(el => el.classList.remove('highlight-target'));
 
     const currentStepElement = tutorialSteps[stepIndex];
-    const targetElement = highlightedElements[stepIndex];
-
     if (currentStepElement) {
         currentStepElement.classList.remove('hidden');
-        
+
+        // Dynamically set highlights based on stepIndex
         if (stepIndex === 5) {
             const firstResponse = document.querySelector('.response-item');
             if (firstResponse) {
@@ -1315,20 +1338,14 @@ const showTutorialStep = (stepIndex) => {
                 if (pinButton) pinButton.classList.add('highlight-target');
             }
         } else if (stepIndex === 7) {
-            // **[MODIFIED CODE BLOCK]**
-            // Find a response that contains placeholders, prioritizing the active category
             const responsesWithPlaceholders = [];
-            
-            // First, search the active category for a response with placeholders
             if (categories[activeCategory]) {
                 categories[activeCategory].responses.forEach(response => {
                     if (response.text.match(/\[([^\]]+)\]/g)) {
                         responsesWithPlaceholders.push(document.querySelector(`.response-item[data-id="${response.id}"]`));
                     }
                 });
-            }        
-            
-            // If no response is found in the active category, search all categories
+            }
             if (responsesWithPlaceholders.length === 0) {
                 for (const category in categories) {
                     categories[category].responses.forEach(response => {
@@ -1341,17 +1358,12 @@ const showTutorialStep = (stepIndex) => {
                     });
                 }
             }
-
             const responseToHighlight = responsesWithPlaceholders[0];
-
             if (responseToHighlight) {
                 responseToHighlight.classList.add('highlight-target');
-                // Temporarily switch to the correct category to show the example
                 if (responseToHighlight.dataset.category !== activeCategory) {
                     activeCategory = responseToHighlight.dataset.category;
                     renderCategories();
-                    
-                    // Re-add highlight after rendering
                     const newHighlight = document.querySelector(`.response-item[data-id="${responseToHighlight.dataset.id}"]`);
                     if (newHighlight) {
                         newHighlight.classList.add('highlight-target');
@@ -1361,18 +1373,15 @@ const showTutorialStep = (stepIndex) => {
                     responseToHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             } else {
-                // Handle the case where no responses with placeholders are found at all.
-                // This prevents an error and gracefully moves on.
                 console.warn("No canned response with dynamic placeholders found for the tutorial.");
             }
         } else if (stepIndex === 10) {
-                document.getElementById('input-text-fedex').classList.add('highlight-target');
-                document.getElementById('input-text-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('input-text-fedex').classList.add('highlight-target');
+            document.getElementById('input-text-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (stepIndex === 11) {
-                document.getElementById('copy-button-fedex').classList.add('highlight-target');
-                document.getElementById('copy-button-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });     
+            document.getElementById('copy-button-fedex').classList.add('highlight-target');
+            document.getElementById('copy-button-fedex').scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
-            // This is the general case for all other steps
             const targetElement = highlightedElements[stepIndex];
             if (targetElement) {
                 if (Array.isArray(targetElement)) {
@@ -1385,25 +1394,26 @@ const showTutorialStep = (stepIndex) => {
             }
         }
     }
-    
-    // Dynamically apply the positioning class
-    // This is the core change: It resets the modal's classes and applies the new one for the current step.
-    // Dynamically apply the positioning class and ensure the modal is visible
-        tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response', 'on-tracker-page'); // Reset all positioning classes
-        tutorialModal.classList.add('modal'); // Ensure the base modal class is present
-        tutorialModal.classList.add(positionClasses[stepIndex]); // Add the specific positioning class
-    
-    // Finally, manage the tutorial's navigation buttons and update the global step variable.
+
+    // Now, apply the positioning classes to the modal itself.
+    const tutorialModal = document.getElementById('tutorial-modal');
+    const tutorialOverlay = document.getElementById('tutorial-overlay');
+
+    tutorialModal.classList.remove('hidden', 'show-modal', 'top-right', 'bottom-left', 'upper-right', 'on-response', 'left-response', 'on-tracker-page');
+    tutorialModal.classList.add('modal', modalPositions[stepIndex]);
+    tutorialModal.classList.remove('hidden'); // Ensure it's not hidden
+    tutorialOverlay.classList.remove('hidden'); // Ensure the overlay is also visible
+
+    // Finally, manage the navigation buttons
     const tutorialBackBtn = document.getElementById('tutorial-back-btn');
     const tutorialNextBtn = document.getElementById('tutorial-next-btn');
     const tutorialFinishBtn = document.getElementById('tutorial-finish-btn');
-    
     tutorialBackBtn.classList.toggle('hidden', stepIndex === 0);
     tutorialNextBtn.classList.toggle('hidden', stepIndex === tutorialSteps.length - 1);
     tutorialFinishBtn.classList.toggle('hidden', stepIndex !== tutorialSteps.length - 1);
-    
+
     currentTutorialStep = stepIndex;
-};
+}
 
 const getCannedResponsesBlueprint = async () => { return defaultCannedResponsesBlueprint; };
 const getHelpfulLinksBlueprint = async () => { return defaultHelpfulLinksBlueprint; };
