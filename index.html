@@ -286,6 +286,20 @@
             filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)); /* Adds a soft glow effect */		
         }
 
+		/* Light Mode Highlighting Effect */
+body.light-mode .highlight-target {
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.2);
+    border: 3px solid #1f2937;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8));
+    animation: pulse-highlight-light 1.5s infinite;
+}
+
+@keyframes pulse-highlight-light {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(100, 160, 255, 0.4); }
+    50% { transform: scale(1.01); box-shadow: 0 0 0 10px rgba(100, 160, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(100, 160, 255, 0.4); }
+}
+
         /* Light Mode Styles */
         body.light-mode {
             background-color: #f3f4f6;
@@ -377,6 +391,46 @@
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+		/* Light Mode Styles for Tutorial Modal */
+body.light-mode #tutorial-modal .modal-content {
+    background-color: rgba(243, 244, 246, 0.9); /* Lighter background */
+    color: #111827; /* Dark text */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode #tutorial-modal h3,
+body.light-mode #tutorial-modal h4 {
+    color: #3b82f6; /* A contrasting blue for headings */
+}
+
+body.light-mode #tutorial-modal p,
+body.light-mode #tutorial-modal ul {
+    color: #4b5563; /* Darker text for readability */
+}
+
+body.light-mode #tutorial-modal .bg-gray-800 {
+    background-color: #e5e7eb; /* Adjusting the info box color */
+    border-color: #d1d5db;
+}
+/* Inside your style block */
+/* Buttons in dark mode (default) */
+#tutorial-back-btn { background-color: #4b5563; color: #e5e7eb; }
+#tutorial-next-btn { background-color: #2563eb; color: #ffffff; }
+#tutorial-finish-btn { background-color: #16a34a; color: #ffffff; }
+
+/* Buttons in light mode */
+body.light-mode #tutorial-back-btn { background-color: #d1d5db; color: #1f2937; }
+body.light-mode #tutorial-next-btn { background-color: #3b82f6; color: #ffffff; }
+body.light-mode #tutorial-finish-btn { background-color: #22c55e; color: #ffffff; }
+
+/* Button hover effects */
+#tutorial-back-btn:hover { background-color: #6b7280; }
+body.light-mode #tutorial-back-btn:hover { background-color: #9ca3af; }
+#tutorial-next-btn:hover { background-color: #3b82f6; }
+body.light-mode #tutorial-next-btn:hover { background-color: #3b82f6; }
+#tutorial-finish-btn:hover { background-color: #22c55e; }
+body.light-mode #tutorial-finish-btn:hover { background-color: #4ade80; }
 
     </style>
 		
@@ -1030,17 +1084,26 @@
                 </div>
             </div>
 
-            <div class="flex justify-between items-center mt-8">
-                <button id="tutorial-back-btn" class="bg-gray-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-gray-700 transition duration-300 shadow-md hidden">
-                    <i class="fas fa-arrow-left mr-2"></i> Back
-                </button>
-                <button id="tutorial-next-btn" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 transition duration-300 shadow-lg">
-                    Next <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-                <button id="tutorial-finish-btn" class="bg-green-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-green-700 transition duration-300 shadow-lg hidden">
-                    Finish <i class="fas fa-check ml-2"></i>
-                </button>
-            </div>
+			<div class="flex justify-between items-center mt-8">
+   				 <button id="tutorial-back-btn" class="py-3 px-6 rounded-xl shadow-md hidden 
+       			 dark:bg-gray-600 dark:text-white dark:hover:bg-gray-700
+        			light-mode:bg-gray-300 light-mode:text-gray-800 light-mode:hover:bg-gray-400
+        			transition duration-300">
+       			 <i class="fas fa-arrow-left mr-2"></i> Back
+   			 </button>
+   			 <button id="tutorial-next-btn" class="py-3 px-6 rounded-xl shadow-lg
+        			dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700
+        			light-mode:bg-blue-600 light-mode:text-white light-mode:hover:bg-blue-700
+        			transition duration-300">
+        			Next <i class="fas fa-arrow-right ml-2"></i>
+   			 </button>
+    			<button id="tutorial-finish-btn" class="py-3 px-6 rounded-xl shadow-lg hidden
+       			 dark:bg-green-600 dark:text-white dark:hover:bg-green-700
+       			 light-mode:bg-green-600 light-mode:text-white light-mode:hover:bg-green-700
+       			 transition duration-300">
+       			 Finish <i class="fas fa-check ml-2"></i>
+    			</button>
+			</div>
         </div>
     </div>
 		
