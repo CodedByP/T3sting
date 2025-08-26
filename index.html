@@ -2380,49 +2380,42 @@ const showPlaceholderDemo = () => {
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
+// This listener handles opening and closing the sidebar by toggling the 'open' class.
+// This is the only place the 'open' class should be toggled.
 document.getElementById('hamburger-menu-btn').addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
 });
 
-document.getElementById('close-sidebar-btn').addEventListener('click', (event) => {
-    // This is the key change: stop the event from bubbling up
-    event.stopPropagation();
-    closeSidebar();
-});
-
-// Update the other navigation listeners to also stop event propagation.
-document.getElementById('nav-canned-responses').addEventListener('click', (event) => {
-    event.stopPropagation(); // Stop the event from bubbling to the parent
+document.getElementById('nav-canned-responses').addEventListener('click', () => {
     currentPage = 'canned-responses';
     renderContent();
     closeSidebar();
 });
-
-document.getElementById('nav-fedex-tracker').addEventListener('click', (event) => {
-    event.stopPropagation(); // Stop the event from bubbling to the parent
+document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
     currentPage = 'fedex-tracker';
     renderContent();
     closeSidebar();
 });
-
-document.getElementById('nav-helpful-links').addEventListener('click', (event) => {
-    event.stopPropagation(); // Stop the event from bubbling to the parent
+document.getElementById('nav-helpful-links').addEventListener('click', () => {
     currentPage = 'helpful-links';
     renderContent();
     closeSidebar();
 });
-
-document.getElementById('nav-settings').addEventListener('click', (event) => {
-    event.stopPropagation(); // Stop the event from bubbling to the parent
+document.getElementById('nav-settings').addEventListener('click', () => {
     currentPage = 'settings';
     renderContent();
     closeSidebar();
 });
-
-// This is a global listener on the main content area to close the sidebar
-// when a user clicks outside of it.
-document.getElementById('main-content').addEventListener('click', () => {
-    closeSidebar();
+// Add a single, global listener to close the sidebar when a user clicks outside of it.
+// This is a robust and common pattern.
+document.addEventListener('click', (event) => {
+    const sidebar = document.getElementById('sidebar');
+    const hamburgerBtn = document.getElementById('hamburger-menu-btn');
+    // Check if the sidebar is open and the click target is not the sidebar itself
+    // or the hamburger button.
+    if (sidebar.classList.contains('open') && !sidebar.contains(event.target) && !hamburgerBtn.contains(event.target)) {
+        closeSidebar();
+    }
 });
 
     // Other one-time listeners
