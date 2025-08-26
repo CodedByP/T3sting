@@ -2142,66 +2142,6 @@ const replacePlaceholders = (text, userValues) => {
     }
     return result;
 };
-const renderStaticLinks = () => {
-    const staticLinksList = document.getElementById('static-links-list');
-    if (renderedStaticLinks) return;
-    staticLinksList.innerHTML = '';
-    if (defaultLinks.length > 0) {
-        defaultLinks.forEach(link => {
-            const card = document.createElement('div');
-            card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect';
-            const descriptionText = link.description || 'No description available.';
-            card.innerHTML = `
-                <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="block">
-                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
-                    <p class="text-sm text-gray-400">${descriptionText}</p>
-                </a>
-            `;
-            staticLinksList.appendChild(card);
-        });
-    } else {
-        staticLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No static links found.</p>';
-    }
-    renderedStaticLinks = true;
-}
-const renderUserLinks = () => {
-    const userLinksList = document.getElementById('user-links-list');
-    userLinksList.innerHTML = '';
-    if (userLinks && userLinks.length > 0) {
-        userLinks.forEach(link => {
-            const card = document.createElement('div');
-            card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect flex items-center justify-between relative';
-            card.innerHTML = `
-                <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
-                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
-                    <p class="text-sm text-gray-400">${link.description || 'No description available.'}</p>
-                </a>
-                <div class="relative inline-block text-left" data-doc-id="${link.id}" data-title="${link.title}" data-url="${link.url}" data-description="${link.description || ''}">
-                    <button type="button" class="meatballs-button p-2 text-gray-400 hover:text-white transition-colors" aria-expanded="true" aria-haspopup="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 pointer-events-none">
-                            <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
-                        </svg>
-                    </button>
-                    <div class="meatballs-menu hidden absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                        <div class="py-1">
-                            <button class="edit-link-btn text-gray-200 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Edit</button>
-                            <button class="delete-link-btn text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Delete</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            userLinksList.appendChild(card);
-        });
-    } else {
-        userLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>';
-    }
-
-	    if (filteredUserLinks.length === 0 && isAnonymous) {
-      userLinksSection.classList.add('hidden');
-    } else {
-      userLinksSection.classList.remove('hidden');
-    }
-};
 const renderHelpfulLinks = () => {
     const userLinksSection = document.getElementById('user-links-section');
     const addLinkSection = document.getElementById('add-link-section');
