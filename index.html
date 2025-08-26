@@ -2380,33 +2380,50 @@ const showPlaceholderDemo = () => {
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
-    document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
-    document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
+document.getElementById('hamburger-menu-btn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+});
 
-    // Updated navigation event listeners with a small delay for closing the sidebar
-    document.getElementById('nav-canned-responses').addEventListener('click', () => {
-        currentPage = 'canned-responses';
-        renderContent();
-        closeSidebar();
-    });
+document.getElementById('close-sidebar-btn').addEventListener('click', (event) => {
+    // This is the key change: stop the event from bubbling up
+    event.stopPropagation();
+    closeSidebar();
+});
 
-    document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
-        currentPage = 'fedex-tracker';
-        renderContent();
-        closeSidebar();
-    });
+// Update the other navigation listeners to also stop event propagation.
+document.getElementById('nav-canned-responses').addEventListener('click', (event) => {
+    event.stopPropagation(); // Stop the event from bubbling to the parent
+    currentPage = 'canned-responses';
+    renderContent();
+    closeSidebar();
+});
 
-    document.getElementById('nav-helpful-links').addEventListener('click', () => {
-        currentPage = 'helpful-links';
-        renderContent();
-        closeSidebar();
-    });
+document.getElementById('nav-fedex-tracker').addEventListener('click', (event) => {
+    event.stopPropagation(); // Stop the event from bubbling to the parent
+    currentPage = 'fedex-tracker';
+    renderContent();
+    closeSidebar();
+});
 
-    document.getElementById('nav-settings').addEventListener('click', () => {
-        currentPage = 'settings';
-        renderContent();
-        closeSidebar();
-    });
+document.getElementById('nav-helpful-links').addEventListener('click', (event) => {
+    event.stopPropagation(); // Stop the event from bubbling to the parent
+    currentPage = 'helpful-links';
+    renderContent();
+    closeSidebar();
+});
+
+document.getElementById('nav-settings').addEventListener('click', (event) => {
+    event.stopPropagation(); // Stop the event from bubbling to the parent
+    currentPage = 'settings';
+    renderContent();
+    closeSidebar();
+});
+
+// This is a global listener on the main content area to close the sidebar
+// when a user clicks outside of it.
+document.getElementById('main-content').addEventListener('click', () => {
+    closeSidebar();
+});
 
     // Other one-time listeners
     document.getElementById('add-link-form').addEventListener('submit', async (e) => {
