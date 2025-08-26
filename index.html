@@ -2386,10 +2386,29 @@ function attachEventListeners() {
 document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
 document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
 // Updated navigation event listeners with the correct closeSidebar() calls
-document.getElementById('nav-canned-responses').addEventListener('click', () => { currentPage = 'canned-responses'; renderContent(); closeSidebar(); });
-document.getElementById('nav-fedex-tracker').addEventListener('click', () => { currentPage = 'fedex-tracker'; renderContent(); closeSidebar(); });
-document.getElementById('nav-helpful-links').addEventListener('click', () => { currentPage = 'helpful-links'; renderContent(); closeSidebar(); });
-document.getElementById('nav-settings').addEventListener('click', () => { currentPage = 'settings'; renderContent(); closeSidebar(); });
+    document.getElementById('nav-canned-responses').addEventListener('click', () => {
+        currentPage = 'canned-responses';
+        renderContent();
+        closeSidebar();
+    });
+
+    document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
+        currentPage = 'fedex-tracker';
+        renderContent();
+        closeSidebar();
+    });
+
+    document.getElementById('nav-helpful-links').addEventListener('click', () => {
+        currentPage = 'helpful-links';
+        renderContent();
+        closeSidebar();
+    });
+
+    document.getElementById('nav-settings').addEventListener('click', () => {
+        currentPage = 'settings';
+        renderContent();
+        closeSidebar();
+    });
     
     // Form Submission Listener (Attached only once)
     document.getElementById('add-link-form').addEventListener('submit', async (e) => {
