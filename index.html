@@ -1760,9 +1760,6 @@ const renderContent = () => {
             checkUpdatesBtnSettings.classList.remove('hidden');
         }
     }
-
-    // This is the correct placement for the closeSidebar() call.
-    closeSidebar();
 };
 
 const renderCategories = () => {
@@ -2390,25 +2387,25 @@ function attachEventListeners() {
     document.getElementById('nav-canned-responses').addEventListener('click', () => {
         currentPage = 'canned-responses';
         renderContent();
-        setTimeout(closeSidebar, 150);
+        closeSidebar();
     });
 
     document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
         currentPage = 'fedex-tracker';
         renderContent();
-        setTimeout(closeSidebar, 150);
+        closeSidebar();
     });
 
     document.getElementById('nav-helpful-links').addEventListener('click', () => {
         currentPage = 'helpful-links';
         renderContent();
-        setTimeout(closeSidebar, 150);
+        closeSidebar();
     });
 
     document.getElementById('nav-settings').addEventListener('click', () => {
         currentPage = 'settings';
         renderContent();
-        setTimeout(closeSidebar, 150);
+        closeSidebar();
     });
 
     // Other one-time listeners
