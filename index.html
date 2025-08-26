@@ -1398,6 +1398,7 @@ const renderLinks = (searchQuery = '') => {
     const userLinksSection = document.getElementById('user-links-section');
 
     const query = searchQuery.toLowerCase();
+    const regex = new RegExp(`(${query})`, 'gi'); // Create a case-insensitive regex for highlighting
 
     // Filter static links based on the search query
     const filteredStaticLinks = defaultLinks.filter(link => 
@@ -1420,11 +1421,15 @@ const renderLinks = (searchQuery = '') => {
         filteredStaticLinks.forEach(link => {
             const card = document.createElement('div');
             card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect';
-            const descriptionText = link.description || 'No description available.';
+            
+            // Apply highlighting to title and description
+            const highlightedTitle = query ? link.title.replace(regex, `<span class="highlight">$&</span>`) : link.title;
+            const highlightedDescription = query && link.description ? link.description.replace(regex, `<span class="highlight">$&</span>`) : (link.description || 'No description available.');
+
             card.innerHTML = `
                 <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="block">
-                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
-                    <p class="text-sm text-gray-400">${descriptionText}</p>
+                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${highlightedTitle}</h3>
+                    <p class="text-sm text-gray-400">${highlightedDescription}</p>
                 </a>
             `;
             staticLinksList.appendChild(card);
@@ -1440,10 +1445,15 @@ const renderLinks = (searchQuery = '') => {
         filteredUserLinks.forEach(link => {
             const card = document.createElement('div');
             card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect flex items-center justify-between relative';
+            
+            // Apply highlighting to title and description
+            const highlightedTitle = query ? link.title.replace(regex, `<span class="highlight">$&</span>`) : link.title;
+            const highlightedDescription = query && link.description ? link.description.replace(regex, `<span class="highlight">$&</span>`) : (link.description || 'No description available.');
+            
             card.innerHTML = `
                 <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
-                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
-                    <p class="text-sm text-gray-400">${link.description || 'No description available.'}</p>
+                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${highlightedTitle}</h3>
+                    <p class="text-sm text-gray-400">${highlightedDescription}</p>
                 </a>
                 <div class="relative inline-block text-left" data-doc-id="${link.id}" data-title="${link.title}" data-url="${link.url}" data-description="${link.description || ''}">
                     <button type="button" class="meatballs-button p-2 text-gray-400 hover:text-white transition-colors" aria-expanded="true" aria-haspopup="true">
