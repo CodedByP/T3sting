@@ -1391,6 +1391,7 @@ const showMessage = (text, type = 'success') => {
     });
 };		
 
+// Add this new function to your helper functions section
 const renderLinks = (searchQuery = '') => {
     const staticLinksList = document.getElementById('static-links-list');
     const userLinksList = document.getElementById('user-links-list');
@@ -1398,12 +1399,13 @@ const renderLinks = (searchQuery = '') => {
 
     const query = searchQuery.toLowerCase();
 
-    // Filter links based on the search query
+    // Filter static links based on the search query
     const filteredStaticLinks = defaultLinks.filter(link => 
         link.title.toLowerCase().includes(query) ||
         (link.description && link.description.toLowerCase().includes(query))
     );
     
+    // Filter user links if they exist
     let filteredUserLinks = [];
     if (userLinks && userLinks.length > 0) {
         filteredUserLinks = userLinks.filter(link =>
@@ -1411,6 +1413,65 @@ const renderLinks = (searchQuery = '') => {
             (link.description && link.description.toLowerCase().includes(query))
         );
     }
+    
+    // Render static links
+    staticLinksList.innerHTML = '';
+    if (filteredStaticLinks.length > 0) {
+        filteredStaticLinks.forEach(link => {
+            const card = document.createElement('div');
+            card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect';
+            const descriptionText = link.description || 'No description available.';
+            card.innerHTML = `
+                <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="block">
+                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
+                    <p class="text-sm text-gray-400">${descriptionText}</p>
+                </a>
+            `;
+            staticLinksList.appendChild(card);
+        });
+    } else {
+        staticLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No static links found.</p>';
+    }
+    
+    // Render user links
+    userLinksList.innerHTML = '';
+    if (!isAnonymous && filteredUserLinks.length > 0) {
+        userLinksSection.classList.remove('hidden'); // Ensure the section is visible if there are links
+        filteredUserLinks.forEach(link => {
+            const card = document.createElement('div');
+            card.className = 'link-card rounded-xl p-6 shadow-2xl pulse-effect flex items-center justify-between relative';
+            card.innerHTML = `
+                <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex-grow">
+                    <h3 class="font-bold text-xl text-white hover:text-sky-300 transition-colors mb-2">${link.title}</h3>
+                    <p class="text-sm text-gray-400">${link.description || 'No description available.'}</p>
+                </a>
+                <div class="relative inline-block text-left" data-doc-id="${link.id}" data-title="${link.title}" data-url="${link.url}" data-description="${link.description || ''}">
+                    <button type="button" class="meatballs-button p-2 text-gray-400 hover:text-white transition-colors" aria-expanded="true" aria-haspopup="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 pointer-events-none">
+                            <path d="M10 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM10 8.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM11.5 15a1.5 1.5 0 10-3 0 1.5 1.5 0 003 0z" />
+                        </svg>
+                    </button>
+                    <div class="meatballs-menu hidden absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
+                        <div class="py-1">
+                            <button class="edit-link-btn text-gray-200 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Edit</button>
+                            <button class="delete-link-btn text-red-400 block w-full text-left px-4 py-2 text-sm hover:bg-gray-600">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            userLinksList.appendChild(card);
+        });
+    } else if (!isAnonymous) {
+        userLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No user links found.</p>';
+    }
+    
+    // Hide or show the user links section based on the filtered results
+    if (isAnonymous) {
+      userLinksSection.classList.add('hidden');
+    } else {
+      userLinksSection.classList.remove('hidden');
+    }
+};
 
 		
 
@@ -2132,18 +2193,18 @@ const renderUserLinks = () => {
     }
 };
 const renderHelpfulLinks = () => {
-const renderStaticLinks = () => renderLinks();
-const renderUserLinks = () => renderLinks();
-    if (!renderedStaticLinks) {
-        renderStaticLinks();
-    }
+    const userLinksSection = document.getElementById('user-links-section');
+    const addLinkSection = document.getElementById('add-link-section');
+    
+    // Call the unified rendering function with no search query
+    renderLinks(); 
+
     if (isAnonymous) {
         userLinksSection.classList.add('hidden');
         addLinkSection.classList.add('hidden');
     } else {
         userLinksSection.classList.remove('hidden');
         addLinkSection.classList.remove('hidden');
-        renderUserLinks();
     }
 };
 const showLinksStatus = (message, colorClass) => {
