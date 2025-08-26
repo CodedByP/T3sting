@@ -1688,53 +1688,78 @@ const saveToFirestore = async (dataToSave) => {
 };
 
 // --- Rendering Functions ---
-const showPage = (pageName) => {
-    const pages = {
-        'canned-responses': document.getElementById('canned-responses-app'),
-        'fedex-tracker': document.getElementById('fedex-tracker-app'),
-        'helpful-links': document.getElementById('helpful-links-app'),
-        'settings': document.getElementById('settings-page')
-    };
-
-    // Hide all pages first
-    Object.values(pages).forEach(page => {
-        if (page) page.classList.add('hidden');
-    });
-
-    // Show the selected page
-    const selectedPage = pages[pageName];
-    if (selectedPage) {
-        selectedPage.classList.remove('hidden');
-    }
-
-    // Update global state and title
-    currentPage = pageName;
-    document.getElementById('main-title').textContent = pageName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-
-    // Handle page-specific UI elements
+const renderContent = () => {
+    const cannedResponsesApp = document.getElementById('canned-responses-app');
+    const fedexTrackerApp = document.getElementById('fedex-tracker-app');
+    const helpfulLinksApp = document.getElementById('helpful-links-app');
+    const settingsPage = document.getElementById('settings-page');
     const categoryBar = document.getElementById('category-bar');
-    if (pageName === 'canned-responses') {
-        if (categoryBar) categoryBar.classList.remove('hidden');
-        renderCategories();
-    } else {
-        if (categoryBar) categoryBar.classList.add('hidden');
-    }
-    
-    // You can move other page-specific logic here if needed,
-    // like calling extractAndDisplayNumbers() only when the FedEx page loads.
-    if (pageName === 'fedex-tracker') {
-        extractAndDisplayNumbers();
-    }
-    if (pageName === 'helpful-links') {
-        renderLinks();
-    }
-    if (pageName === 'settings') {
-        renderSettingsPage();
-    }
+    const mainTitle = document.getElementById('main-title');
+    const categoryActionsBtn = document.getElementById('category-actions-btn');
+    const categoryActionsMenu = document.getElementById('category-actions-menu');
+    const addCategoryBtn = document.getElementById('add-category-btn');
+    const addResponseSection = document.getElementById('add-response-section');
+    const userLinksSection = document.getElementById('user-links-section');
+    const addLinkSection = document.getElementById('add-link-section');
+    const importExportBtnSettings = document.getElementById('import-export-btn-settings');
+    const checkUpdatesBtnSettings = document.getElementById('check-updates-btn-settings');
 
-    // Close the sidebar consistently after the page is rendered
-    closeSidebar();
-    document.getElementById('sidebar').offsetHeight; // Force a reflow
+    categoryActionsBtn.classList.add('hidden');
+    categoryActionsMenu.classList.add('hidden');
+
+    if (cannedResponsesApp) cannedResponsesApp.classList.add('hidden');
+    if (fedexTrackerApp) fedexTrackerApp.classList.add('hidden');
+    if (helpfulLinksApp) helpfulLinksApp.classList.add('hidden');
+    if (settingsPage) settingsPage.classList.add('hidden');
+    if (categoryBar) categoryBar.classList.add('hidden');
+
+    if (currentPage === 'canned-responses') {
+        cannedResponsesApp.classList.remove('hidden');
+        categoryBar.classList.remove('hidden');
+        mainTitle.textContent = 'Canned Responses';
+        renderCategories();
+
+        if (!isAnonymous) {
+            addCategoryBtn.classList.remove('hidden');
+            addResponseSection.classList.remove('hidden');
+            if (Object.keys(categories).length > 0) {
+                categoryActionsBtn.classList.remove('hidden');
+            }
+        } else {
+            addCategoryBtn.classList.add('hidden');
+            addResponseSection.classList.add('hidden');
+            categoryActionsBtn.classList.add('hidden');
+        }
+    } else if (currentPage === 'fedex-tracker') {
+        fedexTrackerApp.classList.remove('hidden');
+        mainTitle.textContent = 'FedEx Tracker';
+        extractAndDisplayNumbers();
+    } else if (currentPage === 'helpful-links') {
+        helpfulLinksApp.classList.remove('hidden');
+        mainTitle.textContent = 'Helpful Links';
+
+        renderLinks();
+
+        if (isAnonymous) {
+            userLinksSection.classList.add('hidden');
+            addLinkSection.classList.add('hidden');
+        } else {
+            userLinksSection.classList.remove('hidden');
+            addLinkSection.classList.remove('hidden');
+            renderUserLinks();
+        }
+    } else if (currentPage === 'settings') {
+        settingsPage.classList.remove('hidden');
+        mainTitle.textContent = 'Settings';
+        renderSettingsPage();
+        if (isAnonymous) {
+            importExportBtnSettings.classList.add('hidden');
+            checkUpdatesBtnSettings.classList.add('hidden');
+        } else {
+            importExportBtnSettings.classList.remove('hidden');
+            checkUpdatesBtnSettings.classList.remove('hidden');
+        }
+    }
 };
 
 const renderCategories = () => {
@@ -2352,34 +2377,35 @@ const showPlaceholderDemo = () => {
 };
 
 
-
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
-    document.getElementById('hamburger-menu-btn').addEventListener('click', () => { 
-        document.getElementById('sidebar').classList.toggle('open');
-    });
-    
+    document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
     document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
 
+    // Updated navigation event listeners with a small delay for closing the sidebar
     document.getElementById('nav-canned-responses').addEventListener('click', () => {
         currentPage = 'canned-responses';
         renderContent();
+        closeSidebar();
     });
 
     document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
         currentPage = 'fedex-tracker';
         renderContent();
+        closeSidebar();
     });
 
     document.getElementById('nav-helpful-links').addEventListener('click', () => {
         currentPage = 'helpful-links';
         renderContent();
+        closeSidebar();
     });
 
     document.getElementById('nav-settings').addEventListener('click', () => {
         currentPage = 'settings';
         renderContent();
+        closeSidebar();
     });
 
     // Other one-time listeners
@@ -2845,7 +2871,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         userId = user.uid;
         isAnonymous = user.isAnonymous;
-        const displayName = auth.currentUser.displayName || auth.currentUser.email || 'User';
+        const displayName = user.displayName || user.email || 'User';
         userName = displayName.split(' ')[0].split('@')[0];
         const linksUserInfo = document.getElementById('links-user-info');
         if (linksUserInfo) linksUserInfo.textContent = `User ID: ${userId}`;
