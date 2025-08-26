@@ -1760,6 +1760,10 @@ const renderContent = () => {
             checkUpdatesBtnSettings.classList.remove('hidden');
         }
     }
+    closeSidebar();
+    document.getElementById('sidebar').offsetHeight; // Force browser repaint (reflow)
+};
+	
 };
 
 const renderCategories = () => {
@@ -2387,25 +2391,21 @@ function attachEventListeners() {
     document.getElementById('nav-canned-responses').addEventListener('click', () => {
         currentPage = 'canned-responses';
         renderContent();
-        closeSidebar();
     });
 
     document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
         currentPage = 'fedex-tracker';
         renderContent();
-        closeSidebar();
     });
 
     document.getElementById('nav-helpful-links').addEventListener('click', () => {
         currentPage = 'helpful-links';
         renderContent();
-        closeSidebar();
     });
 
     document.getElementById('nav-settings').addEventListener('click', () => {
         currentPage = 'settings';
         renderContent();
-        closeSidebar();
     });
 
     // Other one-time listeners
