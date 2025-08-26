@@ -2383,30 +2383,35 @@ const showPlaceholderDemo = () => {
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
-document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
-document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
-// Updated navigation event listeners with the correct closeSidebar() calls
+    document.getElementById('hamburger-menu-btn').addEventListener('click', () => { document.getElementById('sidebar').classList.toggle('open'); });
+    document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
+
+    // Updated navigation event listeners with a small delay for closing the sidebar
     document.getElementById('nav-canned-responses').addEventListener('click', () => {
         currentPage = 'canned-responses';
         renderContent();
+        setTimeout(closeSidebar, 150);
     });
 
     document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
         currentPage = 'fedex-tracker';
         renderContent();
+        setTimeout(closeSidebar, 150);
     });
 
     document.getElementById('nav-helpful-links').addEventListener('click', () => {
         currentPage = 'helpful-links';
         renderContent();
+        setTimeout(closeSidebar, 150);
     });
 
     document.getElementById('nav-settings').addEventListener('click', () => {
         currentPage = 'settings';
         renderContent();
+        setTimeout(closeSidebar, 150);
     });
-    
-    // Form Submission Listener (Attached only once)
+
+    // Other one-time listeners
     document.getElementById('add-link-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (isSubmittingLink) { console.warn("Preventing duplicate form submission."); return; }
@@ -2437,13 +2442,11 @@ document.getElementById('close-sidebar-btn').addEventListener('click', closeSide
         }
     });
 
+    document.getElementById('links-search-input').addEventListener('input', (e) => {
+        const query = e.target.value;
+        renderLinks(query);
+    });
 
-document.getElementById('links-search-input').addEventListener('input', (e) => {
-    const query = e.target.value;
-    renderLinks(query);
-});
-
-    // Other one-time listeners
     document.getElementById('cancel-button').addEventListener('click', () => { resetLinksForm(); });
     document.getElementById('user-links-list').addEventListener('click', (event) => {
         if (isAnonymous) return;
@@ -2480,7 +2483,7 @@ document.getElementById('links-search-input').addEventListener('input', (e) => {
             }
         }
     });
-    
+
     document.addEventListener('click', (event) => {
         const isClickInsideCategoryActions = event.target.closest('#category-actions-menu') || event.target.closest('#category-actions-btn');
         const isClickInsideMeatballsMenu = event.target.closest('.meatballs-menu') || event.target.closest('.meatballs-button');
@@ -2495,7 +2498,7 @@ document.getElementById('links-search-input').addEventListener('input', (e) => {
             openMenuId = null;
         }
     });
-    
+
     document.getElementById('close-login-popup-btn').addEventListener('click', async () => {
         document.getElementById('login-popup-modal').classList.remove('show');
         document.getElementById('login-popup-modal').classList.add('hidden');
@@ -2516,10 +2519,9 @@ document.getElementById('links-search-input').addEventListener('input', (e) => {
 
     document.getElementById('close-copy-success-btn').addEventListener('click', () => {
         document.getElementById('copy-success-modal').classList.add('hidden');
-    
     });
-    
-// --- Tutorial Listeners (Corrected) ---
+
+    // --- Tutorial Listeners (Corrected) ---
     document.getElementById('tutorial-next-btn').addEventListener('click', () => {
         if (currentTutorialStep < tutorialSteps.length - 1) {
             currentTutorialStep++;
@@ -2535,13 +2537,13 @@ document.getElementById('links-search-input').addEventListener('input', (e) => {
     });
 
     document.getElementById('tutorial-finish-btn').addEventListener('click', async () => {
-		 isTutorialActive = false;
+        isTutorialActive = false;
         // Clear all highlights before hiding the modal
         clearTutorialHighlights();
-        
+
         document.getElementById('tutorial-modal').classList.add('hidden');
-        document.getElementById('tutorial-overlay').classList.add('hidden'); 
-        
+        document.getElementById('tutorial-overlay').classList.add('hidden');
+
         if (userId) {
             const userDocRef = getUserRootDocRef(userId);
             try {
@@ -2553,19 +2555,19 @@ document.getElementById('links-search-input').addEventListener('input', (e) => {
     });
 
     document.getElementById('show-tutorial-btn').addEventListener('click', async () => {
-    if (userId && !isAnonymous) {
-        const userDocRef = getUserRootDocRef(userId);
-        try {
-            await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
-            showTutorialStep(0); // This function call will now handle displaying the modal
-        } catch (error) {
-            console.error("Error resetting tutorialSeen flag:", error);
-            showMessage("Error showing tutorial. Please try again.", 'error');
+        if (userId && !isAnonymous) {
+            const userDocRef = getUserRootDocRef(userId);
+            try {
+                await setDoc(userDocRef, { tutorialSeen: false }, { merge: true });
+                showTutorialStep(0); // This function call will now handle displaying the modal
+            } catch (error) {
+                console.error("Error resetting tutorialSeen flag:", error);
+                showMessage("Error showing tutorial. Please try again.", 'error');
+            }
+        } else {
+            showMessage("Please sign in to view the tutorial.", 'error');
         }
-    } else {
-        showMessage("Please sign in to view the tutorial.", 'error');
-    }
-});
+    });
 
     document.getElementById('theme-toggle-btn-settings').addEventListener('click', () => {
         document.body.classList.toggle('light-mode');
@@ -2796,7 +2798,7 @@ document.getElementById('links-search-input').addEventListener('input', (e) => {
     document.getElementById('cancel-placeholder-btn').addEventListener('click', () => {
         // Hide the placeholder modal
         document.getElementById('placeholder-modal').classList.add('hidden');
-   		 // Conditionally show the tutorial based on the global flag
+		 // Conditionally show the tutorial based on the global flag
     	if (isTutorialActive) {
         	// This is the tutorial-specific logic
         	document.getElementById('tutorial-modal').classList.remove('hidden');
@@ -2805,7 +2807,7 @@ document.getElementById('links-search-input').addEventListener('input', (e) => {
     	} else {
         // This is the normal operation; just close the modal.
         // No need to show the tutorial or do anything else.
-   		 }
+		 }
 	});
     document.getElementById('sign-in-btn-settings').addEventListener('click', async () => {
         try { const provider = new GoogleAuthProvider(); await signInWithPopup(auth, provider); showMessage("Signed in with Google!"); } catch (error) { console.error("Google sign-in failed", error); showMessage("Google sign-in failed. Please try again.", 'error'); }
@@ -2936,6 +2938,9 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 attachEventListeners();
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
