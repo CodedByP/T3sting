@@ -2355,6 +2355,7 @@ const showPlaceholderDemo = () => {
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
+// --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
     // Navigation Listeners
     document.getElementById('hamburger-menu-btn').addEventListener('click', () => { 
@@ -2364,23 +2365,24 @@ function attachEventListeners() {
     document.getElementById('close-sidebar-btn').addEventListener('click', closeSidebar);
 
     document.getElementById('nav-canned-responses').addEventListener('click', () => {
-        showPage('canned-responses');
+        currentPage = 'canned-responses';
+        renderContent();
     });
 
     document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
-        showPage('fedex-tracker');
+        currentPage = 'fedex-tracker';
+        renderContent();
     });
 
     document.getElementById('nav-helpful-links').addEventListener('click', () => {
-        showPage('helpful-links');
+        currentPage = 'helpful-links';
+        renderContent();
     });
 
     document.getElementById('nav-settings').addEventListener('click', () => {
-        showPage('settings');
+        currentPage = 'settings';
+        renderContent();
     });
-
-    // ... rest of your event listeners remain the same
-}
 
     // Other one-time listeners
     document.getElementById('add-link-form').addEventListener('submit', async (e) => {
@@ -2845,7 +2847,7 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         userId = user.uid;
         isAnonymous = user.isAnonymous;
-        const displayName = user.displayName || user.email || 'User';
+        const displayName = auth.currentUser.displayName || auth.currentUser.email || 'User';
         userName = displayName.split(' ')[0].split('@')[0];
         const linksUserInfo = document.getElementById('links-user-info');
         if (linksUserInfo) linksUserInfo.textContent = `User ID: ${userId}`;
