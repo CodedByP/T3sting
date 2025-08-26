@@ -1706,19 +1706,19 @@ const renderContent = () => {
 
     categoryActionsBtn.classList.add('hidden');
     categoryActionsMenu.classList.add('hidden');
-    
+
     if (cannedResponsesApp) cannedResponsesApp.classList.add('hidden');
     if (fedexTrackerApp) fedexTrackerApp.classList.add('hidden');
     if (helpfulLinksApp) helpfulLinksApp.classList.add('hidden');
     if (settingsPage) settingsPage.classList.add('hidden');
     if (categoryBar) categoryBar.classList.add('hidden');
-    
+
     if (currentPage === 'canned-responses') {
         cannedResponsesApp.classList.remove('hidden');
         categoryBar.classList.remove('hidden');
         mainTitle.textContent = 'Canned Responses';
         renderCategories();
-        
+
         if (!isAnonymous) {
             addCategoryBtn.classList.remove('hidden');
             addResponseSection.classList.remove('hidden');
@@ -1728,8 +1728,7 @@ const renderContent = () => {
         } else {
             addCategoryBtn.classList.add('hidden');
             addResponseSection.classList.add('hidden');
-            categoryActionsBtn.classList.add('hidden'); // Ensure it is hidden for anonymous users
-
+            categoryActionsBtn.classList.add('hidden');
         }
     } else if (currentPage === 'fedex-tracker') {
         fedexTrackerApp.classList.remove('hidden');
@@ -1738,9 +1737,8 @@ const renderContent = () => {
     } else if (currentPage === 'helpful-links') {
         helpfulLinksApp.classList.remove('hidden');
         mainTitle.textContent = 'Helpful Links';
-        
-    renderLinks(); // Call the new unified function
 
+        renderLinks();
 
         if (isAnonymous) {
             userLinksSection.classList.add('hidden');
@@ -1762,7 +1760,9 @@ const renderContent = () => {
             checkUpdatesBtnSettings.classList.remove('hidden');
         }
     }
-	    closeSidebar();
+
+    // This is the correct placement for the closeSidebar() call.
+    closeSidebar();
 };
 
 const renderCategories = () => {
@@ -2389,25 +2389,21 @@ document.getElementById('close-sidebar-btn').addEventListener('click', closeSide
     document.getElementById('nav-canned-responses').addEventListener('click', () => {
         currentPage = 'canned-responses';
         renderContent();
-        closeSidebar();
     });
 
     document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
         currentPage = 'fedex-tracker';
         renderContent();
-        closeSidebar();
     });
 
     document.getElementById('nav-helpful-links').addEventListener('click', () => {
         currentPage = 'helpful-links';
         renderContent();
-        closeSidebar();
     });
 
     document.getElementById('nav-settings').addEventListener('click', () => {
         currentPage = 'settings';
         renderContent();
-        closeSidebar();
     });
     
     // Form Submission Listener (Attached only once)
