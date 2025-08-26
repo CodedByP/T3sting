@@ -2225,12 +2225,16 @@ const showLinksStatus = (message, colorClass) => {
     }, 3000);
 };
 
+const navigateToPage = (pageName) => {
+    currentPage = pageName;
+    closeSidebar();
+    renderContent();
+};
+
 // Add this helper function somewhere in your script block
 const closeSidebar = () => {
     const sidebar = document.getElementById('sidebar');
-    if (sidebar.classList.contains('open')) {
-        sidebar.classList.remove('open');
-    }
+    sidebar.classList.remove('open');
 };
 
 const resetLinksForm = () => {
@@ -2379,40 +2383,36 @@ const showPlaceholderDemo = () => {
 
 // --- All Event Listeners (Correctly placed to be attached only once) ---
 function attachEventListeners() {
-    // Navigation Listeners
-// This listener handles opening and closing the sidebar by toggling the 'open' class.
-// This is the only place the 'open' class should be toggled.
+// This listener handles opening the sidebar.
 document.getElementById('hamburger-menu-btn').addEventListener('click', () => {
     document.getElementById('sidebar').classList.toggle('open');
 });
 
+// Use the new navigation function for each button.
 document.getElementById('nav-canned-responses').addEventListener('click', () => {
-    currentPage = 'canned-responses';
-    renderContent();
-    closeSidebar();
+    navigateToPage('canned-responses');
 });
+
 document.getElementById('nav-fedex-tracker').addEventListener('click', () => {
-    currentPage = 'fedex-tracker';
-    renderContent();
-    closeSidebar();
+    navigateToPage('fedex-tracker');
 });
+
 document.getElementById('nav-helpful-links').addEventListener('click', () => {
-    currentPage = 'helpful-links';
-    renderContent();
-    closeSidebar();
+    navigateToPage('helpful-links');
 });
+
 document.getElementById('nav-settings').addEventListener('click', () => {
-    currentPage = 'settings';
-    renderContent();
-    closeSidebar();
+    navigateToPage('settings');
 });
-// Add a single, global listener to close the sidebar when a user clicks outside of it.
-// This is a robust and common pattern.
+
+// The global listener to close the sidebar should remain as it is, but with one small correction.
+// It's better to check the 'sidebar' element itself to see if the click was inside it.
 document.addEventListener('click', (event) => {
     const sidebar = document.getElementById('sidebar');
     const hamburgerBtn = document.getElementById('hamburger-menu-btn');
-    // Check if the sidebar is open and the click target is not the sidebar itself
-    // or the hamburger button.
+
+    // Only close the sidebar if it is open AND the click happened outside of it
+    // and outside of the hamburger button.
     if (sidebar.classList.contains('open') && !sidebar.contains(event.target) && !hamburgerBtn.contains(event.target)) {
         closeSidebar();
     }
