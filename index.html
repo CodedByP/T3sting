@@ -595,13 +595,22 @@ body.light-mode #tutorial-finish-btn:hover { background-color: #4ade80; }
             </div>
         </div>
 
-        <div id="helpful-links-app" class="w-full hidden container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-center justify-center py-12">
-            <div class="container mx-auto px-4">
-                <header class="text-center mb-16 animate-fade-in">
-                    <p class="mt-4 text-xl text-gray-300 max-w-2xl mx-auto">
-                        A carefully curated selection of resources, tools, and documentation.
-                    </p>
-                    <div id="links-user-info" class="mt-4 text-sm text-gray-500"></div>
+<div id="helpful-links-app" class="w-full hidden container-bg rounded-2xl p-6 sm:p-10 text-gray-100 min-h-screen flex items-center justify-center py-12">
+    <div class="container mx-auto px-4">
+        <div id="links-search-bar-container" class="floating-card mb-8 relative p-6 sm:p-8">
+            <div class="absolute inset-y-0 left-0 pl-11 flex items-center pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input
+                type="text"
+                id="links-search-input"
+                class="w-full border-2 border-gray-600 rounded-xl p-4 pl-12 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 text-lg text-placeholder"
+                placeholder="Search helpful links..."
+            />
+        </div>
+        <header class="text-center mb-16 animate-fade-in">
                 </header>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -1382,6 +1391,29 @@ const showMessage = (text, type = 'success') => {
     });
 };		
 
+const renderLinks = (searchQuery = '') => {
+    const staticLinksList = document.getElementById('static-links-list');
+    const userLinksList = document.getElementById('user-links-list');
+    const userLinksSection = document.getElementById('user-links-section');
+
+    const query = searchQuery.toLowerCase();
+
+    // Filter links based on the search query
+    const filteredStaticLinks = defaultLinks.filter(link => 
+        link.title.toLowerCase().includes(query) ||
+        (link.description && link.description.toLowerCase().includes(query))
+    );
+    
+    let filteredUserLinks = [];
+    if (userLinks && userLinks.length > 0) {
+        filteredUserLinks = userLinks.filter(link =>
+            link.title.toLowerCase().includes(query) ||
+            (link.description && link.description.toLowerCase().includes(query))
+        );
+    }
+
+		
+
 // This is the new, combined function that handles all tutorial logic
 const showTutorialStep = async (stepIndex) => {
 	    isTutorialActive = true;
@@ -1636,9 +1668,8 @@ const renderContent = () => {
         helpfulLinksApp.classList.remove('hidden');
         mainTitle.textContent = 'Helpful Links';
         
-        if (!renderedStaticLinks) {
-            renderStaticLinks();
-        }
+    renderLinks(); // Call the new unified function
+
 
         if (isAnonymous) {
             userLinksSection.classList.add('hidden');
@@ -2093,10 +2124,16 @@ const renderUserLinks = () => {
     } else {
         userLinksList.innerHTML = '<p class="text-center text-gray-400 col-span-full">No links added yet. Add one above!</p>';
     }
+
+	    if (filteredUserLinks.length === 0 && isAnonymous) {
+      userLinksSection.classList.add('hidden');
+    } else {
+      userLinksSection.classList.remove('hidden');
+    }
 };
 const renderHelpfulLinks = () => {
-    const userLinksSection = document.getElementById('user-links-section');
-    const addLinkSection = document.getElementById('add-link-section');
+const renderStaticLinks = () => renderLinks();
+const renderUserLinks = () => renderLinks();
     if (!renderedStaticLinks) {
         renderStaticLinks();
     }
@@ -2311,6 +2348,12 @@ document.getElementById('nav-settings').addEventListener('click', () => { curren
             isSubmittingLink = false;
         }
     });
+
+
+document.getElementById('links-search-input').addEventListener('input', (e) => {
+    const query = e.target.value;
+    renderLinks(query);
+});
 
     // Other one-time listeners
     document.getElementById('cancel-button').addEventListener('click', () => { resetLinksForm(); });
